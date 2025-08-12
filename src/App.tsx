@@ -38,7 +38,6 @@ function App() {
 
     if (!pickedPath) return;
 
-    // Step 2: list root children
     await invoke<TreeNode[]>("list_directory", { path: pickedPath })
       .then((entries) => {
         setTree(

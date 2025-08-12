@@ -16,6 +16,7 @@ pub mod ERROR_CODES {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct DirEntryInfo {
     name: String,
     path: String,
