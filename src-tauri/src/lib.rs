@@ -1,7 +1,7 @@
 use rfd::FileDialog;
 use serde::Serialize;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize)]
 struct DirectoryError {
@@ -70,11 +70,58 @@ fn list_directory(path: String) -> Result<Vec<DirEntryInfo>, DirectoryError> {
     Ok(result)
 }
 
+#[tauri::command]
+fn search_files(path: String, term: String) -> Result<Vec<String>, DirectoryError> {
+    let dir = PathBuf::from(&path);
+
+    fs::read_dir(&dir).map_err(|_| DirectoryError {
+        code: ERROR_CODES::DIRECTORY_READ_ERROR,
+        directory_name: Some(path.clone()),
+    })?;
+
+    if term.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut results = Vec::new();
+    let term_lower = term.to_lowercase();
+
+    fn visit_dir(dir: &Path, term_lower: &str, results: &mut Vec<String>) {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry_res in entries {
+                if let Ok(entry) = entry_res {
+                    if let Ok(ft) = entry.file_type() {
+                        let name_lower = entry.file_name().to_string_lossy().to_lowercase();
+                        if ft.is_file() {
+                            if name_lower.contains(term_lower) {
+                                results.push(entry.path().to_string_lossy().into_owned());
+                            }
+                        } else if ft.is_dir() {
+                            // Recurse into sub-directory
+                            visit_dir(&entry.path(), term_lower, results);
+                        } else {
+                            // Skip symlinks and other special files
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    visit_dir(&dir, &term_lower, &mut results);
+
+    Ok(results)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![open_directory, list_directory])
+        .invoke_handler(tauri::generate_handler![
+            open_directory,
+            list_directory,
+            search_files
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
