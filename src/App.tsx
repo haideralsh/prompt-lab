@@ -25,18 +25,23 @@ function App() {
     setSelectedFile(null);
   }
 
-  async function openDirectory() {
-    clear();
+  function collapseAll() {
+    setTree(tree.map((node) => ({ ...node, isExpanded: false })));
+  }
 
-    const pickedPath = await invoke<string>("open_directory").catch((err) => {
-      const { code } = err as DirectoryError;
-      if (code !== ERROR_CODES.DIALOG_CANCELLED) {
-        setError("Failed to open directory dialog");
-      }
-      throw err;
-    });
+  async function openDirectory() {
+    const pickedPath = await invoke<string>("open_directory").catch(
+      async (err) => {
+        const { code } = (await err) as DirectoryError;
+        if (code !== ERROR_CODES.DIALOG_CANCELLED) {
+          setError("Failed to open directory dialog");
+        }
+      },
+    );
 
     if (!pickedPath) return;
+
+    clear();
 
     await invoke<TreeNode[]>("list_directory", { path: pickedPath })
       .then((entries) => {
@@ -61,6 +66,7 @@ function App() {
   return (
     <main style={{ padding: 20 }}>
       <button onClick={openDirectory}>Open directory</button>
+      <button onClick={collapseAll}>Collapse all</button>
 
       {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
 
