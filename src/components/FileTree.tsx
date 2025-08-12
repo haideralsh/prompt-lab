@@ -51,28 +51,26 @@ export function FileTree({ nodes, onUpdate, onSelect }: FileTreeProps) {
   function renderNodes(list: TreeNode[], depth = 0) {
     return list.map((n) => (
       <div key={n.path} style={{ paddingLeft: depth * 12 }}>
-        {n.isDirectory && (
-          <span
-            style={{
-              cursor: "pointer",
-              display: "inline-block",
-              width: 16,
-              textAlign: "center",
-            }}
-            onClick={() => toggle(n)}
-          >
-            {n.isExpanded ? "▾" : "▸"}
+        <button onClick={() => (n.isDirectory ? toggle(n) : onSelect(n))}>
+          {n.isDirectory && (
+            <span
+              style={{
+                cursor: "pointer",
+                display: "inline-block",
+                width: 16,
+                textAlign: "center",
+              }}
+            >
+              {n.isExpanded ? "▾" : "▸"}
+            </span>
+          )}
+          {!n.isDirectory && (
+            <span style={{ width: 16, display: "inline-block" }} />
+          )}
+          <span style={{ cursor: "pointer", userSelect: "none" }}>
+            {n.name}
           </span>
-        )}
-        {!n.isDirectory && (
-          <span style={{ width: 16, display: "inline-block" }} />
-        )}
-        <span
-          onClick={() => onSelect(n)}
-          style={{ cursor: "pointer", userSelect: "none" }}
-        >
-          {n.name}
-        </span>
+        </button>
         {n.isDirectory &&
           n.isExpanded &&
           n.children &&

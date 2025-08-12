@@ -44,7 +44,7 @@ function App() {
           entries.map((e) => ({
             ...e,
             isExpanded: false,
-            isLoaded: true,
+            isLoaded: !e.isDirectory,
           })),
         );
       })
