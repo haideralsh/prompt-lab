@@ -21,10 +21,8 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [rootPath, setRootPath] = useState<string | null>(null);
 
-  // Search UI state
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [isFiltered, setIsFiltered] = useState(false);
 
   function clear() {
@@ -171,13 +169,15 @@ function App() {
     return filterNodes(list);
   }
 
-  async function runSearch() {
+  async function runSearch(nextQuery?: string) {
     if (!rootPath) {
       setError("Open a directory first to search.");
       return;
     }
 
-    const trimmed = query.trim();
+    const term = nextQuery ?? query;
+    const trimmed = term.trim();
+
     if (!trimmed) {
       // Clear filter and restore original tree
       setResults([]);
@@ -187,7 +187,6 @@ function App() {
       return;
     }
 
-    setIsSearching(true);
     setError("");
     try {
       const matchesRaw = await invoke<string[]>("search_files", {
@@ -228,8 +227,6 @@ function App() {
       setSelectedFile(null);
     } catch (_e) {
       setError("Search failed");
-    } finally {
-      setIsSearching(false);
     }
   }
 
@@ -248,16 +245,16 @@ function App() {
           type="text"
           placeholder="Filter tree by file name..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") runSearch();
+          onChange={(e) => {
+            const value = e.target.value;
+            setQuery(value);
+            if (rootPath) {
+              void runSearch(value);
+            }
           }}
           style={{ minWidth: 320, padding: "6px 8px" }}
           disabled={!rootPath}
         />
-        <button onClick={runSearch} disabled={!rootPath || isSearching}>
-          {isSearching ? "Filtering..." : "Filter"}
-        </button>
         <button
           onClick={() => {
             setQuery("");
