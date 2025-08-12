@@ -2,12 +2,7 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { TreeNode } from "./types/FileTree";
 import { FileTree } from "./components/FileTree";
-import "./App.css";
-
-const ERROR_CODES = {
-  DIRECTORY_READ_ERROR: 1,
-  DIALOG_CANCELLED: 2,
-} as const;
+import { ERROR_CODES } from "./constants";
 
 interface DirectoryError {
   code: number;
