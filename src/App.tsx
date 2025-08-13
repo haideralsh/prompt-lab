@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { TreeNode } from "./types/FileTree";
-import { FileTree } from "./components/FileTree";
 import { ERROR_CODES } from "./constants";
+import { Sidebar } from "./components/Sidebar/Sidebar";
 
 interface DirectoryError {
   code: number;
@@ -15,9 +15,7 @@ function App() {
   const [error, setError] = useState("");
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [rootPath, setRootPath] = useState<string | null>(null);
-
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<string[]>([]);
   const [isFiltered, setIsFiltered] = useState(false);
 
   function clear() {
@@ -25,7 +23,6 @@ function App() {
     setTree([]);
     setFullTree([]);
     setSelectedFile(null);
-    setResults([]);
     setQuery("");
     setIsFiltered(false);
   }
@@ -60,7 +57,7 @@ function App() {
         const mapped = entries.map((e) => ({
           ...e,
           isExpanded: false,
-          isLoaded: !e.isDirectory,
+          isLoaded: !e.isDirectory ? true : false,
         }));
         setTree(mapped);
         setFullTree(mapped);
@@ -76,94 +73,6 @@ function App() {
       });
   }
 
-  function getSep(p: string) {
-    return p.includes("\\") ? "\\" : "/";
-  }
-
-  // Expand and load directories along the path to make the target visible in the tree
-  async function expandInto(
-    list: TreeNode[],
-    targetPath: string,
-  ): Promise<TreeNode[]> {
-    const sep = getSep(targetPath);
-
-    async function ensureChildrenLoaded(dirNode: TreeNode): Promise<TreeNode> {
-      if (dirNode.isLoaded) {
-        // Already loaded; just expand
-        return { ...dirNode, isExpanded: true };
-      }
-      const children = await invoke<TreeNode[]>("list_directory", {
-        path: dirNode.path,
-      });
-      const mapped = children.map((c) => ({
-        ...c,
-        isExpanded: false,
-        // mark children as not yet loaded (consistent with FileTree toggle mapping)
-        isLoaded: false,
-      }));
-      return {
-        ...dirNode,
-        isLoaded: true,
-        isExpanded: true,
-        children: mapped,
-      };
-    }
-
-    return Promise.all(
-      list.map(async (n) => {
-        if (n.isDirectory) {
-          const isAncestor =
-            targetPath === n.path || targetPath.startsWith(n.path + sep);
-
-          if (isAncestor) {
-            const expanded = await ensureChildrenLoaded(n);
-            const updatedChildren = await expandInto(
-              expanded.children ?? [],
-              targetPath,
-            );
-            return { ...expanded, children: updatedChildren };
-          }
-
-          if (n.children?.length) {
-            const updatedChildren = await expandInto(n.children, targetPath);
-            return { ...n, children: updatedChildren };
-          }
-        }
-        return n;
-      }),
-    );
-  }
-
-  function filterTreeByMatches(
-    list: TreeNode[],
-    matchSet: Set<string>,
-  ): TreeNode[] {
-    function filterNodes(nodes: TreeNode[]): TreeNode[] {
-      const out: TreeNode[] = [];
-      for (const n of nodes) {
-        if (n.isDirectory) {
-          const keptChildren = n.children ? filterNodes(n.children) : [];
-          if (keptChildren.length > 0) {
-            out.push({
-              ...n,
-              isExpanded: true, // auto-expand to reveal matches
-              children: keptChildren,
-              isLoaded: true, // within filtered view, we consider this loaded
-            });
-          }
-          // directories themselves are not "matches" (search returns files),
-          // so we only keep dirs if they have kept children.
-        } else {
-          if (matchSet.has(n.path)) {
-            out.push({ ...n });
-          }
-        }
-      }
-      return out;
-    }
-    return filterNodes(list);
-  }
-
   async function runSearch(nextQuery?: string) {
     if (!rootPath) {
       setError("Open a directory first to search.");
@@ -175,49 +84,37 @@ function App() {
 
     if (!trimmed) {
       // Clear filter and restore original tree
-      setResults([]);
       setIsFiltered(false);
-      setTree(fullTree);
       setSelectedFile(null);
+      setTree(fullTree);
       return;
     }
 
     setError("");
     try {
-      const matchesRaw = await invoke<string[]>("search_files", {
+      const filteredTree = await invoke<TreeNode[]>("search_tree", {
         path: rootPath,
         term: trimmed,
       });
 
-      // Deduplicate paths and ensure stable order
-      const seen = new Set<string>();
-      const matches: string[] = [];
-      for (const p of matchesRaw) {
-        if (!seen.has(p)) {
-          seen.add(p);
-          matches.push(p);
-        }
-      }
-      setResults(matches);
-
-      if (matches.length === 0) {
-        setTree([]); // filtered to nothing
-        setIsFiltered(true);
-        setSelectedFile(null);
-        return;
+      // Mark directories as expanded and loaded so the filtered view opens all branches.
+      function mark(nodes: TreeNode[]): TreeNode[] {
+        return nodes.map((n) => {
+          if (n.isDirectory) {
+            const children = n.children ? mark(n.children) : [];
+            return {
+              ...n,
+              isExpanded: true,
+              isLoaded: true,
+              children,
+            };
+          }
+          return { ...n };
+        });
       }
 
-      // Ensure all branches to each match are loaded, then filter.
-      let updated = fullTree;
-      for (const p of matches) {
-        updated = await expandInto(updated, p);
-      }
-
-      const matchSet = new Set(matches);
-      const filtered = filterTreeByMatches(updated, matchSet);
-
-      setTree(filtered);
-      // Keep fullTree intact so clearing restores it
+      const prepared = mark(filteredTree);
+      setTree(prepared);
       setIsFiltered(true);
       setSelectedFile(null);
     } catch (_e) {
@@ -226,77 +123,42 @@ function App() {
   }
 
   return (
-    <main style={{ padding: 20 }}>
-      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-        <button onClick={openDirectory}>Open directory</button>
-        <button onClick={collapseAll}>Collapse all</button>
-      </div>
-
-      {/* Search controls */}
-      <div
-        style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}
-      >
-        <input
-          type="text"
-          placeholder="Filter tree by file name..."
-          value={query}
-          onChange={(e) => {
-            const value = e.target.value;
-            setQuery(value);
-            if (rootPath) {
-              void runSearch(value);
-            }
-          }}
-          style={{ minWidth: 320, padding: "6px 8px" }}
-          disabled={!rootPath}
+    <main className="text-[#D0D0D0] bg-black h-dvh flex flex-col">
+      {(tree.length > 0 || isFiltered) ? (
+        <Sidebar
+          query={query}
+          setQuery={setQuery}
+          tree={tree}
+          setTree={setTree}
+          setFullTree={setFullTree}
+          error={error}
+          rootPath={rootPath}
+          isFiltered={isFiltered}
+          setSelectedFile={setSelectedFile}
+          selectedFile={selectedFile}
+          collapseAll={collapseAll}
+          runSearch={runSearch}
+          setIsFiltered={setIsFiltered}
         />
-        <button
-          onClick={() => {
-            setQuery("");
-            setResults([]);
-            setIsFiltered(false);
-            setTree(fullTree);
-            setSelectedFile(null);
-          }}
-          disabled={!isFiltered}
-        >
-          Clear filter
-        </button>
-        {isFiltered && (
-          <span style={{ fontSize: 12, opacity: 0.8 }}>
-            {results.length} {results.length === 1 ? "match" : "matches"}
-          </span>
-        )}
-      </div>
+      ) : (
+        <div className="flex flex-col h-full items-center justify-center">
+          <button
+            className="flex items-center gap-2 text-sm cursor-pointer"
+            onClick={openDirectory}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="size-6"
+            >
+              <path d="M19.906 9c.382 0 .749.057 1.094.162V9a3 3 0 0 0-3-3h-3.879a.75.75 0 0 1-.53-.22L11.47 3.66A2.25 2.25 0 0 0 9.879 3H6a3 3 0 0 0-3 3v3.162A3.756 3.756 0 0 1 4.094 9h15.812ZM4.094 10.5a2.25 2.25 0 0 0-2.227 2.568l.857 6A2.25 2.25 0 0 0 4.951 21H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-2.227-2.568H4.094Z" />
+            </svg>
+            <span>Open a directory</span>
+          </button>
 
-      {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
-
-      {/* Tree */}
-      {tree.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <FileTree
-            nodes={tree}
-            onUpdate={(nodes) => {
-              setTree(nodes);
-              // Keep source-of-truth in sync only when not filtered
-              if (!isFiltered) setFullTree(nodes);
-            }}
-            onSelect={(n) => !n.isDirectory && setSelectedFile(n.path)}
-            selectedPath={selectedFile ?? undefined}
-            disableDynamicLoading={isFiltered}
-          />
-        </div>
-      )}
-
-      {!error && rootPath && tree.length === 0 && (
-        <div style={{ marginTop: 16, fontStyle: "italic", opacity: 0.8 }}>
-          {isFiltered ? "No matches found." : "Directory is empty."}
-        </div>
-      )}
-
-      {selectedFile && (
-        <div style={{ marginTop: 20, fontStyle: "italic" }}>
-          Selected file: {selectedFile}
+          {/*This should move to a dialog*/}
+          {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
         </div>
       )}
     </main>

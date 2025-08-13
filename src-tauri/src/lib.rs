@@ -23,6 +23,15 @@ struct DirEntryInfo {
     is_directory: bool,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DirNode {
+    name: String,
+    path: String,
+    is_directory: bool,
+    children: Option<Vec<DirNode>>,
+}
+
 #[tauri::command]
 fn open_directory() -> Result<String, DirectoryError> {
     let picked = FileDialog::new()
@@ -55,10 +64,12 @@ fn list_directory(path: String) -> Result<Vec<DirEntryInfo>, DirectoryError> {
             directory_name: Some(path.clone()),
         })?;
 
-        let file_type = entry.file_type().map_err(|_| DirectoryError {
-            code: ERROR_CODES::DIRECTORY_READ_ERROR,
-            directory_name: Some(path.clone()),
-        })?;
+        let file_type = entry
+            .file_type()
+            .map_err(|_| DirectoryError {
+                code: ERROR_CODES::DIRECTORY_READ_ERROR,
+                directory_name: Some(path.clone()),
+            })?;
 
         result.push(DirEntryInfo {
             name: entry.file_name().to_string_lossy().into_owned(),
@@ -71,46 +82,66 @@ fn list_directory(path: String) -> Result<Vec<DirEntryInfo>, DirectoryError> {
 }
 
 #[tauri::command]
-fn search_files(path: String, term: String) -> Result<Vec<String>, DirectoryError> {
+fn search_tree(path: String, term: String) -> Result<Vec<DirNode>, DirectoryError> {
     let dir = PathBuf::from(&path);
 
+    // Ensure the directory is readable; propagate a consistent error if not.
     fs::read_dir(&dir).map_err(|_| DirectoryError {
         code: ERROR_CODES::DIRECTORY_READ_ERROR,
         directory_name: Some(path.clone()),
     })?;
 
-    if term.trim().is_empty() {
+    let trimmed = term.trim().to_string();
+    if trimmed.is_empty() {
+        // Empty query -> return an empty tree; the frontend restores the full tree itself.
         return Ok(Vec::new());
     }
 
-    let mut results = Vec::new();
-    let term_lower = term.to_lowercase();
+    let term_lower = trimmed.to_lowercase();
 
-    fn visit_dir(dir: &Path, term_lower: &str, results: &mut Vec<String>) {
+    fn visit_dir(dir: &Path, term_lower: &str) -> Vec<DirNode> {
+        let mut kept: Vec<DirNode> = Vec::new();
+
         if let Ok(entries) = fs::read_dir(dir) {
             for entry_res in entries {
                 if let Ok(entry) = entry_res {
+                    // Skip entries that fail file_type(), and skip symlinks/other specials.
                     if let Ok(ft) = entry.file_type() {
-                        let name_lower = entry.file_name().to_string_lossy().to_lowercase();
+                        let name = entry.file_name().to_string_lossy().into_owned();
+                        let name_lower = name.to_lowercase();
+                        let path_str = entry.path().to_string_lossy().into_owned();
+
                         if ft.is_file() {
                             if name_lower.contains(term_lower) {
-                                results.push(entry.path().to_string_lossy().into_owned());
+                                kept.push(DirNode {
+                                    name,
+                                    path: path_str,
+                                    is_directory: false,
+                                    children: None,
+                                });
                             }
                         } else if ft.is_dir() {
-                            // Recurse into sub-directory
-                            visit_dir(&entry.path(), term_lower, results);
+                            let child_nodes = visit_dir(&entry.path(), term_lower);
+                            if !child_nodes.is_empty() {
+                                kept.push(DirNode {
+                                    name,
+                                    path: path_str,
+                                    is_directory: true,
+                                    children: Some(child_nodes),
+                                });
+                            }
                         } else {
-                            // Skip symlinks and other special files
+                            // Skip symlinks and other special file types
                         }
                     }
                 }
             }
         }
+
+        kept
     }
 
-    visit_dir(&dir, &term_lower, &mut results);
-
-    Ok(results)
+    Ok(visit_dir(&dir, &term_lower))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -120,7 +151,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             open_directory,
             list_directory,
-            search_files
+            search_tree
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
