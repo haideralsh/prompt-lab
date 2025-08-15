@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { ERROR_CODES } from "../constants";
 import { ErrorBanner } from "./common/ErrorBanner";
 import type { DirectoryInfo } from "../types/DirectoryInfo";
-import { OpenFolderIcon } from "./icons/open-folder";
+import { OpenFolderIcon } from "./icons/openFolder";
 
 interface DirectoryPickerProps {
   onPick: (dir: DirectoryInfo) => void;
