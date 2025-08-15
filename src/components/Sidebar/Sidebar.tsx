@@ -26,7 +26,6 @@ export function Sidebar({ root }: SidebarProps) {
   const [query, setQuery] = useState("");
   const [isFiltered, setIsFiltered] = useState(false);
 
-  // Load initial tree when root changes
   useEffect(() => {
     let cancelled = false;
 

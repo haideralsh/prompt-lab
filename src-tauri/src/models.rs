@@ -1,6 +1,6 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DirEntryInfo {
     pub name: String,
@@ -8,7 +8,7 @@ pub struct DirEntryInfo {
     pub is_directory: bool,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DirNode {
     pub name: String,
@@ -17,7 +17,7 @@ pub struct DirNode {
     pub children: Option<Vec<DirNode>>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PickedDirectory {
     pub name: String,

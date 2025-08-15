@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DirectoryPicker } from "../DirectoryPicker";
 import { FolderIcon } from "../icons/folder";
 import type { DirectoryInfo } from "../../types/DirectoryInfo";
-import { RecentFolders } from "../../utils/recentFolders";
+import { invoke } from "@tauri-apps/api/core";
 
 interface BlankStateProps {
   onPick: (dir: DirectoryInfo) => void;
@@ -12,21 +12,17 @@ export function BlankState({ onPick }: BlankStateProps) {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([]);
 
   useEffect(() => {
-    let cancelled = false;
-
     async function loadRecentOpened() {
-      try {
-        const list = await RecentFolders.getRecentFolders();
-        if (!cancelled) setRecentOpened(list);
-      } catch {
-        if (!cancelled) setRecentOpened([]);
-      }
+      await invoke<DirectoryInfo[]>("get_recent_folders")
+        .then((list) => {
+          setRecentOpened(list);
+        })
+        .catch(() => {
+          setRecentOpened([]);
+        });
     }
 
     void loadRecentOpened();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   return (

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { BlankState } from "./components/Sidebar/BlankState";
 import type { DirectoryInfo } from "./types/DirectoryInfo";
-import { RecentFolders } from "./utils/recentFolders";
+import { invoke } from "@tauri-apps/api/core";
 
 function App() {
   const [root, setRoot] = useState<DirectoryInfo | null>(null);
@@ -10,8 +10,8 @@ function App() {
   function handleDirectoryPick(dir: DirectoryInfo) {
     setRoot(dir);
 
-    // Change to an invoke function to the backend
-    void RecentFolders.addRecentFolder(dir);
+    // Invoke backend to add folder to recents
+    void invoke("add_recent_folder", { folder: dir });
   }
 
   return (

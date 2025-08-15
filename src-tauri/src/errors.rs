@@ -7,10 +7,22 @@ pub struct DirectoryError {
     pub directory_name: Option<String>,
 }
 
-/// Error code constants for directory operations.
+/// Serializable error returned from Tauri commands for store operations.
+#[derive(Serialize)]
+pub struct StoreError {
+    pub code: u8,
+    pub message: Option<String>,
+}
+
+/// Error code constants for directory and store operations.
 pub mod codes {
     /// Failed to read the directory (permissions, not found, etc.)
     pub const DIRECTORY_READ_ERROR: u8 = 1;
     /// User cancelled the file dialog.
     pub const DIALOG_CANCELLED: u8 = 2;
+
+    /// Failed to open/read the store.
+    pub const STORE_READ_ERROR: u8 = 3;
+    /// Failed to write/save the store.
+    pub const STORE_WRITE_ERROR: u8 = 4;
 }
