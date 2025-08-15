@@ -32,14 +32,29 @@ struct DirNode {
     children: Option<Vec<DirNode>>,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PickedDirectory {
+    name: String,
+    path: String,
+}
+
 #[tauri::command]
-fn open_directory() -> Result<String, DirectoryError> {
+fn open_directory() -> Result<PickedDirectory, DirectoryError> {
     let picked = FileDialog::new()
         .set_title("Choose a directory")
         .pick_folder();
 
     if let Some(path) = picked {
-        Ok(path.to_string_lossy().into_owned())
+        let name = path
+            .file_name()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| path.to_string_lossy().into_owned());
+
+        Ok(PickedDirectory {
+            name,
+            path: path.to_string_lossy().into_owned(),
+        })
     } else {
         Err(DirectoryError {
             code: ERROR_CODES::DIALOG_CANCELLED,

@@ -7,9 +7,10 @@ import { SearchBar } from "./SearchBar";
 import { TreeStatus } from "./TreeStatus";
 import { SelectedFileInfo } from "./SelectedFileInfo";
 import { ErrorBanner } from "../common/ErrorBanner";
+import type { DirectoryInfo } from "../../types/DirectoryInfo";
 
 interface SidebarProps {
-  rootPath: string;
+  root: DirectoryInfo;
 }
 
 interface DirectoryError {
@@ -17,7 +18,7 @@ interface DirectoryError {
   directory_name?: string;
 }
 
-export function Sidebar({ rootPath }: SidebarProps) {
+export function Sidebar({ root }: SidebarProps) {
   const [tree, setTree] = useState<TreeNode[]>([]);
   const [fullTree, setFullTree] = useState<TreeNode[]>([]);
   const [error, setError] = useState("");
@@ -25,7 +26,7 @@ export function Sidebar({ rootPath }: SidebarProps) {
   const [query, setQuery] = useState("");
   const [isFiltered, setIsFiltered] = useState(false);
 
-  // Load initial tree when rootPath changes
+  // Load initial tree when root changes
   useEffect(() => {
     let cancelled = false;
 
@@ -35,7 +36,9 @@ export function Sidebar({ rootPath }: SidebarProps) {
       setQuery("");
       setIsFiltered(false);
       try {
-        const entries = await invoke<TreeNode[]>("list_directory", { path: rootPath });
+        const entries = await invoke<TreeNode[]>("list_directory", {
+          path: root.path,
+        });
         const mapped = entries.map((e) => ({
           ...e,
           isExpanded: false,
@@ -63,7 +66,7 @@ export function Sidebar({ rootPath }: SidebarProps) {
     return () => {
       cancelled = true;
     };
-  }, [rootPath]);
+  }, [root.path]);
 
   function collapseAll() {
     function collapse(list: TreeNode[]) {
@@ -88,7 +91,7 @@ export function Sidebar({ rootPath }: SidebarProps) {
     setError("");
     try {
       const filteredTree = await invoke<TreeNode[]>("search_tree", {
-        path: rootPath,
+        path: root.path,
         term: trimmed,
       });
 
@@ -119,6 +122,10 @@ export function Sidebar({ rootPath }: SidebarProps) {
 
   return (
     <>
+      {root.name && (
+        <div style={{ fontWeight: 600, marginBottom: 8 }}>{root.name}</div>
+      )}
+
       <button onClick={collapseAll}>Collapse all</button>
 
       <SearchBar
@@ -133,7 +140,7 @@ export function Sidebar({ rootPath }: SidebarProps) {
           setSelectedFile(null);
           void runSearch("");
         }}
-        disabled={!rootPath}
+        disabled={!root.path}
         isFiltered={isFiltered}
       />
 
