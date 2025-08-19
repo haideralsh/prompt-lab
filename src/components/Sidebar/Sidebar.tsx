@@ -68,8 +68,12 @@ export function Sidebar({ root }: SidebarProps) {
   }, [root.path]);
 
   function collapseAll() {
-    function collapse(list: TreeNode[]) {
-      return list.map((node) => ({ ...node, isExpanded: false }));
+    function collapse(list: TreeNode[]): TreeNode[] {
+      return list.map((node) => ({
+        ...node,
+        isExpanded: false,
+        children: node.children ? collapse(node.children) : node.children,
+      }));
     }
     setTree((prev) => collapse(prev));
     if (!isFiltered) setFullTree((prev) => collapse(prev));
@@ -120,13 +124,22 @@ export function Sidebar({ root }: SidebarProps) {
   }
 
   return (
-    <>
-      {root.name && (
-        <div style={{ fontWeight: 600, marginBottom: 8 }}>{root.name}</div>
-      )}
+    <div className="flex h-full flex-col">
+      {/* Header: folder name & collapse all */}
+      <div className="mb-2 flex items-center justify-between">
+        {root.name && (
+          <div className="text-sm font-semibold text-gray-900">{root.name}</div>
+        )}
+        <button
+          onClick={collapseAll}
+          className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+        >
+          <span aria-hidden className="text-base leading-none">×</span>
+          <span>Collapse all</span>
+        </button>
+      </div>
 
-      <button onClick={collapseAll}>Collapse all</button>
-
+      {/* Search */}
       <SearchBar
         value={query}
         onChange={(value) => {
@@ -143,28 +156,34 @@ export function Sidebar({ root }: SidebarProps) {
         isFiltered={isFiltered}
       />
 
+      {/* Error */}
       <ErrorBanner message={error} />
 
-      {/* Tree */}
-      {tree.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <FileTree
-            nodes={tree}
-            onUpdate={(nodes) => {
-              setTree(nodes);
-              // Keep source-of-truth in sync only when not filtered
-              if (!isFiltered) setFullTree(nodes);
-            }}
-            onSelect={(n) => !n.isDirectory && setSelectedFile(n.path)}
-            selectedPath={selectedFile ?? undefined}
-            disableDynamicLoading={isFiltered}
-          />
+      {/* File Tree container */}
+      <div className="mt-3 flex-1">
+        <div className="h-full overflow-y-auto rounded-lg border border-gray-200 p-1">
+          {tree.length > 0 ? (
+            <FileTree
+              nodes={tree}
+              onUpdate={(nodes) => {
+                setTree(nodes);
+                // Keep source-of-truth in sync only when not filtered
+                if (!isFiltered) setFullTree(nodes);
+              }}
+              onSelect={(n) => !n.isDirectory && setSelectedFile(n.path)}
+              selectedPath={selectedFile ?? undefined}
+              disableDynamicLoading={isFiltered}
+            />
+          ) : (
+            <div className="p-3">
+              <TreeStatus show={!error && tree.length === 0} isFiltered={isFiltered} />
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      <TreeStatus show={!error && tree.length === 0} isFiltered={isFiltered} />
-
+      {/* Selected file helper (optional) */}
       <SelectedFileInfo path={selectedFile} />
-    </>
+    </div>
   );
 }

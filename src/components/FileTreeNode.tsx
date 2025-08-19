@@ -8,6 +8,19 @@ interface FileTreeNodeProps {
   onSelect(node: TreeNode): void;
 }
 
+const INDENTS = [
+  "pl-0",
+  "pl-3",
+  "pl-6",
+  "pl-9",
+  "pl-12",
+  "pl-16",
+  "pl-20",
+  "pl-24",
+  "pl-28",
+  "pl-32",
+];
+
 export function FileTreeNode({
   node,
   depth = 0,
@@ -16,43 +29,33 @@ export function FileTreeNode({
   onSelect,
 }: FileTreeNodeProps) {
   const isSelected = selectedPath === node.path;
+  const indentClass = INDENTS[Math.min(depth, INDENTS.length - 1)];
 
   return (
-    <div style={{ paddingLeft: depth * 12 }}>
+    <div className={indentClass}>
       <button
         onClick={() => (node.isDirectory ? onToggle(node) : onSelect(node))}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          padding: "2px 6px",
-          border: "none",
-          background: isSelected ? "rgba(0, 120, 255, 0.12)" : "transparent",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
+        className={[
+          "flex w-full items-center gap-1.5 rounded px-2 py-1 text-left",
+          "hover:bg-gray-50 focus:outline-none",
+          isSelected ? "bg-blue-50 ring-1 ring-blue-200" : "",
+        ].join(" ")}
       >
-        {node.isDirectory && (
+        {node.isDirectory ? (
           <span
-            style={{
-              cursor: "pointer",
-              display: "inline-block",
-              width: 16,
-              textAlign: "center",
-            }}
+            className="inline-block w-4 text-center text-gray-500"
+            aria-hidden
           >
             {node.isExpanded ? "▾" : "▸"}
           </span>
-        )}
-        {!node.isDirectory && (
-          <span style={{ width: 16, display: "inline-block" }} />
+        ) : (
+          <span className="inline-block w-4" aria-hidden />
         )}
         <span
-          style={{
-            cursor: "pointer",
-            userSelect: "none",
-            fontWeight: isSelected ? 600 : 400,
-          }}
+          className={[
+            "truncate",
+            isSelected ? "font-semibold text-blue-700" : "text-gray-700",
+          ].join(" ")}
         >
           {node.name}
         </span>

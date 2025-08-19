@@ -6,7 +6,7 @@ interface TreeStatusProps {
 export function TreeStatus({ show, isFiltered }: TreeStatusProps) {
   if (!show) return null;
   return (
-    <div style={{ marginTop: 16, fontStyle: "italic", opacity: 0.8 }}>
+    <div className="mt-2 text-sm italic text-gray-500">
       {isFiltered ? "No results found." : "Directory is empty."}
     </div>
   );
