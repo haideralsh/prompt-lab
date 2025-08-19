@@ -1,41 +1,49 @@
 import { useEffect, useState } from "react";
-import { DirectoryPicker } from "../DirectoryPicker";
-import { FolderIcon } from "../icons/folder";
-import type { DirectoryInfo } from "../../types/DirectoryInfo";
+import { DirectoryPickerButton } from "./DirectoryPickerButton";
+import { FolderIcon } from "./icons/folder";
+import type { DirectoryInfo } from "../types/DirectoryInfo";
 import { invoke } from "@tauri-apps/api/core";
+import { ERROR_CODES } from "../constants";
 
 interface BlankStateProps {
   onPick: (dir: DirectoryInfo) => void;
 }
 
-export function BlankState({ onPick }: BlankStateProps) {
+// Remove the onPick props and move it to a store/context in the future
+export function LaunchScreen({ onPick }: BlankStateProps) {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadRecentOpened() {
-      await invoke<DirectoryInfo[]>("get_recent_folders")
+    function loadRecentOpened() {
+      invoke<DirectoryInfo[]>("get_recent_folders")
         .then((list) => {
           setRecentOpened(list);
         })
-        .catch(() => {
-          setRecentOpened([]);
+        .catch((err) => {
+          if (err.code === ERROR_CODES.STORE_READ_ERROR) {
+            setError("Failed to load recent folders.");
+          }
         });
     }
 
-    void loadRecentOpened();
+    loadRecentOpened();
   }, []);
 
   return (
     <div className="flex flex-col h-full items-center justify-center">
-      <DirectoryPicker onPick={onPick} />
-      <p className="mt-2 text-gray-400 text-sm">
-        Choose a folder to explore and search files.
-      </p>
+      <DirectoryPickerButton onError={setError} onPick={onPick} />
+
+      {error && (
+        <p className="mt-6 text-red-400 text-sm">
+          {error}
+        </p>
+      )}
 
       {recentOpened.length > 0 && (
         <ul
           role="list"
-          className="flex flex-col gap-1 mt-8 w-full max-w-[520px]"
+          className="flex flex-col gap-1 mt-8 w-full max-w-sm"
         >
           <p className="mt-2 text-gray-400 text-sm mb-3">Recently opened</p>
           {recentOpened.map((dir) => (

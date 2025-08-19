@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sidebar } from "./components/Sidebar/Sidebar";
-import { BlankState } from "./components/Sidebar/BlankState";
+import { LaunchScreen } from "./components/BlankState";
 import type { DirectoryInfo } from "./types/DirectoryInfo";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -10,7 +10,6 @@ function App() {
   function handleDirectoryPick(dir: DirectoryInfo) {
     setRoot(dir);
 
-    // Invoke backend to add folder to recents
     void invoke("add_recent_folder", { folder: dir });
   }
 
@@ -19,7 +18,7 @@ function App() {
       {root ? (
         <Sidebar root={root} />
       ) : (
-        <BlankState onPick={handleDirectoryPick} />
+        <LaunchScreen onPick={handleDirectoryPick} />
       )}
     </main>
   );

@@ -2,6 +2,7 @@ interface ErrorBannerProps {
   message?: string;
 }
 
+// only used in the sidebar
 export function ErrorBanner({ message }: ErrorBannerProps) {
   if (!message) return null;
 
