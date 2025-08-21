@@ -3,7 +3,6 @@ interface SearchBarProps {
   onChange(value: string): void;
   onClear(): void;
   disabled?: boolean;
-  isFiltered: boolean;
 }
 
 export function SearchBar({
@@ -11,7 +10,6 @@ export function SearchBar({
   onChange,
   onClear,
   disabled = false,
-  isFiltered,
 }: SearchBarProps) {
   return (
     <div className="mt-3">
@@ -52,7 +50,6 @@ export function SearchBar({
         <button
           type="button"
           onClick={onClear}
-          disabled={!isFiltered}
           aria-label="Clear search"
           className="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 disabled:opacity-0 disabled:pointer-events-none"
         >

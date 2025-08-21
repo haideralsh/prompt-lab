@@ -3,7 +3,7 @@ interface TreeStatusProps {
   isFiltered: boolean;
 }
 
-export function TreeStatus({ show, isFiltered }: TreeStatusProps) {
+export function TreeStatus({ show }: TreeStatusProps) {
   if (!show) return null;
   return (
     <div className="mt-2 text-sm italic text-gray-500">

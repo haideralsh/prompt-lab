@@ -1,1 +1,136 @@
 @import "tailwindcss";
+
+/* React Aria Tree Styles */
+.react-aria-Tree {
+    outline: none;
+}
+
+.react-aria-Tree[data-focus-visible] {
+    outline: 2px solid rgb(59 130 246);
+    outline-offset: -1px;
+}
+
+.react-aria-TreeItem {
+    outline: none;
+    cursor: default;
+    position: relative;
+    border-radius: 6px;
+    transition: background-color 200ms;
+}
+
+.react-aria-TreeItem[data-focus-visible] {
+    outline: 2px solid rgb(59 130 246);
+    outline-offset: -2px;
+}
+
+.react-aria-TreeItem[data-pressed] {
+    background: rgb(243 244 246);
+}
+
+.react-aria-TreeItem[data-selected] {
+    background: rgb(59 130 246);
+    color: white;
+}
+
+.react-aria-TreeItem[data-selected][data-focus-visible] {
+    outline-color: white;
+    outline-offset: -4px;
+}
+
+.react-aria-TreeItem[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.react-aria-TreeItem[data-dragging] {
+    opacity: 0.6;
+}
+
+.react-aria-TreeItem[data-drop-target] {
+    outline: 2px solid rgb(59 130 246);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* React Aria Checkbox Styles */
+.react-aria-Checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: rgb(55 65 81);
+}
+
+.react-aria-Checkbox .react-aria-Checkbox-indicator {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgb(209 213 219);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 200ms;
+}
+
+.react-aria-Checkbox[data-pressed] .react-aria-Checkbox-indicator {
+    border-color: rgb(156 163 175);
+}
+
+.react-aria-Checkbox[data-selected] .react-aria-Checkbox-indicator,
+.react-aria-Checkbox[data-indeterminate] .react-aria-Checkbox-indicator {
+    border-color: rgb(59 130 246);
+    background: rgb(59 130 246);
+    color: white;
+}
+
+.react-aria-Checkbox[data-selected][data-pressed]
+    .react-aria-Checkbox-indicator,
+.react-aria-Checkbox[data-indeterminate][data-pressed]
+    .react-aria-Checkbox-indicator {
+    border-color: rgb(37 99 235);
+    background: rgb(37 99 235);
+}
+
+.react-aria-Checkbox[data-focus-visible] .react-aria-Checkbox-indicator {
+    outline: 2px solid rgb(59 130 246);
+    outline-offset: 2px;
+}
+
+.react-aria-Checkbox[data-disabled] {
+    opacity: 0.5;
+}
+
+.react-aria-Checkbox svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3px;
+    visibility: hidden;
+}
+
+.react-aria-Checkbox[data-selected] svg,
+.react-aria-Checkbox[data-indeterminate] svg {
+    visibility: visible;
+}
+
+/* Tree selection highlighting for selected items */
+.react-aria-TreeItem[data-selected] {
+    background: rgb(59 130 246) !important;
+    color: white !important;
+}
+
+.react-aria-TreeItem[data-selected] .react-aria-Checkbox {
+    color: white;
+}
+
+.react-aria-TreeItem[data-selected]
+    .react-aria-Checkbox
+    .react-aria-Checkbox-indicator {
+    border-color: white;
+    background: white;
+    color: rgb(59 130 246);
+}
+
+.react-aria-TreeItem[data-selected] svg {
+    color: rgb(59 130 246);
+}

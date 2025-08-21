@@ -1,8 +1,13 @@
 export interface TreeNode {
-  name: string;
-  path: string;
-  isDirectory: boolean;
-  children?: TreeNode[];
-  isExpanded?: boolean;
-  isLoaded?: boolean;
+  id: string;
+  title: string;
+  type: "directory" | "file";
+  children: TreeNode[];
+}
+
+export interface FileSystemItem {
+  id: string;
+  title: string;
+  type: "directory" | "file";
+  children: FileSystemItem[];
 }
