@@ -19,7 +19,6 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
         .follow_links(false)
         .build();
 
-    // Build parent -> children mapping (relative paths), and record which entries are directories.
     let mut children_map: BTreeMap<PathBuf, Vec<PathBuf>> = BTreeMap::new();
     let mut is_dir_map: HashMap<PathBuf, bool> = HashMap::new();
 
@@ -60,12 +59,11 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
     }
 
     // Deterministic ordering: directories first, then files; each group alphabetically.
-    let mut next_id: u64 = 1;
     fn build_node(
         rel: &Path,
         children_map: &BTreeMap<PathBuf, Vec<PathBuf>>,
         is_dir_map: &HashMap<PathBuf, bool>,
-        next_id: &mut u64,
+        dir: &Path,
     ) -> DirNode {
         let title = rel
             .file_name()
@@ -101,15 +99,11 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
             });
 
             for child in child_paths {
-                children_nodes.push(build_node(&child, children_map, is_dir_map, next_id));
+                children_nodes.push(build_node(&child, children_map, is_dir_map, dir));
             }
         }
 
-        let id_str = {
-            let id = *next_id;
-            *next_id += 1;
-            id.to_string()
-        };
+        let id_str = dir.join(rel).to_string_lossy().into_owned();
 
         DirNode {
             id: id_str,
@@ -145,7 +139,7 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
 
     let mut result: Vec<DirNode> = Vec::new();
     for p in top_level_paths {
-        result.push(build_node(&p, &children_map, &is_dir_map, &mut next_id));
+        result.push(build_node(&p, &children_map, &is_dir_map, &dir));
     }
 
     Ok(result)
