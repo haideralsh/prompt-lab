@@ -1,35 +1,151 @@
-use std::fs;
-use std::path::PathBuf;
+use ignore::WalkBuilder;
+use std::collections::{BTreeMap, HashMap};
+use std::path::{Path, PathBuf};
 
 use crate::errors::{codes, DirectoryError};
-use crate::models::DirEntryInfo;
+use crate::models::DirNode;
 
 #[tauri::command]
-pub(crate) fn list_directory(path: String) -> Result<Vec<DirEntryInfo>, DirectoryError> {
+pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryError> {
     let dir = PathBuf::from(&path);
 
-    let entries = fs::read_dir(&dir).map_err(|_| DirectoryError {
-        code: codes::DIRECTORY_READ_ERROR,
-        directory_name: Some(path.clone()),
-    })?;
+    // Build a recursive walker that honors .gitignore files in this tree.
+    let walker = WalkBuilder::new(&dir)
+        .hidden(false) // include dotfiles unless .gitignore excludes them
+        .git_ignore(true) // respect .gitignore files
+        .git_exclude(true) // respect .git/info/exclude if present
+        .git_global(false) // do NOT use user's global ~/.gitignore
+        .parents(true) // pick up .gitignore from parent dirs (typical repo behavior)
+        .follow_links(false)
+        .build();
 
-    let mut result = Vec::new();
-    for entry in entries {
-        let entry = entry.map_err(|_| DirectoryError {
+    // Build parent -> children mapping (relative paths), and record which entries are directories.
+    let mut children_map: BTreeMap<PathBuf, Vec<PathBuf>> = BTreeMap::new();
+    let mut is_dir_map: HashMap<PathBuf, bool> = HashMap::new();
+
+    for dent in walker {
+        let dent = dent.map_err(|_| DirectoryError {
             code: codes::DIRECTORY_READ_ERROR,
             directory_name: Some(path.clone()),
         })?;
 
-        let file_type = entry.file_type().map_err(|_| DirectoryError {
-            code: codes::DIRECTORY_READ_ERROR,
-            directory_name: Some(path.clone()),
-        })?;
+        // Skip the root itself; we only want its children.
+        if dent.depth() == 0 {
+            continue;
+        }
 
-        result.push(DirEntryInfo {
-            name: entry.file_name().to_string_lossy().into_owned(),
-            path: entry.path().to_string_lossy().into_owned(),
-            is_directory: file_type.is_dir(),
-        });
+        // Skip .git directory and its contents
+        if dent.path().components().any(|c| c.as_os_str() == ".git") {
+            continue;
+        }
+
+        let is_dir = dent
+            .file_type()
+            .map(|t| t.is_dir())
+            .unwrap_or_else(|| dent.path().is_dir());
+
+        let rel = match dent.path().strip_prefix(&dir) {
+            Ok(r) => r.to_path_buf(),
+            Err(_) => continue, // Skip anything we can't relativize (shouldn't happen under root)
+        };
+
+        // Record type and add to parent's children list
+        is_dir_map.insert(rel.clone(), is_dir);
+
+        let parent_rel = rel
+            .parent()
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| PathBuf::new());
+        children_map.entry(parent_rel).or_default().push(rel);
+    }
+
+    // Deterministic ordering: directories first, then files; each group alphabetically.
+    let mut next_id: u64 = 1;
+    fn build_node(
+        rel: &Path,
+        children_map: &BTreeMap<PathBuf, Vec<PathBuf>>,
+        is_dir_map: &HashMap<PathBuf, bool>,
+        next_id: &mut u64,
+    ) -> DirNode {
+        let title = rel
+            .file_name()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| String::new());
+
+        let is_dir = *is_dir_map.get(rel).unwrap_or(&false);
+        let node_type = if is_dir { "directory" } else { "file" }.to_string();
+
+        let mut children_nodes: Vec<DirNode> = Vec::new();
+
+        if is_dir {
+            let mut child_paths = children_map.get(rel).cloned().unwrap_or_else(|| Vec::new());
+
+            child_paths.sort_by(|a, b| {
+                let ad = *is_dir_map.get(a).unwrap_or(&false);
+                let bd = *is_dir_map.get(b).unwrap_or(&false);
+                match bd.cmp(&ad) {
+                    // Directories first (true before false)
+                    std::cmp::Ordering::Equal => {
+                        let an = a
+                            .file_name()
+                            .map(|s| s.to_string_lossy())
+                            .unwrap_or_default();
+                        let bn = b
+                            .file_name()
+                            .map(|s| s.to_string_lossy())
+                            .unwrap_or_default();
+                        an.cmp(&bn)
+                    }
+                    other => other,
+                }
+            });
+
+            for child in child_paths {
+                children_nodes.push(build_node(&child, children_map, is_dir_map, next_id));
+            }
+        }
+
+        let id_str = {
+            let id = *next_id;
+            *next_id += 1;
+            id.to_string()
+        };
+
+        DirNode {
+            id: id_str,
+            title,
+            node_type,
+            children: children_nodes,
+        }
+    }
+
+    let mut top_level_paths = children_map
+        .get(&PathBuf::new())
+        .cloned()
+        .unwrap_or_else(|| Vec::new());
+
+    top_level_paths.sort_by(|a, b| {
+        let ad = *is_dir_map.get(a).unwrap_or(&false);
+        let bd = *is_dir_map.get(b).unwrap_or(&false);
+        match bd.cmp(&ad) {
+            std::cmp::Ordering::Equal => {
+                let an = a
+                    .file_name()
+                    .map(|s| s.to_string_lossy())
+                    .unwrap_or_default();
+                let bn = b
+                    .file_name()
+                    .map(|s| s.to_string_lossy())
+                    .unwrap_or_default();
+                an.cmp(&bn)
+            }
+            other => other,
+        }
+    });
+
+    let mut result: Vec<DirNode> = Vec::new();
+    for p in top_level_paths {
+        result.push(build_node(&p, &children_map, &is_dir_map, &mut next_id));
     }
 
     Ok(result)
