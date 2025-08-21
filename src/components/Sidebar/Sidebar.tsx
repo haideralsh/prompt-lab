@@ -76,6 +76,40 @@ export function Sidebar({ root }: SidebarProps) {
     return keys;
   }
 
+  // Helper function to collect all children keys from a specific node
+  function collectChildrenKeys(nodes: TreeNode[], parentKey: string): Set<Key> {
+    const keys = new Set<Key>();
+
+    function findNode(items: TreeNode[], key: string): TreeNode | null {
+      for (const item of items) {
+        if (item.id === key) {
+          return item;
+        }
+        if (item.children) {
+          const found = findNode(item.children, key);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+
+    function traverse(items: TreeNode[]) {
+      for (const item of items) {
+        keys.add(item.id);
+        if (item.children && item.children.length > 0) {
+          traverse(item.children);
+        }
+      }
+    }
+
+    const parentNode = findNode(nodes, parentKey);
+    if (parentNode && parentNode.children) {
+      traverse(parentNode.children);
+    }
+
+    return keys;
+  }
+
   async function runSearch(nextQuery?: string) {
     const term = nextQuery ?? query;
     const trimmedTerm = term.trim();
@@ -97,13 +131,61 @@ export function Sidebar({ root }: SidebarProps) {
   }
 
   function handleSelectionChange(keys: Selection) {
-    setSelectedKeys(keys);
+    if (keys === "all") {
+      setSelectedKeys(keys);
+      setSelectedFile(null);
+      return;
+    }
+
+    const newKeys = keys instanceof Set ? keys : new Set();
+    const oldKeys = selectedKeys instanceof Set ? selectedKeys : new Set();
+
+    // Find newly selected and deselected keys
+    const newlySelected = new Set(
+      [...newKeys].filter((key) => !oldKeys.has(key)),
+    );
+    const newlyDeselected = new Set(
+      [...oldKeys].filter((key) => !newKeys.has(key)),
+    );
+    const finalKeys = new Set(newKeys);
+
+    // Helper to find node in tree
+    function findNode(nodes: TreeNode[], searchKey: Key): TreeNode | null {
+      for (const item of nodes) {
+        if (item.id === searchKey) {
+          return item;
+        }
+        if (item.children) {
+          const found = findNode(item.children, searchKey);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+
+    // For each newly selected key, if it's a directory, select all its children
+    for (const key of newlySelected) {
+      const node = findNode(tree, key);
+      if (node && node.type === "directory" && node.children) {
+        const childrenKeys = collectChildrenKeys(tree, key.toString());
+        childrenKeys.forEach((childKey) => finalKeys.add(childKey));
+      }
+    }
+
+    // For each newly deselected key, if it's a directory, deselect all its children
+    for (const key of newlyDeselected) {
+      const node = findNode(tree, key);
+      if (node && node.type === "directory" && node.children) {
+        const childrenKeys = collectChildrenKeys(tree, key.toString());
+        childrenKeys.forEach((childKey) => finalKeys.delete(childKey));
+      }
+    }
+
+    setSelectedKeys(finalKeys);
 
     // Update selected file for the info panel
-    if (keys === "all") {
-      setSelectedFile(null);
-    } else if (keys instanceof Set && keys.size === 1) {
-      const selectedKey = Array.from(keys)[0];
+    if (finalKeys.size === 1) {
+      const selectedKey = Array.from(finalKeys)[0];
       setSelectedFile(selectedKey.toString());
     } else {
       setSelectedFile(null);
@@ -191,7 +273,8 @@ export function Sidebar({ root }: SidebarProps) {
                                 className="flex-shrink-0"
                               >
                                 {({ isSelected, isIndeterminate }) => {
-                                  const selected = isSelected || isIndeterminate;
+                                  const selected =
+                                    isSelected || isIndeterminate;
                                   return (
                                     <span
                                       className={`inline-flex h-4 w-4 items-center justify-center rounded border ${selected ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}`}
