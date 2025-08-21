@@ -20,6 +20,7 @@ import type { DirectoryInfo } from "../../types/DirectoryInfo";
 
 interface SidebarProps {
   root: DirectoryInfo;
+  onSelectedFilesChange?: (files: string[]) => void;
 }
 
 interface DirectoryError {
@@ -27,7 +28,7 @@ interface DirectoryError {
   directory_name?: string;
 }
 
-export function Sidebar({ root }: SidebarProps) {
+export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
   const [tree, setTree] = useState<TreeNode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set());
   const [error, setError] = useState("");
@@ -182,6 +183,18 @@ export function Sidebar({ root }: SidebarProps) {
     }
 
     setSelectedKeys(finalKeys);
+
+    // Notify parent about selected files (files only, exclude directories)
+    if (onSelectedFilesChange) {
+      const filePaths: string[] = [];
+      for (const key of finalKeys) {
+        const node = findNode(tree, key);
+        if (node && node.type === "file") {
+          filePaths.push(key.toString());
+        }
+      }
+      onSelectedFilesChange(filePaths);
+    }
 
     // Update selected file for the info panel
     if (finalKeys.size === 1) {
