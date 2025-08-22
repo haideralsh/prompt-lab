@@ -39,8 +39,9 @@ export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
   useEffect(() => {
     async function loadRoot() {
       try {
-        const entries = await invoke<TreeNode[]>("list_directory", {
+        const entries = await invoke<TreeNode[]>("search_tree", {
           path: root.path,
+          term: "",
         });
 
         setTree(entries);
@@ -190,7 +191,7 @@ export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
       for (const key of finalKeys) {
         const node = findNode(tree, key);
         if (node && node.type === "file") {
-          filePaths.push(key.toString());
+          filePaths.push(node.id);
         }
       }
       onSelectedFilesChange(filePaths);

@@ -10,7 +10,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::open_directory::open_directory,
             commands::list_directory::list_directory,
-            commands::search_tree::search_tree,
+            commands::search::search_tree::search_tree,
             commands::recent_folders::get_recent_folders,
             commands::recent_folders::add_recent_folder,
         ])
