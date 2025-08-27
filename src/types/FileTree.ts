@@ -11,3 +11,8 @@ export interface FileSystemItem {
   type: "directory" | "file";
   children: FileSystemItem[];
 }
+
+export interface SearchMatch {
+  matchedIdsCount: number;
+  results: TreeNode[];
+}

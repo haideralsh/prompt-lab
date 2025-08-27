@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { type TreeNode, type FileSystemItem } from "../../types/FileTree";
+import { type TreeNode, type FileSystemItem, type SearchMatch } from "../../types/FileTree";
 import { invoke } from "@tauri-apps/api/core";
 import { ERROR_CODES } from "../../constants";
 import {
@@ -34,17 +34,18 @@ export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
   const [error, setError] = useState("");
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
+  const [indeterminateKeys, setIndeterminateKeys] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
 
   useEffect(() => {
     async function loadRoot() {
       try {
-        const entries = await invoke<TreeNode[]>("search_tree", {
+        const resp = await invoke<SearchMatch>("search_tree", {
           path: root.path,
           term: "",
         });
 
-        setTree(entries);
+        setTree(resp.results);
       } catch (err) {
         const e = err as DirectoryError;
         if (e && e.code === ERROR_CODES.DIRECTORY_READ_ERROR) {
@@ -78,57 +79,134 @@ export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
     return keys;
   }
 
-  // Helper function to collect all children keys from a specific node
-  function collectChildrenKeys(nodes: TreeNode[], parentKey: string): Set<Key> {
-    const keys = new Set<Key>();
+  // Helper to find node in tree
+  function findNode(nodes: TreeNode[], searchKey: string): TreeNode | null {
+    for (const item of nodes) {
+      if (item.id === searchKey) {
+        return item;
+      }
+      if (item.children) {
+        const found = findNode(item.children, searchKey);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
 
-    function findNode(items: TreeNode[], key: string): TreeNode | null {
-      for (const item of items) {
-        if (item.id === key) {
+  // Helper to find parent of a node
+  function findParent(nodes: TreeNode[], childKey: string): TreeNode | null {
+    for (const item of nodes) {
+      if (item.children) {
+        if (item.children.some(child => child.id === childKey)) {
           return item;
         }
-        if (item.children) {
-          const found = findNode(item.children, key);
-          if (found) return found;
-        }
-      }
-      return null;
-    }
-
-    function traverse(items: TreeNode[]) {
-      for (const item of items) {
-        keys.add(item.id);
-        if (item.children && item.children.length > 0) {
-          traverse(item.children);
-        }
+        const found = findParent(item.children, childKey);
+        if (found) return found;
       }
     }
+    return null;
+  }
 
-    const parentNode = findNode(nodes, parentKey);
-    if (parentNode && parentNode.children) {
-      traverse(parentNode.children);
+  // Get all descendants of a node
+  function getAllDescendants(node: TreeNode): string[] {
+    const descendants: string[] = [];
+    
+    function traverse(item: TreeNode) {
+      descendants.push(item.id);
+      if (item.children) {
+        item.children.forEach(traverse);
+      }
     }
+    
+    if (node.children) {
+      node.children.forEach(traverse);
+    }
+    
+    return descendants;
+  }
 
-    return keys;
+  // Get all ancestors of a node
+  function getAllAncestors(nodes: TreeNode[], nodeKey: string): string[] {
+    const ancestors: string[] = [];
+    let current = nodeKey;
+    
+    while (current) {
+      const parent = findParent(nodes, current);
+      if (parent) {
+        ancestors.push(parent.id);
+        current = parent.id;
+      } else {
+        break;
+      }
+    }
+    
+    return ancestors;
+  }
+
+  // Calculate selection state for a directory
+  function getDirectorySelectionState(node: TreeNode, selectedKeys: Set<string>): 'none' | 'partial' | 'full' {
+    if (!node.children || node.children.length === 0) {
+      return 'none';
+    }
+    
+    let selectedCount = 0;
+    let totalCount = 0;
+    
+    function countSelection(item: TreeNode) {
+      totalCount++;
+      if (selectedKeys.has(item.id)) {
+        selectedCount++;
+      }
+      if (item.children) {
+        item.children.forEach(countSelection);
+      }
+    }
+    
+    node.children.forEach(countSelection);
+    
+    if (selectedCount === 0) return 'none';
+    if (selectedCount === totalCount) return 'full';
+    return 'partial';
+  }
+
+  function updateIndeterminateStates(selectedKeys: Set<string>) {
+    const newIndeterminateKeys = new Set<string>();
+    
+    function processNode(node: TreeNode) {
+      if (node.type === 'directory') {
+        const state = getDirectorySelectionState(node, selectedKeys);
+        if (state === 'partial') {
+          newIndeterminateKeys.add(node.id);
+        }
+      }
+      
+      if (node.children) {
+        node.children.forEach(processNode);
+      }
+    }
+    
+    tree.forEach(processNode);
+    setIndeterminateKeys(newIndeterminateKeys);
   }
 
   async function runSearch(nextQuery?: string) {
     const term = nextQuery ?? query;
     const trimmedTerm = term.trim();
 
-    const filteredTree = await invoke<TreeNode[]>("search_tree", {
+    const resp = await invoke<SearchMatch>("search_tree", {
       path: root.path,
       term: trimmedTerm,
     });
 
-    setTree(filteredTree);
+    const nextTree = resp.results;
+    setTree(nextTree);
 
     if (trimmedTerm === "") {
       // Collapse all when search is empty
       setExpandedKeys(new Set());
     } else {
       // Expand all nodes when searching
-      setExpandedKeys(collectAllKeys(filteredTree));
+      setExpandedKeys(collectAllKeys(nextTree));
     }
   }
 
@@ -139,51 +217,85 @@ export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
       return;
     }
 
-    const newKeys = keys instanceof Set ? keys : new Set();
-    const oldKeys = selectedKeys instanceof Set ? selectedKeys : new Set();
+    const newKeys = keys instanceof Set ? keys : new Set<Key>();
+    const oldKeys = selectedKeys instanceof Set ? selectedKeys : new Set<Key>();
 
-    // Find newly selected and deselected keys
-    const newlySelected = new Set(
-      [...newKeys].filter((key) => !oldKeys.has(key)),
-    );
-    const newlyDeselected = new Set(
-      [...oldKeys].filter((key) => !newKeys.has(key)),
-    );
-    const finalKeys = new Set(newKeys);
-
-    // Helper to find node in tree
-    function findNode(nodes: TreeNode[], searchKey: Key): TreeNode | null {
-      for (const item of nodes) {
-        if (item.id === searchKey) {
-          return item;
-        }
-        if (item.children) {
-          const found = findNode(item.children, searchKey);
-          if (found) return found;
-        }
-      }
-      return null;
-    }
-
-    // For each newly selected key, if it's a directory, select all its children
+    // Find the difference to determine what changed
+    const newlySelected = [...newKeys].filter(key => !oldKeys.has(key));
+    const newlyDeselected = [...oldKeys].filter(key => !newKeys.has(key));
+    
+    // Start with current selection as string set for easier manipulation
+    const finalKeys = new Set<string>();
+    oldKeys.forEach(key => finalKeys.add(key.toString()));
+    
+    // Process newly selected items
     for (const key of newlySelected) {
-      const node = findNode(tree, key);
-      if (node && node.type === "directory" && node.children) {
-        const childrenKeys = collectChildrenKeys(tree, key.toString());
-        childrenKeys.forEach((childKey) => finalKeys.add(childKey));
+      const keyStr = key.toString();
+      const node = findNode(tree, keyStr);
+      
+      if (node) {
+        finalKeys.add(keyStr);
+        
+        // If it's a directory, select all descendants
+        if (node.type === "directory") {
+          const descendants = getAllDescendants(node);
+          descendants.forEach(desc => finalKeys.add(desc));
+        }
       }
     }
-
-    // For each newly deselected key, if it's a directory, deselect all its children
+    
     for (const key of newlyDeselected) {
-      const node = findNode(tree, key);
-      if (node && node.type === "directory" && node.children) {
-        const childrenKeys = collectChildrenKeys(tree, key.toString());
-        childrenKeys.forEach((childKey) => finalKeys.delete(childKey));
+      const keyStr = key.toString();
+      const node = findNode(tree, keyStr);
+      
+      if (node) {
+        finalKeys.delete(keyStr);
+        
+        // If it's a directory, deselect all descendants
+        if (node.type === "directory") {
+          const descendants = getAllDescendants(node);
+          descendants.forEach(desc => finalKeys.delete(desc));
+        }
       }
     }
-
-    setSelectedKeys(finalKeys);
+    
+    // Now handle parent-child relationships
+    // For each changed item, update its ancestors
+    const allChangedItems = [...newlySelected, ...newlyDeselected];
+    const ancestorsToCheck = new Set<string>();
+    
+    for (const key of allChangedItems) {
+      const keyStr = key.toString();
+      const ancestors = getAllAncestors(tree, keyStr);
+      ancestors.forEach(ancestor => ancestorsToCheck.add(ancestor));
+    }
+    
+    // Process ancestors to determine if they should be selected/deselected
+    for (const ancestorKey of ancestorsToCheck) {
+      const ancestorNode = findNode(tree, ancestorKey);
+      if (ancestorNode && ancestorNode.type === "directory") {
+        const state = getDirectorySelectionState(ancestorNode, finalKeys);
+        
+        if (state === 'full') {
+          // All children are selected, so select the parent
+          finalKeys.add(ancestorKey);
+        } else if (state === 'none') {
+          // No children are selected, so deselect the parent
+          finalKeys.delete(ancestorKey);
+        } else {
+          // Some children are selected (partial), so deselect the parent
+          // The indeterminate state will be handled separately
+          finalKeys.delete(ancestorKey);
+        }
+      }
+    }
+    
+    // Convert back to Selection format
+    const finalSelection = new Set<Key>();
+    finalKeys.forEach(key => finalSelection.add(key));
+    
+    setSelectedKeys(finalSelection);
+    updateIndeterminateStates(finalKeys);
 
     // Notify parent about selected files (files only, exclude directories)
     if (onSelectedFilesChange) {
@@ -237,6 +349,7 @@ export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
           setQuery("");
           setSelectedFile(null);
           setSelectedKeys(new Set());
+          setIndeterminateKeys(new Set());
           runSearch("");
         }}
         disabled={!root.path}
@@ -287,16 +400,19 @@ export function Sidebar({ root, onSelectedFilesChange }: SidebarProps) {
                                 className="flex-shrink-0"
                               >
                                 {({ isSelected, isIndeterminate }) => {
-                                  const selected =
-                                    isSelected || isIndeterminate;
+                                  // Override indeterminate state with our custom logic
+                                  const customIndeterminate = indeterminateKeys.has(item.id);
+                                  const customSelected = isSelected && !customIndeterminate;
+                                  const hasState = customSelected || customIndeterminate;
+                                  
                                   return (
                                     <span
-                                      className={`inline-flex h-4 w-4 items-center justify-center rounded border ${selected ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}`}
+                                      className={`inline-flex h-4 w-4 items-center justify-center rounded border ${hasState ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}`}
                                       aria-hidden="true"
                                     >
                                       {isIndeterminate ? (
-                                        <span className="h-0.5 w-2 bg-white" />
-                                      ) : isSelected ? (
+<svg width="15" height="15" color="white" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.25 7.5C2.25 7.22386 2.47386 7 2.75 7H12.25C12.5261 7 12.75 7.22386 12.75 7.5C12.75 7.77614 12.5261 8 12.25 8H2.75C2.47386 8 2.25 7.77614 2.25 7.5Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                                      ) : customSelected ? (
                                         <svg
                                           viewBox="0 0 18 18"
                                           className="h-3 w-3"

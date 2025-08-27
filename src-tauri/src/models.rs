@@ -10,12 +10,20 @@ pub struct DirEntryInfo {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct DirNode {
     pub id: String,
     pub title: String,
     #[serde(rename = "type")]
     pub node_type: String,
     pub children: Vec<DirNode>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchMatch {
+    pub matched_ids_count: usize,
+    pub results: Vec<DirNode>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
