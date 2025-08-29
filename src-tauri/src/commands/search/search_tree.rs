@@ -122,7 +122,10 @@ fn count_matched_nodes(nodes: &[DirNode], original_matches: &HashSet<String>) ->
 }
 
 #[tauri::command]
-pub(crate) fn search_tree(path: String, term: String) -> Result<SearchMatch, DirectoryError> {
+pub(crate) fn search_tree(
+    path: String,
+    term: Option<String>,
+) -> Result<SearchMatch, DirectoryError> {
     ensure_index(&path)?;
 
     let guard = cache().read().expect("cache read poisoned");
@@ -130,9 +133,9 @@ pub(crate) fn search_tree(path: String, term: String) -> Result<SearchMatch, Dir
         .get(&path)
         .expect("index should exist after ensure_index");
 
-    let trimmed = term.trim().to_string();
+    let search_term = term.unwrap_or_default().trim().to_string().to_lowercase();
 
-    if trimmed.is_empty() {
+    if search_term.is_empty() {
         let full_tree = build_full_tree(idx);
 
         return Ok(SearchMatch {
@@ -141,20 +144,18 @@ pub(crate) fn search_tree(path: String, term: String) -> Result<SearchMatch, Dir
         });
     }
 
-    let needle = trimmed.to_lowercase();
-
     let mut original_matches: HashSet<String> = HashSet::new();
 
     // Find all files that match the search term
     for (id, lower) in &idx.file_titles_lower {
-        if lower.contains(&needle) {
+        if lower.contains(&search_term) {
             original_matches.insert(id.clone());
         }
     }
 
     // Find all directories that match the search term
     for (id, lower) in &idx.dir_titles_lower {
-        if lower.contains(&needle) {
+        if lower.contains(&search_term) {
             original_matches.insert(id.clone());
         }
     }

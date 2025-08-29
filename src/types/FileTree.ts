@@ -1,18 +1,25 @@
+export type Tree = TreeNode[]
+
 export interface TreeNode {
-  id: string;
-  title: string;
-  type: "directory" | "file";
-  children: TreeNode[];
+  id: string
+  title: string
+  type: 'directory' | 'file'
+  children: TreeNode[]
 }
 
 export interface FileSystemItem {
-  id: string;
-  title: string;
-  type: "directory" | "file";
-  children: FileSystemItem[];
+  id: string
+  title: string
+  type: 'directory' | 'file'
+  children: FileSystemItem[]
 }
 
 export interface SearchMatch {
-  matchedIdsCount: number;
-  results: TreeNode[];
+  matchedIdsCount: number
+  results: TreeNode[]
+}
+
+export interface DirectoryError {
+  code: number
+  directory_name?: string
 }
