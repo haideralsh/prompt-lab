@@ -19,12 +19,8 @@ import {
 import { SearchBar } from './SearchBar'
 import { useSidebarContext } from './SidebarContext'
 
-interface SidebarProps {
-  tree: TreeNode[]
-}
-
-export function Sidebar({ tree }: SidebarProps) {
-  const { setSelectedNodes } = useSidebarContext()
+export function Sidebar() {
+  const { setSelectedNodes, tree, setTree, root } = useSidebarContext()
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set())
   const [indeterminateKeys, setIndeterminateKeys] = useState<Set<string>>(
@@ -169,7 +165,7 @@ export function Sidebar({ tree }: SidebarProps) {
     const trimmedTerm = term.trim()
 
     const resp = await invoke<SearchMatch>('search_tree', {
-      path: root.path,
+      path: root?.path,
       term: trimmedTerm,
     })
 
@@ -480,7 +476,6 @@ export function Sidebar({ tree }: SidebarProps) {
               )
             }}
           </Tree>
-          )
         </div>
       </div>
     </div>
