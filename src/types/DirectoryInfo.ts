@@ -1,4 +1,4 @@
 export interface DirectoryInfo {
-  name: string;
-  path: string;
+  name: string | null
+  path: string | null
 }

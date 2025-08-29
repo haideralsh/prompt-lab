@@ -4,8 +4,8 @@ import { DirectoryInfo } from '../../types/DirectoryInfo'
 import { Key } from 'react-aria-components'
 
 type SidebarContext = {
-  root: DirectoryInfo | null
-  setRoot: (root: DirectoryInfo | null) => void
+  directory: DirectoryInfo
+  setDirectory: (root: DirectoryInfo) => void
   tree: Tree
   setTree: (tree: Tree) => void
   selectedNodes: Set<Key>
@@ -13,8 +13,8 @@ type SidebarContext = {
 }
 
 const SidebarContext = React.createContext<SidebarContext>({
-  root: null,
-  setRoot: () => {},
+  directory: { name: null, path: null },
+  setDirectory: () => {},
   tree: [],
   setTree: () => {},
   selectedNodes: new Set<Key>(),
@@ -29,7 +29,7 @@ export function useSidebarContext() {
   const context = React.useContext(SidebarContext)
   if (!context) {
     throw new Error(
-      'useSidebarContext must be used within a SidebarContextProvider'
+      'useSidebarContext must be used within a SidebarContextProvider',
     )
   }
   return context
@@ -38,11 +38,21 @@ export function useSidebarContext() {
 export function SidebarContextProvider(props: SidebarContextProps) {
   const [selectedNodes, setSelectedNodes] = useState<Set<Key>>(new Set())
   const [tree, setTree] = useState<Tree>([])
-  const [root, setRoot] = useState<DirectoryInfo | null>(null)
+  const [directory, setDirectory] = useState<DirectoryInfo>({
+    name: null,
+    path: null,
+  })
 
   return (
     <SidebarContext.Provider
-      value={{ selectedNodes, setSelectedNodes, tree, setTree, root, setRoot }}
+      value={{
+        selectedNodes,
+        setSelectedNodes,
+        tree,
+        setTree,
+        directory,
+        setDirectory,
+      }}
     >
       {props.children}
     </SidebarContext.Provider>

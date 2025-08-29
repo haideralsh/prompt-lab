@@ -9,7 +9,7 @@ import { useSidebarContext } from './Sidebar/SidebarContext'
 
 export function LaunchScreen() {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([])
-  const { setTree, setRoot } = useSidebarContext()
+  const { setTree, setDirectory } = useSidebarContext()
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -28,15 +28,15 @@ export function LaunchScreen() {
     loadRecentOpened()
   }, [])
 
-  async function handleDirectoryPick(dir: DirectoryInfo) {
+  async function handleDirectoryPick(directory: DirectoryInfo) {
     try {
       const resp = await invoke<SearchMatch>('search_tree', {
-        path: dir.path,
+        path: directory.path,
       })
 
-      setRoot(dir)
+      setDirectory(directory)
       setTree(resp.results)
-      invoke('add_recent_folder', { folder: dir })
+      invoke('add_recent_folder', { folder: directory })
     } catch (err) {
       const e = err as DirectoryError
       if (e && e.code === ERROR_CODES.DIRECTORY_READ_ERROR) {
