@@ -1,16 +1,18 @@
+import { useState } from 'react'
+
 interface SearchBarProps {
-  value: string;
-  onChange(value: string): void;
-  onClear(): void;
-  disabled?: boolean;
+  onChange(value: string): void
+  onClear(): void
+  disabled?: boolean
 }
 
 export function SearchBar({
-  value,
   onChange,
   onClear,
   disabled = false,
 }: SearchBarProps) {
+  const [value, setValue] = useState('')
+
   return (
     <div className="mt-3">
       <label className="sr-only" htmlFor="sidebar-search">
@@ -41,7 +43,10 @@ export function SearchBar({
           spellCheck={false}
           placeholder="Filter tree by file name..."
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            setValue(e.target.value)
+            onChange(e.target.value)
+          }}
           disabled={disabled}
           className="w-full rounded-md border border-gray-300 py-2 pl-8 pr-8 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
         />
@@ -57,5 +62,5 @@ export function SearchBar({
         </button>
       </div>
     </div>
-  );
+  )
 }
