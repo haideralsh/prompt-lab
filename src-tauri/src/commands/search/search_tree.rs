@@ -1,125 +1,9 @@
-use crate::commands::search::cache::cache;
+use crate::commands::search::lib::{build_full_tree, build_pruned_tree, count_matched_nodes};
 use crate::commands::search::tree_index::ensure_index;
+use crate::commands::search::{cache::cache, lib::add_ancestors};
 use crate::errors::DirectoryError;
-use crate::models::{DirNode, SearchMatch, TreeIndex};
-use std::collections::HashSet;
-
-struct NodeTree {
-    nodes: Vec<DirNode>,
-    total_nodes: usize,
-}
-
-fn build_full_tree(idx: &TreeIndex) -> NodeTree {
-    fn build_all(id: &str, idx: &TreeIndex, counter: &mut usize) -> DirNode {
-        *counter += 1;
-
-        let info = idx.nodes.get(id).expect("node id must exist");
-        if info.node_type == "file" {
-            return DirNode {
-                id: info.id.clone(),
-                title: info.title.clone(),
-                node_type: info.node_type.clone(),
-                children: Vec::new(),
-            };
-        }
-
-        let mut children = Vec::new();
-        for cid in &info.children {
-            children.push(build_all(cid, idx, counter));
-        }
-
-        DirNode {
-            id: info.id.clone(),
-            title: info.title.clone(),
-            node_type: info.node_type.clone(),
-            children,
-        }
-    }
-
-    let mut node_count = 0;
-    let mut out = Vec::new();
-    for id in &idx.top_level {
-        out.push(build_all(id, idx, &mut node_count));
-    }
-
-    NodeTree {
-        nodes: out,
-        total_nodes: node_count,
-    }
-}
-
-fn build_pruned(id: &str, idx: &TreeIndex, keep: &HashSet<String>) -> Option<DirNode> {
-    let info = idx.nodes.get(id)?;
-
-    if info.node_type == "file" {
-        if keep.contains(id) {
-            return Some(DirNode {
-                id: info.id.clone(),
-                title: info.title.clone(),
-                node_type: info.node_type.clone(),
-                children: Vec::new(),
-            });
-        } else {
-            return None;
-        }
-    }
-
-    let mut pruned_children = Vec::new();
-    for cid in &info.children {
-        if let Some(child) = build_pruned(cid, idx, keep) {
-            pruned_children.push(child);
-        }
-    }
-
-    if keep.contains(id) || !pruned_children.is_empty() {
-        return Some(DirNode {
-            id: info.id.clone(),
-            title: info.title.clone(),
-            node_type: info.node_type.clone(),
-            children: pruned_children,
-        });
-    }
-
-    None
-}
-
-fn add_ancestors(id: &str, idx: &TreeIndex, acc: &mut HashSet<String>) {
-    let mut cur = Some(id.to_string());
-    while let Some(cid) = cur {
-        if let Some(node) = idx.nodes.get(&cid) {
-            if let Some(parent) = &node.parent {
-                if acc.insert(parent.clone()) {
-                    cur = Some(parent.clone());
-                    continue;
-                }
-            }
-        }
-        break;
-    }
-}
-
-fn count_matched_nodes(nodes: &[DirNode], original_matches: &HashSet<String>) -> usize {
-    fn count_recursive(node: &DirNode, original_matches: &HashSet<String>) -> usize {
-        let mut count = 0;
-
-        // Count this node if it was an original match (not just an ancestor)
-        if original_matches.contains(&node.id) {
-            count += 1;
-        }
-
-        // Count children recursively
-        for child in &node.children {
-            count += count_recursive(child, original_matches);
-        }
-
-        count
-    }
-
-    nodes
-        .iter()
-        .map(|node| count_recursive(node, original_matches))
-        .sum()
-}
+use crate::models::SearchMatch;
+use std::collections::{HashSet, VecDeque};
 
 #[tauri::command]
 pub(crate) fn search_tree(
@@ -146,40 +30,149 @@ pub(crate) fn search_tree(
 
     let mut original_matches: HashSet<String> = HashSet::new();
 
-    // Find all files that match the search term
     for (id, lower) in &idx.file_titles_lower {
         if lower.contains(&search_term) {
             original_matches.insert(id.clone());
         }
     }
 
-    // Find all directories that match the search term
     for (id, lower) in &idx.dir_titles_lower {
         if lower.contains(&search_term) {
             original_matches.insert(id.clone());
         }
     }
 
-    // Create a set that includes both matches and their ancestors
     let mut keep = original_matches.clone();
     let ids: Vec<String> = original_matches.iter().cloned().collect();
     for id in ids {
         add_ancestors(&id, idx, &mut keep);
     }
 
-    // Build the pruned tree
     let mut results = Vec::new();
     for id in &idx.top_level {
-        if let Some(node) = build_pruned(id, idx, &keep) {
+        if let Some(node) = build_pruned_tree(id, idx, &keep) {
             results.push(node);
         }
     }
 
-    // Count only the originally matched nodes (not ancestors)
     let matched_count = count_matched_nodes(&results, &original_matches);
 
     Ok(SearchMatch {
         matched_ids_count: matched_count,
         results,
     })
+}
+
+#[tauri::command]
+pub(crate) fn ancestors(
+    path: String,
+    id: String,
+    include_self: bool,
+) -> Result<Vec<String>, DirectoryError> {
+    ensure_index(&path)?;
+    let guard = cache().read().expect("cache read poisoned");
+    let idx = guard
+        .get(&path)
+        .expect("index should exist after ensure_index");
+
+    if !idx.nodes.contains_key(&id) {
+        return Ok(Vec::new());
+    }
+
+    let mut out = Vec::new();
+    if include_self {
+        out.push(id.clone());
+    }
+
+    let mut cur = idx.nodes.get(&id).and_then(|n| n.parent.clone());
+    while let Some(pid) = cur {
+        out.push(pid.clone());
+        cur = idx.nodes.get(&pid).and_then(|n| n.parent.clone());
+    }
+    Ok(out)
+}
+
+#[tauri::command]
+pub(crate) fn descendants(
+    path: String,
+    id: String,
+    include_self: bool,
+) -> Result<Vec<String>, DirectoryError> {
+    ensure_index(&path)?;
+    let guard = cache().read().expect("cache read poisoned");
+    let idx = guard
+        .get(&path)
+        .expect("index should exist after ensure_index");
+
+    if !idx.nodes.contains_key(&id) {
+        return Ok(Vec::new());
+    }
+
+    let mut out = Vec::new();
+    if include_self {
+        out.push(id.clone());
+    }
+
+    let mut q: VecDeque<String> = idx
+        .nodes
+        .get(&id)
+        .map(|n| n.children.clone().into())
+        .unwrap_or_else(VecDeque::new);
+
+    while let Some(cur) = q.pop_front() {
+        out.push(cur.clone());
+        if let Some(n) = idx.nodes.get(&cur) {
+            for c in &n.children {
+                q.push_back(c.clone());
+            }
+        }
+    }
+    Ok(out)
+}
+
+#[tauri::command]
+pub(crate) fn toggle_selection(
+    path: String,
+    current: Vec<String>,
+    id: String,
+    mode: String, // "auto" | "force_select" | "force_deselect"
+) -> Result<Vec<String>, DirectoryError> {
+    ensure_index(&path)?;
+    let guard = cache().read().expect("cache read poisoned");
+    let idx = guard
+        .get(&path)
+        .expect("index should exist after ensure_index");
+
+    let info = match idx.nodes.get(&id) {
+        Some(n) => n,
+        None => return Ok(current),
+    };
+
+    let mut targets = vec![id.clone()];
+    if info.node_type != "file" {
+        let mut stack = info.children.clone();
+        while let Some(cur) = stack.pop() {
+            targets.push(cur.clone());
+            if let Some(n) = idx.nodes.get(&cur) {
+                stack.extend(n.children.iter().cloned());
+            }
+        }
+    }
+
+    let mut set: HashSet<String> = current.into_iter().collect();
+    let selecting = match mode.as_str() {
+        "force_select" => true,
+        "force_deselect" => false,
+        _ => targets.iter().any(|k| !set.contains(k)), // auto
+    };
+
+    for t in targets {
+        if selecting {
+            set.insert(t);
+        } else {
+            set.remove(&t);
+        }
+    }
+
+    Ok(set.into_iter().collect())
 }

@@ -1,10 +1,9 @@
 use crate::commands::list_directory::list_directory;
 use crate::commands::search::cache::cache;
 use crate::errors::DirectoryError;
-use crate::models::{DirNode, NodeInfo, TreeIndex};
+use crate::models::{DirectoryNode, NodeInfo, TreeIndex};
 use std::collections::HashMap;
 
-/// Ensure we have a built index for the given path; if not, build one
 pub fn ensure_index(path: &str) -> Result<(), DirectoryError> {
     {
         let guard = cache().read().expect("cache read poisoned");
@@ -16,7 +15,6 @@ pub fn ensure_index(path: &str) -> Result<(), DirectoryError> {
     let full_tree = list_directory(path.to_string())?;
     let index = build_index(full_tree);
 
-    // Insert into cache.
     {
         let mut guard = cache().write().expect("cache write poisoned");
         guard.insert(path.to_string(), index);
@@ -25,8 +23,7 @@ pub fn ensure_index(path: &str) -> Result<(), DirectoryError> {
     Ok(())
 }
 
-/// Build the index from the full directory tree (single walk result).
-fn build_index(full_tree: Vec<DirNode>) -> TreeIndex {
+fn build_index(full_tree: Vec<DirectoryNode>) -> TreeIndex {
     let mut idx = TreeIndex {
         top_level: Vec::new(),
         nodes: HashMap::new(),
@@ -34,13 +31,11 @@ fn build_index(full_tree: Vec<DirNode>) -> TreeIndex {
         dir_titles_lower: Vec::new(),
     };
 
-    // Record top-level ids in original order
     for n in &full_tree {
         idx.top_level.push(n.id.clone());
     }
 
-    // DFS to populate NodeInfo, parent/children relationships, and flat indices.
-    fn index_node(node: &DirNode, parent: Option<&str>, idx: &mut TreeIndex) {
+    fn index_node(node: &DirectoryNode, parent: Option<&str>, idx: &mut TreeIndex) {
         let id = node.id.clone();
         let title = node.title.clone();
         let node_type = node.node_type.clone();

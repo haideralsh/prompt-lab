@@ -11,19 +11,19 @@ pub struct DirEntryInfo {
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct DirNode {
+pub struct DirectoryNode {
     pub id: String,
     pub title: String,
     #[serde(rename = "type")]
     pub node_type: String,
-    pub children: Vec<DirNode>,
+    pub children: Vec<DirectoryNode>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SearchMatch {
     pub matched_ids_count: usize,
-    pub results: Vec<DirNode>,
+    pub results: Vec<DirectoryNode>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -46,4 +46,9 @@ pub struct TreeIndex {
     pub nodes: HashMap<String, NodeInfo>,
     pub file_titles_lower: Vec<(String, String)>,
     pub dir_titles_lower: Vec<(String, String)>,
+}
+
+pub struct NodeTree {
+    pub nodes: Vec<DirectoryNode>,
+    pub total_nodes: usize,
 }

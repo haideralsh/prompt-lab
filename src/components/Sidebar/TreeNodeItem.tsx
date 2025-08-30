@@ -1,19 +1,40 @@
+import { invoke } from '@tauri-apps/api/core'
+import { useSidebarContext } from './SidebarContext'
 import { type FileSystemItem } from '../../types/FileTree'
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
 import {
   Button,
-  Checkbox,
   Collection,
   TreeItem,
   TreeItemContent,
 } from 'react-aria-components'
+import React from 'react'
 
 type TreeNodeItemProps = {
   item: FileSystemItem
   depth?: number
 }
 
+/**
+ * Renders a single node. Selection is fully controlled by our app state and
+ * toggled via the Tauri backend command `toggle_selection`. We use a custom
+ * checkbox button (not RAC Checkbox) to avoid slot requirements.
+ */
 export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
+  const { selectedNodes, setSelectedNodes, directory } = useSidebarContext()
+  const selected = selectedNodes.has(item.id)
+
+  const onToggle = React.useCallback(async () => {
+    if (!directory?.path) return
+    const next = await invoke<string[]>('toggle_selection', {
+      path: directory.path,
+      current: Array.from(selectedNodes) as string[],
+      id: item.id,
+      mode: 'auto',
+    })
+    setSelectedNodes(new Set(next))
+  }, [directory?.path, selectedNodes, item.id, setSelectedNodes])
+
   return (
     <TreeItem
       key={item.id}
@@ -22,18 +43,28 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       className="cursor-pointer hover:bg-gray-800 focus:bg-gray-900 focus:outline-none"
     >
       <TreeItemContent>
-        {({ hasChildItems, isExpanded, selectionMode }) => (
+        {({ hasChildItems, isExpanded }) => (
           <div
             className="flex items-center space-x-2 py-1 px-2 pl-[calc(8px+var(--depth)*16px)]"
             style={{ '--depth': depth } as React.CSSProperties}
           >
-            {selectionMode !== 'none' && (
-              <Checkbox slot="selection" aria-label={`Select ${item.title}`}>
-                <div className="react-aria-Checkbox-indicator">
-                  <CheckIcon className="size-2" />
-                </div>
-              </Checkbox>
-            )}
+            {/* Custom controlled checkbox (no RAC slot) */}
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={selected}
+              aria-label={`Select ${item.title}`}
+              onClick={onToggle}
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.preventDefault()
+                  onToggle()
+                }
+              }}
+              className="flex h-4 w-4 items-center justify-center rounded border border-gray-500 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {selected ? <CheckIcon className="size-3" /> : null}
+            </button>
 
             {hasChildItems ? (
               <Button
@@ -51,6 +82,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
             ) : (
               <div className="shrink-0 w-4 h-4" />
             )}
+
             <div className="flex items-center space-x-1">
               <span className="text-gray-400 text-sm">
                 {item.type === 'directory' ? (

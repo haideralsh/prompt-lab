@@ -3,10 +3,10 @@ use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
 use crate::errors::{codes, DirectoryError};
-use crate::models::DirNode;
+use crate::models::DirectoryNode;
 
 #[tauri::command]
-pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryError> {
+pub(crate) fn list_directory(path: String) -> Result<Vec<DirectoryNode>, DirectoryError> {
     let dir = PathBuf::from(&path);
 
     // Build a recursive walker that honors .gitignore files in this tree.
@@ -64,7 +64,7 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
         children_map: &BTreeMap<PathBuf, Vec<PathBuf>>,
         is_dir_map: &HashMap<PathBuf, bool>,
         dir: &Path,
-    ) -> DirNode {
+    ) -> DirectoryNode {
         let title = rel
             .file_name()
             .map(|s| s.to_string_lossy().into_owned())
@@ -73,7 +73,7 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
         let is_dir = *is_dir_map.get(rel).unwrap_or(&false);
         let node_type = if is_dir { "directory" } else { "file" }.to_string();
 
-        let mut children_nodes: Vec<DirNode> = Vec::new();
+        let mut children_nodes: Vec<DirectoryNode> = Vec::new();
 
         if is_dir {
             let mut child_paths = children_map.get(rel).cloned().unwrap_or_else(|| Vec::new());
@@ -105,7 +105,7 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
 
         let id_str = dir.join(rel).to_string_lossy().into_owned();
 
-        DirNode {
+        DirectoryNode {
             id: id_str,
             title,
             node_type,
@@ -137,7 +137,7 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirNode>, DirectoryErro
         }
     });
 
-    let mut result: Vec<DirNode> = Vec::new();
+    let mut result: Vec<DirectoryNode> = Vec::new();
     for p in top_level_paths {
         result.push(build_node(&p, &children_map, &is_dir_map, &dir));
     }
