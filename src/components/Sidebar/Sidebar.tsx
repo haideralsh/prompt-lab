@@ -11,6 +11,17 @@ import type {
 } from '../../types/FileTree'
 import { ChevronsDownUpIcon } from 'lucide-react'
 
+function expand(node: TreeNode, expandedNodes: Key[] = []): Key[] {
+  if (node.type === 'directory') {
+    const nodeKeys = [...expandedNodes, node.id]
+    return (
+      node.children?.flatMap((child) => expand(child, nodeKeys)) || nodeKeys
+    )
+  }
+
+  return [...expandedNodes, node.id]
+}
+
 export function Sidebar() {
   const { setSelectedNodes, selectedNodes, tree, setTree, directory } =
     useSidebarContext()
@@ -23,19 +34,11 @@ export function Sidebar() {
     })
 
     setTree(results)
-
-    function expand(node: TreeNode, expandedNodes: Key[] = []): Key[] {
-      if (node.type === 'directory') {
-        const nodeKeys = [...expandedNodes, node.id]
-        return (
-          node.children?.flatMap((child) => expand(child, nodeKeys)) || nodeKeys
-        )
-      }
-
-      return [...expandedNodes, node.id]
-    }
-
-    setExpandedKeys(new Set(results.flatMap((result) => expand(result))))
+    setExpandedKeys(
+      query.trim()
+        ? new Set(results.flatMap((result) => expand(result)))
+        : new Set()
+    )
   }
 
   return (
@@ -62,36 +65,31 @@ export function Sidebar() {
       </div>
 
       <SearchBar
-        onChange={(value) => {
-          search(value)
-        }}
-        onClear={() => {
-          // setQuery('')
-          // setSelectedKeys(new Set())
-          // setIndeterminateKeys(new Set())
-          // runSearch('')
-        }}
+        onChange={(value) => search(value)}
+        onClear={() => search('')}
       />
 
       <div className="mt-3 flex-1">
         <div className="h-full overflow-y-auto rounded-lg border border-gray-200 p-1">
-          <Tree
-            aria-label="directory tree"
-            selectionMode="multiple"
-            selectionBehavior="toggle"
-            items={tree}
-            expandedKeys={expandedKeys}
-            selectedKeys={selectedNodes}
-            onSelectionChange={(keys) => {
-              setSelectedNodes(new Set(keys))
-            }}
-            onExpandedChange={(keys) => {
-              setExpandedKeys(new Set(keys))
-            }}
-            className="w-full"
-          >
-            {(item: FileSystemItem) => <TreeNodeItem item={item} />}
-          </Tree>
+          {tree.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-sm text-gray-500">
+              No results found
+            </div>
+          ) : (
+            <Tree
+              aria-label="directory tree"
+              selectionMode="multiple"
+              selectionBehavior="toggle"
+              items={tree}
+              expandedKeys={expandedKeys}
+              selectedKeys={selectedNodes}
+              onSelectionChange={(keys) => setSelectedNodes(new Set(keys))}
+              onExpandedChange={(keys) => setExpandedKeys(new Set(keys))}
+              className="w-full"
+            >
+              {(item: FileSystemItem) => <TreeNodeItem item={item} />}
+            </Tree>
+          )}
         </div>
       </div>
     </div>
