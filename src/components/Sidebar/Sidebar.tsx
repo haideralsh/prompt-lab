@@ -29,7 +29,7 @@ export function Sidebar() {
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
-        : new Set(),
+        : new Set()
     )
   }
 
@@ -74,8 +74,7 @@ export function Sidebar() {
           ) : (
             <Tree
               aria-label="directory tree"
-              /* We manage selection ourselves, so disable RAC selection */
-              selectionMode="none"
+              selectionMode="multiple"
               items={tree}
               expandedKeys={expandedKeys}
               onExpandedChange={(keys) => setExpandedKeys(new Set(keys))}

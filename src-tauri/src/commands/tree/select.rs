@@ -8,7 +8,6 @@ pub(crate) fn toggle_selection(
     path: String,
     current: Vec<String>,
     id: String,
-    mode: String, // "auto" | "force_select" | "force_deselect"
 ) -> Result<Vec<String>, DirectoryError> {
     ensure_index(&path)?;
     let guard = cache().read().expect("cache read poisoned");
@@ -16,14 +15,14 @@ pub(crate) fn toggle_selection(
         .get(&path)
         .expect("index should exist after ensure_index");
 
-    let info = match idx.nodes.get(&id) {
+    let node = match idx.nodes.get(&id) {
         Some(n) => n,
         None => return Ok(current),
     };
 
     let mut targets = vec![id.clone()];
-    if info.node_type != "file" {
-        let mut stack = info.children.clone();
+    if node.node_type != "file" {
+        let mut stack = node.children.clone();
         while let Some(cur) = stack.pop() {
             targets.push(cur.clone());
             if let Some(n) = idx.nodes.get(&cur) {
@@ -33,11 +32,7 @@ pub(crate) fn toggle_selection(
     }
 
     let mut set: HashSet<String> = current.into_iter().collect();
-    let selecting = match mode.as_str() {
-        "force_select" => true,
-        "force_deselect" => false,
-        _ => targets.iter().any(|k| !set.contains(k)), // auto
-    };
+    let selecting = targets.iter().any(|k| !set.contains(k));
 
     for t in targets {
         if selecting {

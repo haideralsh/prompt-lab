@@ -4,6 +4,7 @@ import { type FileSystemItem } from '../../types/FileTree'
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
 import {
   Button,
+  Checkbox,
   Collection,
   TreeItem,
   TreeItemContent,
@@ -15,22 +16,15 @@ type TreeNodeItemProps = {
   depth?: number
 }
 
-/**
- * Renders a single node. Selection is fully controlled by our app state and
- * toggled via the Tauri backend command `toggle_selection`. We use a custom
- * checkbox button (not RAC Checkbox) to avoid slot requirements.
- */
 export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
   const { selectedNodes, setSelectedNodes, directory } = useSidebarContext()
   const selected = selectedNodes.has(item.id)
 
   const onToggle = React.useCallback(async () => {
-    if (!directory?.path) return
     const next = await invoke<string[]>('toggle_selection', {
-      path: directory.path,
+      path: directory?.path,
       current: Array.from(selectedNodes) as string[],
       id: item.id,
-      mode: 'auto',
     })
     setSelectedNodes(new Set(next))
   }, [directory?.path, selectedNodes, item.id, setSelectedNodes])
@@ -48,23 +42,15 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
             className="flex items-center space-x-2 py-1 px-2 pl-[calc(8px+var(--depth)*16px)]"
             style={{ '--depth': depth } as React.CSSProperties}
           >
-            {/* Custom controlled checkbox (no RAC slot) */}
-            <button
-              type="button"
-              role="checkbox"
-              aria-checked={selected}
+            <Checkbox
+              slot="selection"
               aria-label={`Select ${item.title}`}
-              onClick={onToggle}
-              onKeyDown={(e) => {
-                if (e.key === ' ' || e.key === 'Enter') {
-                  e.preventDefault()
-                  onToggle()
-                }
-              }}
-              className="flex h-4 w-4 items-center justify-center rounded border border-gray-500 bg-transparent text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              isSelected={selected}
+              onChange={onToggle}
+              className="flex h-4 w-4 items-center justify-center rounded border border-gray-500 bg-transparent text-white data-[selected]:bg-blue-600 data-[selected]:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
             >
               {selected ? <CheckIcon className="size-3" /> : null}
-            </button>
+            </Checkbox>
 
             {hasChildItems ? (
               <Button
