@@ -1,3 +1,4 @@
+import { XIcon } from 'lucide-react'
 import { useState } from 'react'
 
 interface SearchBarProps {
@@ -12,6 +13,13 @@ export function SearchBar({
   disabled = false,
 }: SearchBarProps) {
   const [value, setValue] = useState('')
+
+  function clear() {
+    if (!value.trim()) return
+
+    setValue('')
+    onClear()
+  }
 
   return (
     <div className="mt-3">
@@ -54,11 +62,13 @@ export function SearchBar({
         {/* Clear button */}
         <button
           type="button"
-          onClick={onClear}
+          onClick={clear}
           aria-label="Clear search"
-          className="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-600 disabled:opacity-0 disabled:pointer-events-none"
+          className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 disabled:opacity-0 disabled:pointer-events-none"
         >
-          <span className="text-base leading-none">×</span>
+          <span className="text-base leading-none">
+            <XIcon className="size-4" />
+          </span>
         </button>
       </div>
     </div>
