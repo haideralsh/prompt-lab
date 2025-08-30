@@ -1,14 +1,16 @@
+type Id = string
+
 export type Tree = TreeNode[]
 
 export interface TreeNode {
-  id: string
+  id: Id
   title: string
   type: 'directory' | 'file'
   children: TreeNode[]
 }
 
 export interface FileSystemItem {
-  id: string
+  id: Id
   title: string
   type: 'directory' | 'file'
   children: FileSystemItem[]
