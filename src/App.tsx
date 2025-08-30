@@ -4,9 +4,9 @@ import { useSidebarContext } from './components/Sidebar/SidebarContext'
 import { Main } from './components/Main'
 
 function App() {
-  const { tree } = useSidebarContext()
+  const { directory } = useSidebarContext()
 
-  if (tree.length > 0)
+  if (directory)
     return (
       <main className="h-dvh flex text-[#D0D0D0] bg-black">
         <aside className="w-72 shrink-0 border-r border-gray-200 p-4 flex flex-col">
