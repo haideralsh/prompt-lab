@@ -8,14 +8,12 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            commands::open_directory::open_directory,
-            commands::list_directory::list_directory,
-            commands::search::search_tree::search_tree,
-            commands::search::search_tree::ancestors,
-            commands::search::search_tree::descendants,
-            commands::search::search_tree::toggle_selection,
-            commands::recent_folders::get_recent_folders,
-            commands::recent_folders::add_recent_folder,
+            commands::directory::open::open_directory,
+            commands::directory::list::list_directory,
+            commands::directory::recent::get_recent_directories,
+            commands::directory::recent::add_recent_directory,
+            commands::tree::search::search_tree,
+            commands::tree::select::toggle_selection,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

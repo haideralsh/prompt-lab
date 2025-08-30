@@ -1,4 +1,2 @@
-pub(crate) mod list_directory;
-pub(crate) mod open_directory;
-pub(crate) mod recent_folders;
-pub(crate) mod search;
+pub(crate) mod directory;
+pub(crate) mod tree;

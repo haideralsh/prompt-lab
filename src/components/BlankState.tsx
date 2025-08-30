@@ -14,13 +14,13 @@ export function LaunchScreen() {
 
   useEffect(() => {
     function loadRecentOpened() {
-      invoke<DirectoryInfo[]>('get_recent_folders')
+      invoke<DirectoryInfo[]>('get_recent_directories')
         .then((list) => {
           setRecentOpened(list)
         })
         .catch((err) => {
           if (err.code === ERROR_CODES.STORE_READ_ERROR) {
-            setError('Failed to load recent folders.')
+            setError('Failed to load recent directories.')
           }
         })
     }
@@ -36,7 +36,7 @@ export function LaunchScreen() {
 
       setDirectory(directory)
       setTree(resp.results)
-      invoke('add_recent_folder', { folder: directory })
+      invoke('add_recent_directory', { directory })
     } catch (err) {
       const e = err as DirectoryError
       if (e && e.code === ERROR_CODES.DIRECTORY_READ_ERROR) {

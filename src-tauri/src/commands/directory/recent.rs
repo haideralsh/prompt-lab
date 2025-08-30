@@ -10,7 +10,9 @@ const KEY_RECENT: &str = "RECENTLY_OPENED";
 const MAX_RECENT: usize = 5;
 
 #[tauri::command]
-pub(crate) fn get_recent_folders(app: AppHandle<Wry>) -> Result<Vec<PickedDirectory>, StoreError> {
+pub(crate) fn get_recent_directories(
+    app: AppHandle<Wry>,
+) -> Result<Vec<PickedDirectory>, StoreError> {
     let store = app.store(STORE_FILE).map_err(|_| StoreError {
         code: codes::STORE_READ_ERROR,
         message: Some("Failed to open store".to_string()),
@@ -29,9 +31,9 @@ pub(crate) fn get_recent_folders(app: AppHandle<Wry>) -> Result<Vec<PickedDirect
 }
 
 #[tauri::command]
-pub(crate) fn add_recent_folder(
+pub(crate) fn add_recent_directory(
     app: AppHandle<Wry>,
-    folder: PickedDirectory,
+    directory: PickedDirectory,
 ) -> Result<(), StoreError> {
     let store = app.store(STORE_FILE).map_err(|_| StoreError {
         code: codes::STORE_READ_ERROR,
@@ -46,10 +48,10 @@ pub(crate) fn add_recent_folder(
     };
 
     if list.len() > 0 {
-        list.retain(|item| item.path != folder.path);
+        list.retain(|item| item.path != directory.path);
     }
 
-    list.insert(0, folder);
+    list.insert(0, directory);
 
     if list.len() > MAX_RECENT {
         list.truncate(MAX_RECENT);
@@ -61,7 +63,6 @@ pub(crate) fn add_recent_folder(
         message: Some("Failed to save store".to_string()),
     })?;
 
-    // Optional: release the store handle from resources.
     store.close_resource();
 
     Ok(())
