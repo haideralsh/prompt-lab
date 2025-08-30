@@ -24,8 +24,8 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       <TreeItemContent>
         {({ hasChildItems, isExpanded, selectionMode }) => (
           <div
-            className="flex items-center space-x-2 py-1 px-2"
-            style={{ paddingLeft: `${8 + depth * 16}px` }}
+            className="flex items-center space-x-2 py-1 px-2 pl-[calc(8px+var(--depth)*16px)]"
+            style={{ '--depth': depth } as React.CSSProperties}
           >
             {selectionMode !== 'none' && (
               <Checkbox slot="selection" aria-label={`Select ${item.title}`}>
