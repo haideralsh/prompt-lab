@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Key, Tree } from 'react-aria-components'
+import { Key, Selection, Tree } from 'react-aria-components'
 import { SearchBar } from './SearchBar'
 import { useSidebarContext } from './SidebarContext'
 import { TreeNodeItem } from './TreeNodeItem'
@@ -22,10 +22,52 @@ function expand(node: TreeNode, expandedNodes: Key[] = []): Key[] {
   return [...expandedNodes, node.id]
 }
 
+function getAllChildrenIds(node: TreeNode): Key[] {
+  const ids: Key[] = [node.id]
+  if (node.type === 'directory' && node.children) {
+    node.children.forEach((child) => {
+      ids.push(...getAllChildrenIds(child))
+    })
+  }
+  return ids
+}
+
+function findNodeById(nodes: TreeNode[], id: Key): TreeNode | null {
+  for (const node of nodes) {
+    if (node.id === id) {
+      return node
+    }
+    if (node.type === 'directory' && node.children) {
+      const found = findNodeById(node.children, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
 export function Sidebar() {
   const { setSelectedNodes, selectedNodes, tree, setTree, directory } =
     useSidebarContext()
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
+
+  function handleSelectionChange(selection: Selection) {
+    const newKeys = new Set(selection)
+    const previousKeys = selectedNodes
+
+    const newlySelected = Array.from(selection).filter(
+      (key) => !previousKeys.has(key),
+    )
+
+    newlySelected.forEach((key) => {
+      const node = findNodeById(tree, key)
+      if (node && node.type === 'directory') {
+        const childrenIds = getAllChildrenIds(node)
+        childrenIds.forEach((id) => newKeys.add(id))
+      }
+    })
+
+    setSelectedNodes(newKeys)
+  }
 
   async function search(query: string) {
     const { results } = await invoke<SearchMatch>('search_tree', {
@@ -37,7 +79,7 @@ export function Sidebar() {
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expand(result)))
-        : new Set()
+        : new Set(),
     )
   }
 
@@ -83,7 +125,7 @@ export function Sidebar() {
               items={tree}
               expandedKeys={expandedKeys}
               selectedKeys={selectedNodes}
-              onSelectionChange={(keys) => setSelectedNodes(new Set(keys))}
+              onSelectionChange={handleSelectionChange}
               onExpandedChange={(keys) => setExpandedKeys(new Set(keys))}
               className="w-full"
             >
