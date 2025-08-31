@@ -15,7 +15,7 @@ pub struct DirectoryNode {
     pub id: String,
     pub title: String,
     #[serde(rename = "type")]
-    pub node_type: String,
+    pub node_type: String, // "file" | "directory"
     pub children: Vec<DirectoryNode>,
 }
 
@@ -44,8 +44,7 @@ pub struct NodeInfo {
 pub struct TreeIndex {
     pub top_level: Vec<String>,
     pub nodes: HashMap<String, NodeInfo>,
-    pub file_titles_lower: Vec<(String, String)>,
-    pub dir_titles_lower: Vec<(String, String)>,
+    pub titles: Vec<(String, String)>,
 }
 
 pub struct NodeTree {

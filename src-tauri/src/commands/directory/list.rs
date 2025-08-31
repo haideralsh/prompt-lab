@@ -6,7 +6,7 @@ use crate::errors::{codes, DirectoryError};
 use crate::models::DirectoryNode;
 
 #[tauri::command]
-pub(crate) fn list_directory(path: String) -> Result<Vec<DirectoryNode>, DirectoryError> {
+pub(crate) fn list_directory(path: &str) -> Result<Vec<DirectoryNode>, DirectoryError> {
     let dir = PathBuf::from(&path);
 
     // Build a recursive walker that honors .gitignore files in this tree.
@@ -25,7 +25,7 @@ pub(crate) fn list_directory(path: String) -> Result<Vec<DirectoryNode>, Directo
     for dent in walker {
         let dent = dent.map_err(|_| DirectoryError {
             code: codes::DIRECTORY_READ_ERROR,
-            directory_name: Some(path.clone()),
+            directory_name: Some(path.to_string()),
         })?;
 
         // Skip the root itself; we only want its children.

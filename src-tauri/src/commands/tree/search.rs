@@ -30,13 +30,7 @@ pub(crate) fn search_tree(
 
     let mut original_matches: HashSet<String> = HashSet::new();
 
-    for (id, lower) in &idx.file_titles_lower {
-        if lower.contains(&search_term) {
-            original_matches.insert(id.clone());
-        }
-    }
-
-    for (id, lower) in &idx.dir_titles_lower {
+    for (id, lower) in &idx.titles {
         if lower.contains(&search_term) {
             original_matches.insert(id.clone());
         }
