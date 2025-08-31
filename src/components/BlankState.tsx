@@ -4,7 +4,7 @@ import { FolderIcon } from './icons/folder'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { invoke } from '@tauri-apps/api/core'
 import { ERROR_CODES } from '../constants'
-import type { SearchMatch, DirectoryError } from '../types/FileTree'
+import type { SearchResult, DirectoryError } from '../types/FileTree'
 import { useSidebarContext } from './Sidebar/SidebarContext'
 
 export function LaunchScreen() {
@@ -30,7 +30,7 @@ export function LaunchScreen() {
 
   async function handleDirectoryPick(directory: DirectoryInfo) {
     try {
-      const resp = await invoke<SearchMatch>('search_tree', {
+      const resp = await invoke<SearchResult>('search_tree', {
         path: directory.path,
       })
 

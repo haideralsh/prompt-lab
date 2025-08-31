@@ -9,16 +9,14 @@ export interface TreeNode {
   children: TreeNode[]
 }
 
-export interface FileSystemItem {
-  id: Id
-  title: string
-  type: 'directory' | 'file'
-  children: FileSystemItem[]
-}
-
-export interface SearchMatch {
+export interface SearchResult {
   matchedIdsCount: number
   results: TreeNode[]
+}
+
+export interface SelectionResult {
+  selected: Id[]
+  indeterminate: Id[]
 }
 
 export interface DirectoryError {

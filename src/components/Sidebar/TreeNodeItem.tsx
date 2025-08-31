@@ -1,7 +1,15 @@
 import { invoke } from '@tauri-apps/api/core'
 import { useSidebarContext } from './SidebarContext'
-import { type FileSystemItem } from '../../types/FileTree'
-import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
+import { SelectionResult, TreeNode } from '../../types/FileTree'
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FileIcon,
+  FolderClosedIcon,
+  FolderOpenIcon,
+  MinusIcon,
+} from 'lucide-react'
 import {
   Button,
   Checkbox,
@@ -12,21 +20,29 @@ import {
 import React from 'react'
 
 type TreeNodeItemProps = {
-  item: FileSystemItem
+  item: TreeNode
   depth?: number
 }
 
 export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
-  const { selectedNodes, setSelectedNodes, directory } = useSidebarContext()
+  const {
+    selectedNodes,
+    setSelectedNodes,
+    indeterminateNodes,
+    setIndeterminateNodes,
+    directory,
+  } = useSidebarContext()
   const selected = selectedNodes.has(item.id)
+  const indeterminate = indeterminateNodes.has(item.id)
 
   const onToggle = React.useCallback(async () => {
-    const next = await invoke<string[]>('toggle_selection', {
+    const next = await invoke<SelectionResult>('toggle_selection', {
       path: directory?.path,
       current: Array.from(selectedNodes) as string[],
       id: item.id,
     })
-    setSelectedNodes(new Set(next))
+    setSelectedNodes(new Set(next.selected))
+    setIndeterminateNodes(new Set(next.indeterminate))
   }, [directory?.path, selectedNodes, item.id, setSelectedNodes])
 
   return (
@@ -47,10 +63,12 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
               slot="selection"
               aria-label={`Select ${item.title}`}
               isSelected={selected}
+              isIndeterminate={indeterminate}
               onChange={onToggle}
-              className="flex h-4 w-4 items-center justify-center rounded border border-gray-500 bg-transparent text-white data-[selected]:bg-blue-600 data-[selected]:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+              className="flex h-4 w-4 items-center justify-center rounded border border-gray-500 bg-transparent text-white data-[selected]:bg-blue-600 data-[selected]:border-blue-600 data-[indeterminate]:bg-blue-600 data-[indeterminate]:border-blue-600 focus:outline-none focus:ring-0 focus:ring-blue-500 flex-shrink-0"
             >
               {selected ? <CheckIcon className="size-3" /> : null}
+              {indeterminate ? <MinusIcon className="size-3" /> : null}
             </Checkbox>
 
             {hasChildItems ? (
@@ -73,24 +91,13 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
             <div className="flex items-center space-x-1">
               <span className="text-gray-400 text-sm">
                 {item.type === 'directory' ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="size-5"
-                  >
-                    <path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15ZM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146Z" />
-                  </svg>
+                  isExpanded ? (
+                    <FolderOpenIcon />
+                  ) : (
+                    <FolderClosedIcon />
+                  )
                 ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="size-5"
-                  >
-                    <path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0 0 16.5 9h-1.875a1.875 1.875 0 0 1-1.875-1.875V5.25A3.75 3.75 0 0 0 9 1.5H5.625Z" />
-                    <path d="M12.971 1.816A5.23 5.23 0 0 1 14.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 0 1 3.434 1.279 9.768 9.768 0 0 0-6.963-6.963Z" />
-                  </svg>
+                  <FileIcon />
                 )}
               </span>
               <span className="text-sm text-white">{item.title}</span>
@@ -100,9 +107,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       </TreeItemContent>
 
       <Collection items={item.children}>
-        {(child: FileSystemItem) => (
-          <TreeNodeItem item={child} depth={depth + 1} />
-        )}
+        {(child: TreeNode) => <TreeNodeItem item={child} depth={depth + 1} />}
       </Collection>
     </TreeItem>
   )

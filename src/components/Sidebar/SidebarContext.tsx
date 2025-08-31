@@ -10,16 +10,12 @@ type SidebarContext = {
   setTree: (tree: Tree) => void
   selectedNodes: Set<Key>
   setSelectedNodes: (nodes: Set<Key>) => void
+  indeterminateNodes: Set<Key>
+  setIndeterminateNodes: (nodes: Set<Key>) => void
 }
 
-const SidebarContext = React.createContext<SidebarContext>({
-  directory: null,
-  setDirectory: () => {},
-  tree: [],
-  setTree: () => {},
-  selectedNodes: new Set<Key>(),
-  setSelectedNodes: () => {},
-})
+// @ts-expect-error createContext expects a value on initialization but it really shouldn't :facepalm
+const SidebarContext = React.createContext<SidebarContext>()
 
 interface SidebarContextProps {
   children: React.ReactNode
@@ -37,6 +33,9 @@ export function useSidebarContext() {
 
 export function SidebarContextProvider(props: SidebarContextProps) {
   const [selectedNodes, setSelectedNodes] = useState<Set<Key>>(new Set())
+  const [indeterminateNodes, setIndeterminateNodes] = useState<Set<Key>>(
+    new Set()
+  )
   const [tree, setTree] = useState<Tree>([])
   const [directory, setDirectory] = useState<DirectoryInfo | null>(null)
 
@@ -45,6 +44,8 @@ export function SidebarContextProvider(props: SidebarContextProps) {
       value={{
         selectedNodes,
         setSelectedNodes,
+        indeterminateNodes,
+        setIndeterminateNodes,
         tree,
         setTree,
         directory,

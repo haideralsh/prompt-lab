@@ -3,11 +3,11 @@ import { Key, Tree } from 'react-aria-components'
 import { SearchBar } from './SearchBar'
 import { useSidebarContext } from './SidebarContext'
 import { TreeNodeItem } from './TreeNodeItem'
-import type { FileSystemItem, SearchMatch } from '../../types/FileTree'
+import type { TreeNode, SearchResult } from '../../types/FileTree'
 import { ChevronsDownUpIcon } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
 
-function expandAll(item: FileSystemItem, acc: Key[] = []): Key[] {
+function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)
   if (item.type === 'directory' && item.children) {
     for (const c of item.children) expandAll(c, acc)
@@ -20,7 +20,7 @@ export function Sidebar() {
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
 
   async function search(query: string) {
-    const { results } = await invoke<SearchMatch>('search_tree', {
+    const { results } = await invoke<SearchResult>('search_tree', {
       path: directory?.path,
       term: query.trim(),
     })
@@ -39,7 +39,6 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header: folder name & collapse all */}
       <div className="mb-2 flex items-center justify-between">
         {directory?.name && (
           <div className="text-sm font-semibold text-white">
@@ -80,7 +79,7 @@ export function Sidebar() {
               onExpandedChange={(keys) => setExpandedKeys(new Set(keys))}
               className="w-full"
             >
-              {(item: FileSystemItem) => <TreeNodeItem item={item} />}
+              {(item: TreeNode) => <TreeNodeItem item={item} />}
             </Tree>
           )}
         </div>

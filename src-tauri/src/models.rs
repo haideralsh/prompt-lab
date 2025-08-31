@@ -51,3 +51,9 @@ pub struct NodeTree {
     pub nodes: Vec<DirectoryNode>,
     pub total_nodes: usize,
 }
+
+#[derive(Serialize)]
+pub struct SelectionResult {
+    pub selected: Vec<String>,
+    pub indeterminate: Vec<String>,
+}
