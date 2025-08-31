@@ -34,6 +34,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       key={item.id}
       id={item.id}
       textValue={item.title}
+      onPress={onToggle}
       className="cursor-pointer hover:bg-gray-800 focus:bg-gray-900 focus:outline-none"
     >
       <TreeItemContent>
