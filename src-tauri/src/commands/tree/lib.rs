@@ -94,6 +94,16 @@ pub fn add_ancestors(id: &str, idx: &TreeIndex, acc: &mut HashSet<String>) {
     }
 }
 
+pub fn add_descendants(id: &str, tree_index: &TreeIndex, acc: &mut HashSet<String>) {
+    if let Some(node) = tree_index.nodes.get(id) {
+        for child_id in &node.children {
+            if acc.insert(child_id.clone()) {
+                add_descendants(child_id, tree_index, acc);
+            }
+        }
+    }
+}
+
 pub fn count_matched_nodes(nodes: &[DirectoryNode], original_matches: &HashSet<String>) -> usize {
     fn count_recursive(node: &DirectoryNode, original_matches: &HashSet<String>) -> usize {
         let mut count = 0;
