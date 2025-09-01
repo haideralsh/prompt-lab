@@ -1,7 +1,7 @@
 use crate::commands::tree::cache::cache;
 use crate::commands::tree::index::ensure_index;
 use crate::errors::DirectoryError;
-use crate::models::{SelectionResult, TreeIndex};
+use crate::models::{FileNode, SelectionResult, TreeIndex};
 use std::collections::HashSet;
 
 fn all_descendants_selected(id: &str, tree_index: &TreeIndex, selected: &HashSet<String>) -> bool {
@@ -73,6 +73,24 @@ fn compute_indeterminate(tree_index: &TreeIndex, selected: &HashSet<String>) -> 
     out
 }
 
+fn collect_selected_files(tree_index: &TreeIndex, selected: &HashSet<String>) -> Vec<FileNode> {
+    selected
+        .iter()
+        .filter_map(|id| {
+            tree_index.nodes.get(id).and_then(|n| {
+                if n.node_type == "file" {
+                    Some(FileNode {
+                        id: id.clone(),
+                        title: n.title.clone(),
+                    })
+                } else {
+                    None
+                }
+            })
+        })
+        .collect()
+}
+
 #[tauri::command]
 pub(crate) fn toggle_selection(
     path: String,
@@ -89,9 +107,12 @@ pub(crate) fn toggle_selection(
         Some(n) => n,
         None => {
             let set: HashSet<String> = current.into_iter().collect();
+            let selected_files = collect_selected_files(tree_index, &set);
             let ind = compute_indeterminate(tree_index, &set);
+
             return Ok(SelectionResult {
-                selected: set.into_iter().collect(),
+                selected: set.clone().into_iter().collect(),
+                selected_files,
                 indeterminate: ind.into_iter().collect(),
             });
         }
@@ -120,11 +141,12 @@ pub(crate) fn toggle_selection(
     }
 
     update_ancestors_selection(&id, tree_index, &mut set);
-
     let indeterminates = compute_indeterminate(tree_index, &set);
+    let selected_files = collect_selected_files(tree_index, &set);
 
     Ok(SelectionResult {
         selected: set.into_iter().collect(),
+        selected_files,
         indeterminate: indeterminates.into_iter().collect(),
     })
 }

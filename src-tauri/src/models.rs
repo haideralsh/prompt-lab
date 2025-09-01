@@ -9,6 +9,7 @@ pub struct DirEntryInfo {
     pub is_directory: bool,
 }
 
+// TODO: why do we have both this and the NodeInfo
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DirectoryNode {
@@ -17,6 +18,13 @@ pub struct DirectoryNode {
     #[serde(rename = "type")]
     pub node_type: String, // "file" | "directory"
     pub children: Vec<DirectoryNode>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FileNode {
+    pub id: String,
+    pub title: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -53,7 +61,9 @@ pub struct NodeTree {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SelectionResult {
     pub selected: Vec<String>,
     pub indeterminate: Vec<String>,
+    pub selected_files: Vec<FileNode>,
 }

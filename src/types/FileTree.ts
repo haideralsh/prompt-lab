@@ -14,9 +14,15 @@ export interface SearchResult {
   results: TreeNode[]
 }
 
+export interface FileNode {
+  id: Id
+  title: string
+}
+
 export interface SelectionResult {
   selected: Id[]
   indeterminate: Id[]
+  selectedFiles: FileNode[]
 }
 
 export interface DirectoryError {
