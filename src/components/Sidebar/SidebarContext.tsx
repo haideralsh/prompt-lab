@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, Dispatch, SetStateAction } from 'react'
 import { FileNode, Tree } from '../../types/FileTree'
 import { DirectoryInfo } from '../../types/DirectoryInfo'
 import { Key } from 'react-aria-components'
@@ -11,7 +11,7 @@ type SidebarContext = {
   selectedNodes: Set<Key>
   setSelectedNodes: (nodes: Set<Key>) => void
   selectedFiles: FileNode[]
-  setSelectedFiles: (files: FileNode[]) => void
+  setSelectedFiles: Dispatch<SetStateAction<FileNode[]>>
   indeterminateNodes: Set<Key>
   setIndeterminateNodes: (nodes: Set<Key>) => void
 }
@@ -27,7 +27,7 @@ export function useSidebarContext() {
   const context = React.useContext(SidebarContext)
   if (!context) {
     throw new Error(
-      'useSidebarContext must be used within a SidebarContextProvider',
+      'useSidebarContext must be used within a SidebarContextProvider'
     )
   }
   return context
@@ -37,7 +37,7 @@ export function SidebarContextProvider(props: SidebarContextProps) {
   const [selectedNodes, setSelectedNodes] = useState<Set<Key>>(new Set())
   const [selectedFiles, setSelectedFiles] = useState<FileNode[]>([])
   const [indeterminateNodes, setIndeterminateNodes] = useState<Set<Key>>(
-    new Set(),
+    new Set()
   )
   const [tree, setTree] = useState<Tree>([])
   const [directory, setDirectory] = useState<DirectoryInfo | null>(null)

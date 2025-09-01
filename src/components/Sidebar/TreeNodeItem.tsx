@@ -36,7 +36,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
   const selected = selectedNodes.has(item.id)
   const indeterminate = indeterminateNodes.has(item.id)
 
-  const onToggle = React.useCallback(async () => {
+  async function onToggle() {
     const selection = await invoke<SelectionResult>('toggle_selection', {
       path: directory?.path,
       current: Array.from(selectedNodes) as string[],
@@ -45,7 +45,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
     setSelectedNodes(new Set(selection.selected))
     setSelectedFiles(selection.selectedFiles)
     setIndeterminateNodes(new Set(selection.indeterminate))
-  }, [directory?.path, selectedNodes, item.id, setSelectedNodes])
+  }
 
   return (
     <TreeItem

@@ -9,7 +9,7 @@ pub struct DirEntryInfo {
     pub is_directory: bool,
 }
 
-// TODO: why do we have both this and the NodeInfo
+// TODO: why do we have both this and the NodeInfo?
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DirectoryNode {
@@ -25,7 +25,7 @@ pub struct DirectoryNode {
 pub struct FileNode {
     pub id: String,
     pub title: String,
-    pub token_count: usize,
+    pub token_count: Option<usize>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
