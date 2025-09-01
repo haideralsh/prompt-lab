@@ -25,6 +25,7 @@ pub struct DirectoryNode {
 pub struct FileNode {
     pub id: String,
     pub title: String,
+    pub token_count: usize,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

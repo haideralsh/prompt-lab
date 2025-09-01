@@ -15,9 +15,15 @@ export function Main() {
       <h2 className="text-sm font-semibold text-white mb-2">Selected files</h2>
       {selectedFiles.length > 0 ? (
         <div className="flex flex-col gap-4">
-          <ul className="list-disc pl-5 space-y-1 text-sm text-white">
+          <ul className="space-y-4 text-sm text-white">
             {Array.from(selectedFiles).map((path) => (
-              <li key={path.id}>{path.title}</li>
+              <li key={path.id} className="flex flex-col gap-2">
+                <span className="flex items-center gap-1">
+                  <span className="font-semibold">{path.title}</span>
+                  <span>({path.tokenCount} tokens)</span>
+                </span>
+                <span className="text-xs">{path.id}</span>
+              </li>
             ))}
           </ul>
           <button

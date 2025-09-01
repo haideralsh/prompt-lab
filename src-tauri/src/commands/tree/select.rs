@@ -3,6 +3,8 @@ use crate::commands::tree::index::ensure_index;
 use crate::errors::DirectoryError;
 use crate::models::{FileNode, SelectionResult, TreeIndex};
 use std::collections::HashSet;
+use std::fs;
+use tiktoken_rs::cl100k_base;
 
 fn all_descendants_selected(id: &str, tree_index: &TreeIndex, selected: &HashSet<String>) -> bool {
     let Some(node) = tree_index.nodes.get(id) else {
@@ -74,21 +76,51 @@ fn compute_indeterminate(tree_index: &TreeIndex, selected: &HashSet<String>) -> 
 }
 
 fn collect_selected_files(tree_index: &TreeIndex, selected: &HashSet<String>) -> Vec<FileNode> {
-    selected
-        .iter()
-        .filter_map(|id| {
-            tree_index.nodes.get(id).and_then(|n| {
-                if n.node_type == "file" {
-                    Some(FileNode {
-                        id: id.clone(),
-                        title: n.title.clone(),
+    let bpe = match cl100k_base() {
+        Ok(b) => b,
+        Err(_) => {
+            return selected
+                .iter()
+                .filter_map(|id| {
+                    tree_index.nodes.get(id).and_then(|n| {
+                        if n.node_type == "file" {
+                            Some(FileNode {
+                                id: id.clone(),
+                                title: n.title.clone(),
+                                token_count: 0,
+                            })
+                        } else {
+                            None
+                        }
                     })
-                } else {
-                    None
-                }
-            })
-        })
-        .collect()
+                })
+                .collect();
+        }
+    };
+
+    let mut out: Vec<FileNode> = Vec::new();
+
+    for id in selected {
+        if let Some(n) = tree_index.nodes.get(id) {
+            if n.node_type == "file" {
+                let token_count = fs::read(id)
+                    .ok()
+                    .map(|bytes| {
+                        let text = String::from_utf8_lossy(&bytes);
+                        bpe.encode_with_special_tokens(&text).len()
+                    })
+                    .unwrap_or(0);
+
+                out.push(FileNode {
+                    id: id.clone(),
+                    title: n.title.clone(),
+                    token_count,
+                });
+            }
+        }
+    }
+
+    out
 }
 
 #[tauri::command]
