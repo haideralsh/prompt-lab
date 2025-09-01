@@ -14,6 +14,7 @@ pub fn run() {
             commands::directory::recent::add_recent_directory,
             commands::tree::search::search_tree,
             commands::tree::select::toggle_selection,
+            commands::clipboard::copy_files_to_clipboard,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
