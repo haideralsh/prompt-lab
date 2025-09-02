@@ -86,7 +86,6 @@ struct TokenCountsEvent {
 
 const BATCH_SIZE: usize = 25;
 
-/// Load cached counts for a directory from the Tauri store (once per run) and merge into memory.
 pub fn ensure_cache_loaded_for_dir(app: &AppHandle<Wry>, root: &str) {
     {
         if let Ok(loaded) = loaded_dirs().read() {
@@ -96,7 +95,6 @@ pub fn ensure_cache_loaded_for_dir(app: &AppHandle<Wry>, root: &str) {
         }
     }
 
-    // Load from store and merge.
     if let Ok(store) = app.store(STORE_FILE) {
         let key = cache_store_key(root);
         if let Some(value) = store.get(&key) {
