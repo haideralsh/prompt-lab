@@ -45,7 +45,9 @@ export function Main() {
                 <span className="flex items-center gap-1">
                   <span className="font-semibold">{path.title}</span>
                   <span className="text-gray-400">
-                    {path.tokenCount !== null && `(${path.tokenCount} tokens)`}
+                    {path.tokenCount == null
+                      ? 'counting...'
+                      : `(${path.tokenCount} tokens)`}
                   </span>
                 </span>
                 <span className="text-xs">{path.id}</span>
