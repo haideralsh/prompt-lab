@@ -8,7 +8,7 @@ function App() {
 
   if (directory)
     return (
-      <main className="h-dvh flex text-[#D0D0D0] bg-black">
+      <main className="min-h-dvh flex text-[#D0D0D0] bg-black">
         <aside className="w-72 shrink-0 border-r border-gray-200 p-4 flex flex-col">
           <Sidebar />
         </aside>
