@@ -1,10 +1,12 @@
-use crate::commands::tokenize::{get_cached_count, spawn_token_count_task};
+use crate::commands::tokenize::{
+    ensure_cache_loaded_for_dir, get_cached_count, spawn_token_count_task,
+};
 use crate::commands::tree::cache::cache;
 use crate::commands::tree::index::ensure_index;
 use crate::errors::DirectoryError;
 use crate::models::{FileNode, SelectionResult, TreeIndex};
 use std::collections::HashSet;
-use tauri::AppHandle;
+use tauri::{AppHandle, Wry};
 
 fn all_descendants_selected(id: &str, tree_index: &TreeIndex, selected: &HashSet<String>) -> bool {
     let Some(node) = tree_index.nodes.get(id) else {
@@ -96,7 +98,7 @@ fn collect_selected_files(tree_index: &TreeIndex, selected: &HashSet<String>) ->
 
 #[tauri::command]
 pub(crate) fn toggle_selection(
-    app: AppHandle,
+    app: AppHandle<Wry>,
     path: String,
     current: Vec<String>,
     id: String,
@@ -106,6 +108,8 @@ pub(crate) fn toggle_selection(
     let tree_index = guard
         .get(&path)
         .expect("index should exist after ensure_index");
+
+    ensure_cache_loaded_for_dir(&app, &path);
 
     let node = match tree_index.nodes.get(&id) {
         Some(n) => n,
@@ -120,7 +124,7 @@ pub(crate) fn toggle_selection(
                 .map(|f| f.id.clone())
                 .collect();
             if !to_compute.is_empty() {
-                spawn_token_count_task(app, to_compute);
+                spawn_token_count_task(app.clone(), path.clone(), to_compute);
             }
 
             return Ok(SelectionResult {
@@ -163,7 +167,7 @@ pub(crate) fn toggle_selection(
         .map(|f| f.id.clone())
         .collect();
     if !to_compute.is_empty() {
-        spawn_token_count_task(app, to_compute);
+        spawn_token_count_task(app.clone(), path.clone(), to_compute);
     }
 
     Ok(SelectionResult {

@@ -1,14 +1,15 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     sync::{OnceLock, RwLock},
     time::UNIX_EPOCH,
 };
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Wry};
+use tauri_plugin_store::StoreExt;
 use tiktoken_rs::cl100k_base;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 struct CacheEntry {
     mtime_ms: u128,
     size: u64,
@@ -16,9 +17,21 @@ struct CacheEntry {
 }
 
 static TOKEN_CACHE: OnceLock<RwLock<HashMap<String, CacheEntry>>> = OnceLock::new();
+static LOADED_DIRS: OnceLock<RwLock<HashSet<String>>> = OnceLock::new();
 
 fn cache() -> &'static RwLock<HashMap<String, CacheEntry>> {
     TOKEN_CACHE.get_or_init(|| RwLock::new(HashMap::new()))
+}
+
+fn loaded_dirs() -> &'static RwLock<HashSet<String>> {
+    LOADED_DIRS.get_or_init(|| RwLock::new(HashSet::new()))
+}
+
+const STORE_FILE: &str = "store.json";
+const TOKEN_CACHE_KEY_PREFIX: &str = "TOKEN_CACHE:";
+
+fn cache_store_key(root: &str) -> String {
+    format!("{}:{}", TOKEN_CACHE_KEY_PREFIX, root)
 }
 
 fn file_sig(path: &str) -> Option<(u128, u64)> {
@@ -73,10 +86,64 @@ struct TokenCountsEvent {
 
 const BATCH_SIZE: usize = 25;
 
-pub fn spawn_token_count_task(app: AppHandle, file_ids: Vec<String>) {
+/// Load cached counts for a directory from the Tauri store (once per run) and merge into memory.
+pub fn ensure_cache_loaded_for_dir(app: &AppHandle<Wry>, root: &str) {
+    {
+        if let Ok(loaded) = loaded_dirs().read() {
+            if loaded.contains(root) {
+                return;
+            }
+        }
+    }
+
+    // Load from store and merge.
+    if let Ok(store) = app.store(STORE_FILE) {
+        let key = cache_store_key(root);
+        if let Some(value) = store.get(&key) {
+            if let Ok(map) = serde_json::from_value::<HashMap<String, CacheEntry>>(value.clone()) {
+                if let Ok(mut c) = cache().write() {
+                    for (path, entry) in map {
+                        c.insert(path, entry);
+                    }
+                }
+            }
+        }
+        store.close_resource();
+    }
+
+    if let Ok(mut loaded) = loaded_dirs().write() {
+        loaded.insert(root.to_string());
+    }
+}
+
+fn save_cache_batch_to_store(app: &AppHandle<Wry>, root: &str, batch: &[(String, CacheEntry)]) {
+    if batch.is_empty() {
+        return;
+    }
+
+    if let Ok(store) = app.store(STORE_FILE) {
+        let key = cache_store_key(root);
+        let mut existing: HashMap<String, CacheEntry> = store
+            .get(&key)
+            .and_then(|v| serde_json::from_value::<HashMap<String, CacheEntry>>(v.clone()).ok())
+            .unwrap_or_default();
+
+        for (path, entry) in batch {
+            existing.insert(path.clone(), entry.clone());
+        }
+
+        store.set(&key, serde_json::json!(existing));
+
+        let _ = store.save();
+        store.close_resource();
+    }
+}
+
+pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, file_ids: Vec<String>) {
     std::thread::spawn(move || {
         let bpe = cl100k_base().ok();
         let mut batch: Vec<TokenCountResult> = Vec::new();
+        let mut store_batch: Vec<(String, CacheEntry)> = Vec::new();
 
         for id in file_ids {
             if let Some(count) = get_cached_count(&id) {
@@ -100,6 +167,14 @@ pub fn spawn_token_count_task(app: AppHandle, file_ids: Vec<String>) {
 
                 if mtime_ms != 0 {
                     set_cache(&id, mtime_ms, size, token_count);
+                    store_batch.push((
+                        id.clone(),
+                        CacheEntry {
+                            mtime_ms,
+                            size,
+                            count: token_count,
+                        },
+                    ));
                 }
                 batch.push(TokenCountResult { id, token_count });
             }
@@ -111,10 +186,20 @@ pub fn spawn_token_count_task(app: AppHandle, file_ids: Vec<String>) {
                         files: batch.clone(),
                     },
                 );
+
+                save_cache_batch_to_store(&app, &root, &store_batch);
+
                 batch.clear();
+                store_batch.clear();
             }
         }
 
-        let _ = app.emit("file-token-counts", TokenCountsEvent { files: batch });
+        if !batch.is_empty() {
+            let _ = app.emit("file-token-counts", TokenCountsEvent { files: batch });
+        }
+
+        if !store_batch.is_empty() {
+            save_cache_batch_to_store(&app, &root, &store_batch);
+        }
     });
 }
