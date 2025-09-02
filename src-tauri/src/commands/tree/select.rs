@@ -1,4 +1,4 @@
-use crate::commands::tokenize::spawn_token_count_task;
+use crate::commands::tokenize::{get_cached_count, spawn_token_count_task};
 use crate::commands::tree::cache::cache;
 use crate::commands::tree::index::ensure_index;
 use crate::errors::DirectoryError;
@@ -84,7 +84,7 @@ fn collect_selected_files(tree_index: &TreeIndex, selected: &HashSet<String>) ->
                     Some(FileNode {
                         id: id.clone(),
                         title: n.title.clone(),
-                        token_count: None,
+                        token_count: get_cached_count(id),
                     })
                 } else {
                     None
@@ -114,13 +114,17 @@ pub(crate) fn toggle_selection(
             let indeterminates = compute_indeterminate(tree_index, &set);
             let selected_files = collect_selected_files(tree_index, &set);
 
-            if !selected_files.is_empty() {
-                let file_ids: Vec<String> = selected_files.iter().map(|f| f.id.clone()).collect();
-                spawn_token_count_task(app, file_ids);
+            let to_compute: Vec<String> = selected_files
+                .iter()
+                .filter(|f| f.token_count.is_none())
+                .map(|f| f.id.clone())
+                .collect();
+            if !to_compute.is_empty() {
+                spawn_token_count_task(app, to_compute);
             }
 
             return Ok(SelectionResult {
-                selected: set.clone().into_iter().collect(),
+                selected: set.into_iter().collect(),
                 selected_files,
                 indeterminate: indeterminates.into_iter().collect(),
             });
@@ -153,9 +157,13 @@ pub(crate) fn toggle_selection(
     let indeterminates = compute_indeterminate(tree_index, &set);
     let selected_files = collect_selected_files(tree_index, &set);
 
-    if !selected_files.is_empty() {
-        let file_ids: Vec<String> = selected_files.iter().map(|f| f.id.clone()).collect();
-        spawn_token_count_task(app, file_ids);
+    let to_compute: Vec<String> = selected_files
+        .iter()
+        .filter(|f| f.token_count.is_none())
+        .map(|f| f.id.clone())
+        .collect();
+    if !to_compute.is_empty() {
+        spawn_token_count_task(app, to_compute);
     }
 
     Ok(SelectionResult {
