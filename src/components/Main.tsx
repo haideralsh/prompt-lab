@@ -3,8 +3,15 @@ import { useSidebarContext } from './Sidebar/SidebarContext'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
+interface TokenCountResult {
+  id: string
+  tokenCount: number
+  tokenPercentage: number
+}
+
 type TokenCountsEvent = {
-  files: { id: string; tokenCount: number }[]
+  selectionId: string
+  files: TokenCountResult[]
 }
 
 export function Main() {
@@ -23,10 +30,10 @@ export function Main() {
 
       setSelectedFiles((prev) => {
         const map = new Map(prev.map((f) => [f.id, f]))
-        for (const { id, tokenCount } of files) {
+        for (const { id, tokenCount, tokenPercentage } of files) {
           const node = map.get(id)
           if (node) {
-            map.set(id, { ...node, tokenCount })
+            map.set(id, { ...node, tokenCount, tokenPercentage })
           }
         }
         return Array.from(map.values())
@@ -47,7 +54,7 @@ export function Main() {
                   <span className="text-gray-400">
                     {path.tokenCount == null
                       ? 'counting...'
-                      : `(${path.tokenCount} tokens)`}
+                      : `${path.tokenCount} tokens${path.tokenPercentage == null ? '' : ` (${Math.round(path.tokenPercentage)}%)`}`}
                   </span>
                 </span>
                 <span className="text-xs">{path.id}</span>

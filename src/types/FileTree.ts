@@ -17,7 +17,8 @@ export interface SearchResult {
 export interface FileNode {
   id: Id
   title: string
-  tokenCount: number
+  tokenCount?: number
+  tokenPercentage?: number
 }
 
 export interface SelectionResult {

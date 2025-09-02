@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use std::{
     collections::{HashMap, HashSet},
     fs,
@@ -76,15 +78,26 @@ fn set_cache(path: &str, mtime_ms: u128, size: u64, count: usize) {
 struct TokenCountResult {
     id: String,
     token_count: usize,
+    token_percentage: f64,
 }
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct TokenCountsEvent {
+    selection_id: String,
+    total_token_count: usize,
     files: Vec<TokenCountResult>,
 }
 
 const BATCH_SIZE: usize = 25;
+
+fn selection_id_for(ids: &[String]) -> String {
+    let mut sorted = ids.to_vec();
+    sorted.sort();
+    let mut hasher = DefaultHasher::new();
+    sorted.hash(&mut hasher);
+    format!("{:016x}", hasher.finish())
+}
 
 pub fn ensure_cache_loaded_for_dir(app: &AppHandle<Wry>, root: &str) {
     {
@@ -137,18 +150,17 @@ fn save_cache_batch_to_store(app: &AppHandle<Wry>, root: &str, batch: &[(String,
     }
 }
 
-pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, file_ids: Vec<String>) {
+pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: Vec<String>) {
     std::thread::spawn(move || {
         let bpe = cl100k_base().ok();
-        let mut batch: Vec<TokenCountResult> = Vec::new();
+        let sid = selection_id_for(&selection_ids);
+
+        let mut counts: Vec<(String, usize)> = Vec::with_capacity(selection_ids.len());
         let mut store_batch: Vec<(String, CacheEntry)> = Vec::new();
 
-        for id in file_ids {
+        for id in selection_ids {
             if let Some(count) = get_cached_count(&id) {
-                batch.push(TokenCountResult {
-                    id,
-                    token_count: count,
-                });
+                counts.push((id, count));
             } else {
                 let (mtime_ms, size) = file_sig(&id).unwrap_or((0, 0));
                 let token_count = fs::read(&id)
@@ -173,31 +185,59 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, file_ids: Vec<S
                             count: token_count,
                         },
                     ));
+
+                    if store_batch.len() >= BATCH_SIZE {
+                        save_cache_batch_to_store(&app, &root, &store_batch);
+                        store_batch.clear();
+                    }
                 }
-                batch.push(TokenCountResult { id, token_count });
+
+                counts.push((id, token_count));
             }
+        }
+
+        if !store_batch.is_empty() {
+            save_cache_batch_to_store(&app, &root, &store_batch);
+        }
+
+        let total: usize = counts.iter().map(|(_, c)| *c).sum();
+
+        let mut batch: Vec<TokenCountResult> = Vec::new();
+        for (id, token_count) in counts {
+            let token_percentage = if total > 0 {
+                (token_count as f64 / total as f64) * 100.0
+            } else {
+                0.0
+            };
+
+            batch.push(TokenCountResult {
+                id,
+                token_count,
+                token_percentage,
+            });
 
             if batch.len() >= BATCH_SIZE {
                 let _ = app.emit(
                     "file-token-counts",
                     TokenCountsEvent {
+                        selection_id: sid.clone(),
+                        total_token_count: total,
                         files: batch.clone(),
                     },
                 );
-
-                save_cache_batch_to_store(&app, &root, &store_batch);
-
                 batch.clear();
-                store_batch.clear();
             }
         }
 
         if !batch.is_empty() {
-            let _ = app.emit("file-token-counts", TokenCountsEvent { files: batch });
-        }
-
-        if !store_batch.is_empty() {
-            save_cache_batch_to_store(&app, &root, &store_batch);
+            let _ = app.emit(
+                "file-token-counts",
+                TokenCountsEvent {
+                    selection_id: sid,
+                    total_token_count: total,
+                    files: batch,
+                },
+            );
         }
     });
 }
