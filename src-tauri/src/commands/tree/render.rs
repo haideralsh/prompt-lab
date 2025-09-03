@@ -81,7 +81,7 @@ fn render_dir(node: &DirEntry, prefix: &str, lines: &mut Vec<String>) {
             || (!dir_names.is_empty() && i + dir_names.len() == total - 1);
         let connector = if is_last { "└── " } else { "├── " };
 
-        lines.push(format!("{prefix}{connector}{fname} *"));
+        lines.push(format!("{prefix}{connector}{fname}"));
     }
 }
 
