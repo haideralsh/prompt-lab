@@ -71,7 +71,7 @@ export function Main() {
                       : `${path.tokenCount} tokens${
                           path.tokenPercentage == null
                             ? ''
-                            : ` (${Math.round(path.tokenPercentage)}%)`
+                            : ` (${Math.ceil(path.tokenPercentage)}%)`
                         }`}
                   </span>
                 </span>

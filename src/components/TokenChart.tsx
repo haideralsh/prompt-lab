@@ -24,25 +24,27 @@ const colors = [
   '#6b7280', // gray for "other"
 ]
 
+const FILES_TO_DISPLAY_COUNT = 6
+
 export default function TokenChart({
   files,
   totalTokenCount,
 }: TokenChartProps) {
-  const topFiles = files.slice(0, 6).map((file) => ({
+  const topFiles = files.slice(0, FILES_TO_DISPLAY_COUNT).map((file) => ({
     ...file,
     percentage: file.tokenCount
-      ? Math.round((file.tokenCount / totalTokenCount) * 100)
+      ? Math.ceil((file.tokenCount / totalTokenCount) * 100)
       : 0,
   }))
 
-  const remainingFiles = files.slice(6)
+  const remainingFiles = files.slice(FILES_TO_DISPLAY_COUNT)
   const remainingTokens = remainingFiles.reduce(
     (sum, file) => sum + (file.tokenCount || 0),
     0,
   )
   const otherPercentage =
     remainingTokens > 0
-      ? Math.round((remainingTokens / totalTokenCount) * 100)
+      ? Math.ceil((remainingTokens / totalTokenCount) * 100)
       : 0
 
   const chartData = [...topFiles]
@@ -59,7 +61,7 @@ export default function TokenChart({
 
   return (
     <div className="w-full mx-auto mt-6">
-      <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden mb-3">
+      <div className="relative h-3 bg-gray-700 rounded-full overflow-hidden mb-3">
         {chartData.map((file, index) => (
           <div
             key={file.id}
