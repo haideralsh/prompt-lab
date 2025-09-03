@@ -8,6 +8,8 @@ type SidebarContext = {
   setDirectory: (root: DirectoryInfo) => void
   tree: Tree
   setTree: (tree: Tree) => void
+  filteredTree: Tree
+  setFilteredTree: (tree: Tree) => void
   selectedNodes: Set<Key>
   setSelectedNodes: (nodes: Set<Key>) => void
   selectedFiles: FileNode[]
@@ -40,6 +42,7 @@ export function SidebarContextProvider(props: SidebarContextProps) {
     new Set()
   )
   const [tree, setTree] = useState<Tree>([])
+  const [filteredTree, setFilteredTree] = useState<Tree>([])
   const [directory, setDirectory] = useState<DirectoryInfo | null>(null)
 
   return (
@@ -51,10 +54,12 @@ export function SidebarContextProvider(props: SidebarContextProps) {
         setSelectedFiles,
         indeterminateNodes,
         setIndeterminateNodes,
-        tree,
-        setTree,
+        filteredTree,
+        setFilteredTree,
         directory,
         setDirectory,
+        tree,
+        setTree,
       }}
     >
       {props.children}

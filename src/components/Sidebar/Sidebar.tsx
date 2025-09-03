@@ -16,7 +16,7 @@ function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
 }
 
 export function Sidebar() {
-  const { tree, setTree, directory } = useSidebarContext()
+  const { filteredTree, setFilteredTree, directory } = useSidebarContext()
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
 
   async function search(query: string) {
@@ -25,7 +25,7 @@ export function Sidebar() {
       term: query.trim(),
     })
 
-    setTree(results)
+    setFilteredTree(results)
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
@@ -66,7 +66,7 @@ export function Sidebar() {
 
       <div className="mt-3 flex-1">
         <div className="h-full overflow-y-auto rounded-lg border border-gray-200 p-1">
-          {tree.length === 0 ? (
+          {filteredTree.length === 0 ? (
             <div className="flex h-full items-center justify-center text-sm text-gray-500">
               No results found
             </div>
@@ -74,7 +74,7 @@ export function Sidebar() {
             <Tree
               aria-label="directory tree"
               selectionMode="multiple"
-              items={tree}
+              items={filteredTree}
               expandedKeys={expandedKeys}
               onExpandedChange={(keys) => setExpandedKeys(new Set(keys))}
               className="w-full"

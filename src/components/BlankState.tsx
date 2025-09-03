@@ -9,7 +9,7 @@ import { useSidebarContext } from './Sidebar/SidebarContext'
 
 export function LaunchScreen() {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([])
-  const { setTree, setDirectory } = useSidebarContext()
+  const { setTree, setDirectory, setFilteredTree } = useSidebarContext()
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -36,6 +36,7 @@ export function LaunchScreen() {
 
       setDirectory(directory)
       setTree(resp.results)
+      setFilteredTree(resp.results)
       invoke('add_recent_directory', { directory })
     } catch (err) {
       const e = err as DirectoryError

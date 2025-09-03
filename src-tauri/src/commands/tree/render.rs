@@ -1,4 +1,5 @@
-use std::collections::{BTreeMap, BTreeSet};
+use crate::models::DirectoryNode;
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::path::{Path, PathBuf};
 
 #[derive(Default)]
@@ -106,5 +107,39 @@ pub fn render_selected_tree(files: &[PathBuf]) -> String {
 
     let mut lines: Vec<String> = Vec::new();
     render_dir(&tree, "", &mut lines);
+    lines.join("\n")
+}
+
+pub fn render_full_tree(nodes: &[DirectoryNode], selected: &HashSet<String>) -> String {
+    fn render_nodes(
+        nodes: &[DirectoryNode],
+        prefix: &str,
+        lines: &mut Vec<String>,
+        selected: &HashSet<String>,
+    ) {
+        for (idx, node) in nodes.iter().enumerate() {
+            let is_last = idx == nodes.len() - 1;
+            let connector = if is_last { "└── " } else { "├── " };
+
+            let mut title = node.title.clone();
+            if selected.contains(&node.id) {
+                title.push_str(" *");
+            }
+
+            lines.push(format!("{prefix}{connector}{title}"));
+
+            if node.node_type == "directory" {
+                let child_prefix = format!("{prefix}{}", if is_last { "    " } else { "│   " });
+                render_nodes(&node.children, &child_prefix, lines, selected);
+            }
+        }
+    }
+
+    if nodes.is_empty() {
+        return String::new();
+    }
+
+    let mut lines: Vec<String> = Vec::new();
+    render_nodes(nodes, "", &mut lines, selected);
     lines.join("\n")
 }

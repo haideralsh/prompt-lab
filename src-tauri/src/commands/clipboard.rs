@@ -1,9 +1,11 @@
 use arboard::Clipboard;
+use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::commands::tree::render::render_selected_tree;
+use crate::commands::tree::render::{render_full_tree, render_selected_tree};
 use crate::errors::{codes, ClipboardError};
+use crate::models::DirectoryNode;
 
 const FILE_CONTENTS_OPENING_TAG: &str = "<file_contents>";
 const FILE_CONTENTS_CLOSING_TAG: &str = "</file_contents>";
@@ -35,8 +37,21 @@ fn concatenate_files(files: &[PathBuf]) -> Result<String, ClipboardError> {
     Ok(concatenated_files)
 }
 
-fn build_clipboard_content(root: &str, files: &[PathBuf]) -> Result<String, ClipboardError> {
-    let tree = render_selected_tree(files);
+fn build_clipboard_content(
+    full_tree: &[DirectoryNode],
+    tree_mode: &str,
+    root: &str,
+    selected_nodes: &HashSet<String>,
+    files: &[PathBuf],
+) -> Result<String, ClipboardError> {
+    let mut tree = String::new();
+
+    if tree_mode == "selected" {
+        tree = render_selected_tree(files);
+    } else if tree_mode == "full" {
+        tree = render_full_tree(full_tree, selected_nodes);
+    }
+
     let concatenated_files = concatenate_files(files)?;
 
     Ok(format!(
@@ -53,6 +68,9 @@ fn build_clipboard_content(root: &str, files: &[PathBuf]) -> Result<String, Clip
 
 #[tauri::command]
 pub(crate) fn copy_files_to_clipboard(
+    tree_mode: &str,
+    full_tree: Vec<DirectoryNode>,
+    selected_nodes: HashSet<String>,
     root: &str,
     paths: Vec<String>,
 ) -> Result<(), ClipboardError> {
@@ -65,7 +83,8 @@ pub(crate) fn copy_files_to_clipboard(
         }
     }
 
-    let payload = build_clipboard_content(root, &all_files)?;
+    let payload =
+        build_clipboard_content(&full_tree, tree_mode, root, &selected_nodes, &all_files)?;
 
     let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
         code: codes::CLIPBOARD_WRITE_ERROR,
