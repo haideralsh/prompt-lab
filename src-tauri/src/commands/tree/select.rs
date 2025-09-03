@@ -96,6 +96,18 @@ fn collect_selected_files(tree_index: &TreeIndex, selected: &HashSet<String>) ->
         .collect()
 }
 
+// fn sort_selected_files(mut collected: Vec<FileNode>) -> Vec<FileNode> {
+//     collected.sort_by(|a, b| {
+//         let ac = a.token_count.unwrap_or(usize::MAX - usize::MAX);
+//         let bc = b.token_count.unwrap_or(usize::MAX - usize::MAX);
+//         bc.cmp(&ac)
+//             .then(a.title.cmp(&b.title))
+//             .then(a.id.cmp(&b.id))
+//     });
+
+//     collected
+// }
+
 #[tauri::command]
 pub(crate) fn toggle_selection(
     app: AppHandle<Wry>,
@@ -118,10 +130,7 @@ pub(crate) fn toggle_selection(
             let indeterminates = compute_indeterminate(tree_index, &set);
             let selected_files = collect_selected_files(tree_index, &set);
 
-            let selection_ids: Vec<String> = selected_files
-                .iter()
-                .map(|f| f.id.clone())
-                .collect();
+            let selection_ids: Vec<String> = selected_files.iter().map(|f| f.id.clone()).collect();
             if !selection_ids.is_empty() {
                 spawn_token_count_task(app.clone(), path.clone(), selection_ids);
             }
@@ -160,10 +169,7 @@ pub(crate) fn toggle_selection(
     let indeterminates = compute_indeterminate(tree_index, &set);
     let selected_files = collect_selected_files(tree_index, &set);
 
-    let selection_ids: Vec<String> = selected_files
-        .iter()
-        .map(|f| f.id.clone())
-        .collect();
+    let selection_ids: Vec<String> = selected_files.iter().map(|f| f.id.clone()).collect();
     if !selection_ids.is_empty() {
         spawn_token_count_task(app.clone(), path.clone(), selection_ids);
     }

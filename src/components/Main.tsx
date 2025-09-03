@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSidebarContext } from './Sidebar/SidebarContext'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+import TokenChart from './TokenChart'
 
 interface TokenCountResult {
   id: string
@@ -11,11 +12,13 @@ interface TokenCountResult {
 
 type TokenCountsEvent = {
   selectionId: string
+  totalTokenCount: number
   files: TokenCountResult[]
 }
 
 export function Main() {
   const { selectedFiles, setSelectedFiles } = useSidebarContext()
+  const [totalTokenCount, setTotalTokenCount] = useState(0)
 
   async function handleCopyToClipboard() {
     await invoke<any>('copy_files_to_clipboard', {
@@ -25,9 +28,10 @@ export function Main() {
 
   useEffect(() => {
     listen<TokenCountsEvent>('file-token-counts', (event) => {
-      const { files } = event.payload
+      const { files, totalTokenCount: eventTotalTokenCount } = event.payload
       if (!files?.length) return
 
+      setTotalTokenCount(eventTotalTokenCount)
       setSelectedFiles((prev) => {
         const map = new Map(prev.map((f) => [f.id, f]))
         for (const { id, tokenCount, tokenPercentage } of files) {
@@ -41,13 +45,22 @@ export function Main() {
     })
   }, [])
 
+  const sortedFiles = useMemo(() => {
+    return selectedFiles.sort((a, b) => {
+      if (a.tokenCount == null) return 1
+      if (b.tokenCount == null) return -1
+
+      return b.tokenCount - a.tokenCount
+    })
+  }, [selectedFiles])
+
   return (
     <section className="flex-1 p-4">
       <h2 className="text-sm font-semibold text-white mb-2">Selected files</h2>
-      {selectedFiles.length > 0 ? (
+      {sortedFiles.length > 0 ? (
         <div className="flex flex-col gap-4">
           <ul className="space-y-4 text-sm text-white">
-            {Array.from(selectedFiles).map((path) => (
+            {Array.from(sortedFiles).map((path) => (
               <li key={path.id} className="flex flex-col gap-2">
                 <span className="flex items-center gap-1">
                   <span className="font-semibold">{path.title}</span>
@@ -68,6 +81,7 @@ export function Main() {
           >
             Copy to Clipboard
           </button>
+          <TokenChart files={sortedFiles} totalTokenCount={totalTokenCount} />
         </div>
       ) : (
         <div className="text-sm text-white">No files selected.</div>
