@@ -2,10 +2,14 @@ use arboard::Clipboard;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::commands::tree::render::render_selected_tree;
 use crate::errors::{codes, ClipboardError};
 
-const OPENING_TAG: &str = "<file_contents>\n";
-const CLOSING_TAG: &str = "</file_contents>\n";
+const FILE_CONTENTS_OPENING_TAG: &str = "<file_contents>";
+const FILE_CONTENTS_CLOSING_TAG: &str = "</file_contents>";
+
+const TREE_OPENING_TAG: &str = "<file_map>";
+const TREE_CLOSING_TAG: &str = "</file_map>";
 
 fn concatenate_files(files: &[PathBuf]) -> Result<String, ClipboardError> {
     let mut concatenated_files = String::new();
@@ -28,14 +32,30 @@ fn concatenate_files(files: &[PathBuf]) -> Result<String, ClipboardError> {
         ));
     }
 
+    Ok(concatenated_files)
+}
+
+fn build_clipboard_content(root: &str, files: &[PathBuf]) -> Result<String, ClipboardError> {
+    let tree = render_selected_tree(files);
+    let concatenated_files = concatenate_files(files)?;
+
     Ok(format!(
-        "{}{}{}",
-        OPENING_TAG, concatenated_files, CLOSING_TAG
+        "{}\n{}\n{}\n{}\n\n{}\n{}\n{}\n",
+        TREE_OPENING_TAG,
+        root,
+        tree,
+        TREE_CLOSING_TAG,
+        FILE_CONTENTS_OPENING_TAG,
+        concatenated_files,
+        FILE_CONTENTS_CLOSING_TAG
     ))
 }
 
 #[tauri::command]
-pub(crate) fn copy_files_to_clipboard(paths: Vec<String>) -> Result<(), ClipboardError> {
+pub(crate) fn copy_files_to_clipboard(
+    root: &str,
+    paths: Vec<String>,
+) -> Result<(), ClipboardError> {
     let mut all_files: Vec<PathBuf> = Vec::new();
 
     for p in paths {
@@ -45,7 +65,7 @@ pub(crate) fn copy_files_to_clipboard(paths: Vec<String>) -> Result<(), Clipboar
         }
     }
 
-    let payload = concatenate_files(&all_files)?;
+    let payload = build_clipboard_content(root, &all_files)?;
 
     let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
         code: codes::CLIPBOARD_WRITE_ERROR,

@@ -17,11 +17,12 @@ type TokenCountsEvent = {
 }
 
 export function Main() {
-  const { selectedFiles, setSelectedFiles } = useSidebarContext()
+  const { directory, selectedFiles, setSelectedFiles } = useSidebarContext()
   const [totalTokenCount, setTotalTokenCount] = useState(0)
 
   async function handleCopyToClipboard() {
-    await invoke<any>('copy_files_to_clipboard', {
+    await invoke('copy_files_to_clipboard', {
+      root: directory?.path ?? '',
       paths: selectedFiles.map((file) => file.id),
     })
   }
@@ -67,7 +68,11 @@ export function Main() {
                   <span className="text-gray-400">
                     {path.tokenCount == null
                       ? 'counting...'
-                      : `${path.tokenCount} tokens${path.tokenPercentage == null ? '' : ` (${Math.round(path.tokenPercentage)}%)`}`}
+                      : `${path.tokenCount} tokens${
+                          path.tokenPercentage == null
+                            ? ''
+                            : ` (${Math.round(path.tokenPercentage)}%)`
+                        }`}
                   </span>
                 </span>
                 <span className="text-xs">{path.id}</span>
