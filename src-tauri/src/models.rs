@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DirEntryInfo {
     pub name: String,
@@ -10,7 +10,7 @@ pub struct DirEntryInfo {
 }
 
 // TODO: why do we have both this and the NodeInfo?
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DirectoryNode {
     pub id: String,
@@ -20,7 +20,7 @@ pub struct DirectoryNode {
     pub children: Vec<DirectoryNode>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FileNode {
     pub id: String,
@@ -28,14 +28,14 @@ pub struct FileNode {
     pub token_count: Option<usize>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SearchMatch {
     pub matched_ids_count: usize,
     pub results: Vec<DirectoryNode>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PickedDirectory {
     pub name: String,
