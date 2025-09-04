@@ -3,8 +3,12 @@ import { Key, Tree } from 'react-aria-components'
 import { SearchBar } from './SearchBar'
 import { useSidebarContext } from './SidebarContext'
 import { TreeNodeItem } from './TreeNodeItem'
-import type { TreeNode, SearchResult } from '../../types/FileTree'
-import { ChevronsDownUpIcon } from 'lucide-react'
+import type {
+  TreeNode,
+  SearchResult,
+  SelectionResult,
+} from '../../types/FileTree'
+import { ChevronsDownUpIcon, SquareXIcon } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
@@ -16,7 +20,14 @@ function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
 }
 
 export function Sidebar() {
-  const { filteredTree, setFilteredTree, directory } = useSidebarContext()
+  const {
+    filteredTree,
+    setFilteredTree,
+    directory,
+    setSelectedFiles,
+    setSelectedNodes,
+    setIndeterminateNodes,
+  } = useSidebarContext()
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
 
   async function search(query: string) {
@@ -29,7 +40,7 @@ export function Sidebar() {
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
-        : new Set()
+        : new Set(),
     )
   }
 
@@ -37,9 +48,19 @@ export function Sidebar() {
     setExpandedKeys(new Set())
   }
 
+  async function clearSelection() {
+    const selection = await invoke<SelectionResult>('clear_selection', {
+      path: directory?.path,
+    })
+
+    setSelectedNodes(new Set(selection.selected))
+    setSelectedFiles(selection.selectedFiles)
+    setIndeterminateNodes(new Set(selection.indeterminate))
+  }
+
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex flex-col gap-1.5 justify-between">
         {directory?.name && (
           <div className="text-sm font-semibold text-white">
             {directory.name}
@@ -47,8 +68,18 @@ export function Sidebar() {
         )}
         <div className="flex items-center gap-2">
           <button
+            onClick={clearSelection}
+            className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-gray-400"
+            title="Clear selection"
+          >
+            <span aria-hidden className="text-base leading-none">
+              <SquareXIcon className="size-3" />
+            </span>
+            <span>Clear selection</span>
+          </button>
+          <button
             onClick={collapseAll}
-            className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-gray-700"
+            className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-gray-400"
             title="Collapse all"
           >
             <span aria-hidden className="text-base leading-none">
