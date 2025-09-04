@@ -38,27 +38,17 @@ fn concatenate_files(files: &[PathBuf]) -> Result<String, ClipboardError> {
 }
 
 fn build_clipboard_content(
-    full_tree: &[DirectoryNode],
-    tree_mode: &str,
+    files: Vec<PathBuf>,
+    rendered_tree: &str,
     root: &str,
-    selected_nodes: &HashSet<String>,
-    files: &[PathBuf],
 ) -> Result<String, ClipboardError> {
-    let mut tree = String::new();
-
-    if tree_mode == "selected" {
-        tree = render_selected_tree(files);
-    } else if tree_mode == "full" {
-        tree = render_full_tree(full_tree, selected_nodes);
-    }
-
-    let concatenated_files = concatenate_files(files)?;
+    let concatenated_files = concatenate_files(&files)?;
 
     Ok(format!(
         "{}\n{}\n{}\n{}\n\n{}\n{}\n{}\n",
         TREE_OPENING_TAG,
         root,
-        tree,
+        rendered_tree,
         TREE_CLOSING_TAG,
         FILE_CONTENTS_OPENING_TAG,
         concatenated_files,
@@ -71,20 +61,26 @@ pub(crate) fn copy_files_to_clipboard(
     tree_mode: &str,
     full_tree: Vec<DirectoryNode>,
     selected_nodes: HashSet<String>,
-    root: &str,
-    paths: Vec<String>,
+    root: String,
 ) -> Result<(), ClipboardError> {
     let mut all_files: Vec<PathBuf> = Vec::new();
 
-    for p in paths {
-        let pb = PathBuf::from(&p);
+    for node in &selected_nodes {
+        let pb = PathBuf::from(&node);
         if pb.is_file() {
             all_files.push(pb);
         }
     }
 
-    let payload =
-        build_clipboard_content(&full_tree, tree_mode, root, &selected_nodes, &all_files)?;
+    let mut tree = String::new();
+
+    if tree_mode == "selected" {
+        tree = render_selected_tree(&all_files);
+    } else if tree_mode == "full" {
+        tree = render_full_tree(&full_tree, &selected_nodes);
+    }
+
+    let payload = build_clipboard_content(all_files, &tree, &root)?;
 
     let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
         code: codes::CLIPBOARD_WRITE_ERROR,

@@ -31,10 +31,10 @@ export function Main() {
 
   async function handleCopyToClipboard() {
     await invoke('copy_files_to_clipboard', {
-      tree_mode: getTreeMode(treeFormat),
-      full_tree: tree,
-      root: directory?.path!,
-      selected_nodes: Array.from(selectedNodes),
+      treeMode: getTreeMode(treeFormat),
+      fullTree: tree,
+      root: directory?.path ?? '',
+      selectedNodes: Array.from(selectedNodes).map(String),
       paths: selectedFiles.map((file) => file.id),
     })
   }
