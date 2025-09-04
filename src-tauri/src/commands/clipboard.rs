@@ -26,7 +26,7 @@ fn concatenate_files(files: &[PathBuf]) -> Result<String, ClipboardError> {
         let ext = file.extension().and_then(|ext| ext.to_str()).unwrap_or("");
         let wrapper_start = format!("```{}\n", ext);
         let text = String::from_utf8_lossy(&bytes);
-        let wrapper_end = "```\n\n";
+        let wrapper_end = "```\n";
 
         concatenated_files.push_str(&format!(
             "{}{}{}{}",
