@@ -17,6 +17,13 @@ type TokenCountsEvent = {
   files: TokenCountResult[]
 }
 
+interface GitChange {
+  path: string
+  changeType: string
+}
+
+type GitStatusResult = GitChange[] | null
+
 function getTreeMode(treeFormat: Set<Key>): 'selected' | 'full' | undefined {
   if (treeFormat.has('selected')) return 'selected'
   if (treeFormat.has('full')) return 'full'
@@ -37,6 +44,22 @@ export function Main() {
       selectedNodes: Array.from(selectedNodes).map(String),
       paths: selectedFiles.map((file) => file.id),
     })
+  }
+
+  async function printGitStatus() {
+    const change = await invoke<GitStatusResult>('git_status', {
+      root: directory?.path,
+    })
+
+    if (change) {
+      if (change.length === 0) {
+        console.log('No changes')
+      } else {
+        console.log(change)
+      }
+    } else {
+      console.log('Not a git repository')
+    }
   }
 
   useEffect(() => {
@@ -218,6 +241,14 @@ export function Main() {
       ) : (
         <div className="text-sm text-white">No files selected.</div>
       )}
+
+      <button
+        onClick={printGitStatus}
+        type="button"
+        className="flex-grow rounded-sm bg-gray-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 dark:bg-gray-500 dark:shadow-none dark:hover:bg-gray-400 dark:focus-visible:outline-gray-500"
+      >
+        Git status
+      </button>
     </section>
   )
 }
