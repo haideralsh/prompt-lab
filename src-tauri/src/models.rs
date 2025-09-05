@@ -64,7 +64,7 @@ pub struct NodeTree {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SelectionResult {
-    pub selected: Vec<String>,
+    pub selected_nodes: Vec<String>,
     pub indeterminate: Vec<String>,
     pub selected_files: Vec<FileNode>,
 }

@@ -53,7 +53,7 @@ export function Sidebar() {
       path: directory?.path,
     })
 
-    setSelectedNodes(new Set(selection.selected))
+    setSelectedNodes(new Set(selection.selectedNodes))
     setSelectedFiles(selection.selectedFiles)
     setIndeterminateNodes(new Set(selection.indeterminate))
   }

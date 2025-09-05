@@ -42,7 +42,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       current: Array.from(selectedNodes) as string[],
       id: item.id,
     })
-    setSelectedNodes(new Set(selection.selected))
+    setSelectedNodes(new Set(selection.selectedNodes))
     setSelectedFiles(selection.selectedFiles)
     setIndeterminateNodes(new Set(selection.indeterminate))
   }

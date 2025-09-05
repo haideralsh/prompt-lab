@@ -124,7 +124,7 @@ pub(crate) fn toggle_selection(
             }
 
             return Ok(SelectionResult {
-                selected: set.into_iter().collect(),
+                selected_nodes: set.into_iter().collect(),
                 selected_files,
                 indeterminate: indeterminates.into_iter().collect(),
             });
@@ -163,7 +163,7 @@ pub(crate) fn toggle_selection(
     }
 
     Ok(SelectionResult {
-        selected: set.into_iter().collect(),
+        selected_nodes: set.into_iter().collect(),
         selected_files,
         indeterminate: indeterminates.into_iter().collect(),
     })
@@ -188,7 +188,7 @@ pub(crate) fn clear_selection(
     let selected_files = collect_selected_files(tree_index, &set);
 
     Ok(SelectionResult {
-        selected: Vec::new(),
+        selected_nodes: Vec::new(),
         selected_files,
         indeterminate: indeterminates.into_iter().collect(),
     })

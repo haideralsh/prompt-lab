@@ -22,7 +22,7 @@ export interface FileNode {
 }
 
 export interface SelectionResult {
-  selected: Id[]
+  selectedNodes: Id[]
   indeterminate: Id[]
   selectedFiles: FileNode[]
 }
