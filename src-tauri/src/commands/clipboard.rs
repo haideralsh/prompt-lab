@@ -10,14 +10,24 @@ use crate::models::DirectoryNode;
 const FILE_CONTENTS_OPENING_TAG: &str = "<file_contents>";
 const FILE_CONTENTS_CLOSING_TAG: &str = "</file_contents>";
 
-const TREE_OPENING_TAG: &str = "<file_map>";
-const TREE_CLOSING_TAG: &str = "</file_map>";
+const TREE_OPENING_TAG: &str = "<file_tree>";
+const TREE_CLOSING_TAG: &str = "</file_tree>";
+const TREE_LEGEND: &str = "Nodes marked with an asterisk (*) are selected";
 
-fn concatenate_files(files: &[PathBuf]) -> Result<String, ClipboardError> {
+fn concatenate_files(selected_files: &HashSet<String>) -> Result<String, ClipboardError> {
     let mut concatenated_files = String::new();
 
-    for file in files {
-        let bytes = fs::read(file).map_err(|_| ClipboardError {
+    let mut file_strs: Vec<&String> = selected_files.iter().collect();
+    file_strs.sort();
+
+    for file_str in file_strs {
+        let file = PathBuf::from(file_str);
+
+        if !file.is_file() {
+            continue;
+        }
+
+        let bytes = fs::read(&file).map_err(|_| ClipboardError {
             code: codes::FILE_READ_ERROR,
             message: Some(format!("Failed to read file: {}", file.display())),
         })?;
@@ -38,11 +48,11 @@ fn concatenate_files(files: &[PathBuf]) -> Result<String, ClipboardError> {
 }
 
 fn build_clipboard_content(
-    files: Vec<PathBuf>,
+    selected_nodes: &HashSet<String>,
     rendered_tree: &str,
     root: &str,
 ) -> Result<String, ClipboardError> {
-    let concatenated_files = concatenate_files(&files)?;
+    let concatenated_files = concatenate_files(selected_nodes)?;
 
     if rendered_tree.is_empty() {
         return Ok(format!(
@@ -52,10 +62,11 @@ fn build_clipboard_content(
     }
 
     Ok(format!(
-        "{}\n{}\n{}\n{}\n\n{}\n{}\n{}\n",
+        "{}\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n{}\n",
         TREE_OPENING_TAG,
         root,
         rendered_tree,
+        TREE_LEGEND,
         TREE_CLOSING_TAG,
         FILE_CONTENTS_OPENING_TAG,
         concatenated_files,
@@ -70,24 +81,15 @@ pub(crate) fn copy_files_to_clipboard(
     selected_nodes: HashSet<String>,
     root: String,
 ) -> Result<(), ClipboardError> {
-    let mut all_files: Vec<PathBuf> = Vec::new();
-
-    for node in &selected_nodes {
-        let pb = PathBuf::from(&node);
-        if pb.is_file() {
-            all_files.push(pb);
-        }
-    }
-
     let mut rendered_tree = String::new();
 
     match tree_mode {
-        "selected" => rendered_tree = render_selected_tree(&all_files),
+        "selected" => rendered_tree = render_selected_tree(&full_tree, &selected_nodes),
         "full" => rendered_tree = render_full_tree(&full_tree, &selected_nodes),
         "none" | _ => (),
     }
 
-    let payload = build_clipboard_content(all_files, &rendered_tree, &root)?;
+    let payload = build_clipboard_content(&selected_nodes, &rendered_tree, &root)?;
 
     let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
         code: codes::CLIPBOARD_WRITE_ERROR,
