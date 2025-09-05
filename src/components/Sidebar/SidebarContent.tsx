@@ -1,0 +1,120 @@
+import { useState } from 'react'
+import { Key, Tree } from 'react-aria-components'
+import { SearchBar } from './SearchBar'
+import { useSidebarContext } from './SidebarContext'
+import { TreeNodeItem } from './TreeNodeItem'
+import type {
+  TreeNode,
+  SearchResult,
+  SelectionResult,
+} from '../../types/FileTree'
+import { ChevronsDownUpIcon, SquareXIcon } from 'lucide-react'
+import { invoke } from '@tauri-apps/api/core'
+
+function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
+  acc.push(item.id)
+  if (item.type === 'directory' && item.children) {
+    for (const c of item.children) expandAll(c, acc)
+  }
+  return acc
+}
+
+export function SidebarContent() {
+  const {
+    filteredTree,
+    setFilteredTree,
+    directory,
+    setSelectedFiles,
+    setSelectedNodes,
+    setIndeterminateNodes,
+  } = useSidebarContext()
+  const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
+
+  async function search(query: string) {
+    const { results } = await invoke<SearchResult>('search_tree', {
+      path: directory?.path,
+      term: query.trim(),
+    })
+
+    setFilteredTree(results)
+    setExpandedKeys(
+      query.trim()
+        ? new Set(results.flatMap((result) => expandAll(result)))
+        : new Set(),
+    )
+  }
+
+  function collapseAll() {
+    setExpandedKeys(new Set())
+  }
+
+  async function clearSelection() {
+    const selection = await invoke<SelectionResult>('clear_selection', {
+      path: directory?.path,
+    })
+
+    setSelectedNodes(new Set(selection.selectedNodes))
+    setSelectedFiles(selection.selectedFiles)
+    setIndeterminateNodes(new Set(selection.indeterminate))
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex flex-col gap-1.5 justify-between p-4">
+        {directory?.name && (
+          <div className="text-sm font-semibold text-white">
+            {directory.name}
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={clearSelection}
+            className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-gray-400"
+            title="Clear selection"
+          >
+            <span aria-hidden className="text-base leading-none">
+              <SquareXIcon className="size-3" />
+            </span>
+            <span>Clear selection</span>
+          </button>
+          <button
+            onClick={collapseAll}
+            className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-gray-400"
+            title="Collapse all"
+          >
+            <span aria-hidden className="text-base leading-none">
+              <ChevronsDownUpIcon className="size-3" />
+            </span>
+            <span>Collapse all</span>
+          </button>
+        </div>
+      </div>
+
+      <SearchBar
+        onChange={(value) => search(value)}
+        onClear={() => search('')}
+      />
+
+      <div className="mt-3 flex-1">
+        <div className="h-full overflow-y-auto rounded-lg p-1">
+          {filteredTree.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-sm text-gray-500">
+              No results found
+            </div>
+          ) : (
+            <Tree
+              aria-label="directory tree"
+              selectionMode="multiple"
+              items={filteredTree}
+              expandedKeys={expandedKeys}
+              onExpandedChange={(keys) => setExpandedKeys(new Set(keys))}
+              className="w-full"
+            >
+              {(item: TreeNode) => <TreeNodeItem item={item} />}
+            </Tree>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

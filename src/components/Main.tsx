@@ -127,7 +127,7 @@ export function Main() {
               <ToggleButton
                 id="none"
                 className="
-                flex-grow
+                        flex-grow
                         z-10
                         -ml-0
                         rounded-none
@@ -243,7 +243,6 @@ export function Main() {
       ) : (
         <div className="text-sm text-white">No files selected.</div>
       )}
-
       <button
         onClick={printGitStatus}
         type="button"

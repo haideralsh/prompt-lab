@@ -1,20 +1,14 @@
-import { Sidebar } from './components/Sidebar/Sidebar'
+import { SidebarContent } from './components/Sidebar/SidebarContent'
 import { LaunchScreen } from './components/BlankState'
 import { useSidebarContext } from './components/Sidebar/SidebarContext'
 import { Main } from './components/Main'
+import { ResizableLayout } from './components/Sidebar/Sidebar'
 
 function App() {
   const { directory } = useSidebarContext()
 
   if (directory)
-    return (
-      <main className="min-h-dvh flex text-[#D0D0D0] bg-black">
-        <aside className="w-72 shrink-0 border-r border-gray-200 p-4 flex flex-col">
-          <Sidebar />
-        </aside>
-        <Main />
-      </main>
-    )
+    return <ResizableLayout sidebar={<SidebarContent />} main={<Main />} />
 
   return <LaunchScreen />
 }
