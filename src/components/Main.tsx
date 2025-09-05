@@ -3,7 +3,12 @@ import { useSidebarContext } from './Sidebar/SidebarContext'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import TokenChart from './TokenChart'
-import { Key, ToggleButton, ToggleButtonGroup } from 'react-aria-components'
+import {
+  Key,
+  ToggleButton as RACToggleButton,
+  ToggleButtonGroup,
+} from 'react-aria-components'
+import { ToggleButton } from './ToggleButton'
 
 interface TokenCountResult {
   id: string
@@ -38,6 +43,8 @@ export function Main() {
     useSidebarContext()
   const [totalTokenCount, setTotalTokenCount] = useState(0)
   let [treeFormat, setTreeFormat] = React.useState(new Set<Key>(['full']))
+  let [gitDiff, setGitDiff] = React.useState(false)
+  let [gitStatus, setGitStatus] = React.useState<GitStatusResult>(null)
 
   async function handleCopyToClipboard() {
     await invoke('copy_files_to_clipboard', {
@@ -45,24 +52,21 @@ export function Main() {
       fullTree: tree,
       root: directory?.path ?? '',
       selectedNodes: Array.from(selectedNodes).map(String),
+      addGitDiff: gitDiff,
     })
   }
 
-  async function printGitStatus() {
-    const change = await invoke<GitStatusResult>('git_status', {
-      root: directory?.path,
-    })
-
-    if (change) {
-      if (change.length === 0) {
-        console.log('No changes')
-      } else {
-        console.log(change)
-      }
-    } else {
-      console.log('Not a git repository')
+  useEffect(() => {
+    function inquireGitStatus() {
+      invoke<GitStatusResult>('git_status', {
+        root: directory?.path,
+      }).then((change) => {
+        setGitStatus(change)
+      })
     }
-  }
+
+    inquireGitStatus()
+  }, [directory?.path])
 
   useEffect(() => {
     listen<TokenCountsEvent>('file-token-counts', (event) => {
@@ -95,38 +99,51 @@ export function Main() {
   return (
     <section className="flex-1 p-4">
       <h2 className="text-sm font-semibold text-white mb-2">Selected files</h2>
-      {sortedFiles.length > 0 ? (
-        <div className="flex flex-col gap-4">
-          <ul className="space-y-4 text-sm text-white">
-            {Array.from(sortedFiles).map((path) => (
-              <li key={path.id} className="flex flex-col gap-2">
-                <span className="flex items-center gap-1">
-                  <span className="font-semibold">{path.title}</span>
-                  <span className="text-gray-400">
-                    {path.tokenCount == null
-                      ? 'counting...'
-                      : `${path.tokenCount} tokens${
-                          path.tokenPercentage == null
-                            ? ''
-                            : ` (${Math.ceil(path.tokenPercentage)}%)`
-                        }`}
-                  </span>
+      {sortedFiles.length > 0 && (
+        <ul className="space-y-4 text-sm text-white">
+          {Array.from(sortedFiles).map((path) => (
+            <li key={path.id} className="flex flex-col gap-2">
+              <span className="flex items-center gap-1">
+                <span className="font-semibold">{path.title}</span>
+                <span className="text-gray-400">
+                  {path.tokenCount == null
+                    ? 'counting...'
+                    : `${path.tokenCount} tokens${
+                        path.tokenPercentage == null
+                          ? ''
+                          : ` (${Math.ceil(path.tokenPercentage)}%)`
+                      }`}
                 </span>
-                <span className="text-xs">{path.id}</span>
-              </li>
-            ))}
-          </ul>
-          <TokenChart files={sortedFiles} totalTokenCount={totalTokenCount} />
-          <div className="flex gap-8">
-            <ToggleButtonGroup
-              className="flex flex-grow"
-              selectionMode="single"
-              selectedKeys={treeFormat}
-              onSelectionChange={setTreeFormat}
-            >
-              <ToggleButton
-                id="none"
-                className="
+              </span>
+              <span className="text-xs">{path.id}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex flex-col gap-6">
+        <TokenChart files={sortedFiles} totalTokenCount={totalTokenCount} />
+        <div className="flex gap-8 flex-grow-0">
+          <ToggleButton
+            isDisabled={!gitStatus}
+            isSelected={gitDiff}
+            onChange={setGitDiff}
+          >
+            Git diff
+            {gitStatus && (
+              <div className="ml-2 text-xs text-gray-400">
+                {gitStatus.length} changes
+              </div>
+            )}
+          </ToggleButton>
+          <ToggleButtonGroup
+            className="flex flex-grow"
+            selectionMode="single"
+            selectedKeys={treeFormat}
+            onSelectionChange={setTreeFormat}
+          >
+            <RACToggleButton
+              id="none"
+              className="
                         flex-grow
                         z-10
                         -ml-0
@@ -157,99 +174,89 @@ export function Main() {
                         data-[disabled]:cursor-not-allowed
                         -ml-px
                       "
-              >
-                None
-              </ToggleButton>
-              <ToggleButton
-                id="selected"
-                className="
-                flex-grow
-                        z-10
-                        rounded-none
-                        first:rounded-l-md
-                        first:ml-0
-                        last:rounded-r-md
-                        border
-                        border-gray-300
-                        px-4
-                        py-2
-                        text-sm
-                        font-medium
-                        text-gray-700
-                        bg-white
-                        hover:bg-gray-50
-                        focus:z-20
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        data-[selected]:z-20
-                        data-[selected]:bg-blue-500
-                        data-[selected]:text-white
-                        data-[selected]:border-blue-500
-                        data-[disabled]:z-0
-                        data-[disabled]:opacity-50
-                        data-[disabled]:cursor-not-allowed
-                        -ml-px
-                      "
-              >
-                Selected
-              </ToggleButton>
-              <ToggleButton
-                id="full"
-                className="
-                flex-grow
-                        z-10
-                        rounded-none
-                        first:rounded-l-md
-                        first:ml-0
-                        last:rounded-r-md
-                        border
-                        border-gray-300
-                        px-4
-                        py-2
-                        text-sm
-                        font-medium
-                        text-gray-700
-                        bg-white
-                        hover:bg-gray-50
-                        focus:z-20
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        data-[selected]:z-20
-                        data-[selected]:bg-blue-500
-                        data-[selected]:text-white
-                        data-[selected]:border-blue-500
-                        data-[disabled]:z-0
-                        data-[disabled]:opacity-50
-                        data-[disabled]:cursor-not-allowed
-                        -ml-px
-                      "
-              >
-                Full
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <button
-              onClick={handleCopyToClipboard}
-              type="button"
-              className="flex-grow rounded-sm bg-gray-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 dark:bg-gray-500 dark:shadow-none dark:hover:bg-gray-400 dark:focus-visible:outline-gray-500"
             >
-              Copy to Clipboard
-            </button>
-          </div>
+              None
+            </RACToggleButton>
+            <RACToggleButton
+              id="selected"
+              className="
+                flex-grow
+                        z-10
+                        rounded-none
+                        first:rounded-l-md
+                        first:ml-0
+                        last:rounded-r-md
+                        border
+                        border-gray-300
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        text-gray-700
+                        bg-white
+                        hover:bg-gray-50
+                        focus:z-20
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-blue-500
+                        focus:border-blue-500
+                        data-[selected]:z-20
+                        data-[selected]:bg-blue-500
+                        data-[selected]:text-white
+                        data-[selected]:border-blue-500
+                        data-[disabled]:z-0
+                        data-[disabled]:opacity-50
+                        data-[disabled]:cursor-not-allowed
+                        -ml-px
+                      "
+            >
+              Selected
+            </RACToggleButton>
+            <RACToggleButton
+              id="full"
+              className="
+                flex-grow
+                        z-10
+                        rounded-none
+                        first:rounded-l-md
+                        first:ml-0
+                        last:rounded-r-md
+                        border
+                        border-gray-300
+                        px-4
+                        py-2
+                        text-sm
+                        font-medium
+                        text-gray-700
+                        bg-white
+                        hover:bg-gray-50
+                        focus:z-20
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-blue-500
+                        focus:border-blue-500
+                        data-[selected]:z-20
+                        data-[selected]:bg-blue-500
+                        data-[selected]:text-white
+                        data-[selected]:border-blue-500
+                        data-[disabled]:z-0
+                        data-[disabled]:opacity-50
+                        data-[disabled]:cursor-not-allowed
+                        -ml-px
+                      "
+            >
+              Full
+            </RACToggleButton>
+          </ToggleButtonGroup>
+          <button
+            onClick={handleCopyToClipboard}
+            type="button"
+            className="flex-grow rounded-sm bg-gray-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 dark:bg-gray-500 dark:shadow-none dark:hover:bg-gray-400 dark:focus-visible:outline-gray-500"
+          >
+            Copy to Clipboard
+          </button>
         </div>
-      ) : (
-        <div className="text-sm text-white">No files selected.</div>
-      )}
-      <button
-        onClick={printGitStatus}
-        type="button"
-        className="flex-grow rounded-sm bg-gray-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 dark:bg-gray-500 dark:shadow-none dark:hover:bg-gray-400 dark:focus-visible:outline-gray-500"
-      >
-        Git status
-      </button>
+      </div>
     </section>
   )
 }

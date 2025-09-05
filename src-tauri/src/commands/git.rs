@@ -87,3 +87,50 @@ fn classify_change(st: Status) -> Option<String> {
         _ => None,
     }
 }
+
+pub(crate) fn git_diff_text(root: &str) -> Option<String> {
+    use git2::{DiffFindOptions, DiffFormat, DiffOptions};
+
+    let repo = match Repository::discover(root) {
+        Ok(r) => r,
+        Err(e) if e.code() == ErrorCode::NotFound => return None,
+        Err(_) => return Some(String::new()),
+    };
+
+    let head_tree = match repo.head().and_then(|h| h.peel_to_tree()) {
+        Ok(t) => Some(t),
+        Err(_) => {
+            match repo
+                .treebuilder(None)
+                .and_then(|tb| tb.write())
+                .and_then(|oid| repo.find_tree(oid))
+            {
+                Ok(t) => Some(t),
+                Err(_) => None,
+            }
+        }
+    };
+
+    let mut opts = DiffOptions::new();
+    opts.include_untracked(true)
+        .recurse_untracked_dirs(true)
+        .ignore_submodules(true)
+        .include_typechange(true);
+
+    let mut diff = match repo.diff_tree_to_workdir_with_index(head_tree.as_ref(), Some(&mut opts)) {
+        Ok(d) => d,
+        Err(_) => return Some(String::new()),
+    };
+
+    let mut find_opts = DiffFindOptions::new();
+    find_opts.renames(true).copies(true);
+    let _ = diff.find_similar(Some(&mut find_opts));
+
+    let mut out = String::new();
+    let _ = diff.print(DiffFormat::Patch, |_, _, line| {
+        out.push_str(&String::from_utf8_lossy(line.content()));
+        true
+    });
+
+    Some(out)
+}
