@@ -45,7 +45,6 @@ export function Main() {
       fullTree: tree,
       root: directory?.path ?? '',
       selectedNodes: Array.from(selectedNodes).map(String),
-      paths: selectedFiles.map((file) => file.id),
     })
   }
 
