@@ -81,13 +81,11 @@ pub(crate) fn copy_files_to_clipboard(
     selected_nodes: HashSet<String>,
     root: String,
 ) -> Result<(), ClipboardError> {
-    let mut rendered_tree = String::new();
-
-    match tree_mode {
-        "selected" => rendered_tree = render_selected_tree(&full_tree, &selected_nodes),
-        "full" => rendered_tree = render_full_tree(&full_tree, &selected_nodes),
-        "none" | _ => (),
-    }
+    let rendered_tree = match tree_mode {
+        "selected" => render_selected_tree(&full_tree, &selected_nodes),
+        "full" => render_full_tree(&full_tree, &selected_nodes),
+        "none" | _ => String::new(),
+    };
 
     let payload = build_clipboard_content(&selected_nodes, &rendered_tree, &root)?;
 
