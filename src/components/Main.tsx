@@ -24,9 +24,12 @@ interface GitChange {
 
 type GitStatusResult = GitChange[] | null
 
-function getTreeMode(treeFormat: Set<Key>): 'selected' | 'full' | undefined {
+type TreeMode = 'selected' | 'full' | 'none' | undefined
+
+function getTreeMode(treeFormat: Set<Key>): TreeMode {
   if (treeFormat.has('selected')) return 'selected'
   if (treeFormat.has('full')) return 'full'
+  if (treeFormat.has('none')) return 'none'
   return undefined
 }
 

@@ -44,6 +44,13 @@ fn build_clipboard_content(
 ) -> Result<String, ClipboardError> {
     let concatenated_files = concatenate_files(&files)?;
 
+    if rendered_tree.is_empty() {
+        return Ok(format!(
+            "{}\n{}\n{}\n",
+            FILE_CONTENTS_OPENING_TAG, concatenated_files, FILE_CONTENTS_CLOSING_TAG
+        ));
+    }
+
     Ok(format!(
         "{}\n{}\n{}\n{}\n\n{}\n{}\n{}\n",
         TREE_OPENING_TAG,
@@ -72,15 +79,15 @@ pub(crate) fn copy_files_to_clipboard(
         }
     }
 
-    let mut tree = String::new();
+    let mut rendered_tree = String::new();
 
-    if tree_mode == "selected" {
-        tree = render_selected_tree(&all_files);
-    } else if tree_mode == "full" {
-        tree = render_full_tree(&full_tree, &selected_nodes);
+    match tree_mode {
+        "selected" => rendered_tree = render_selected_tree(&all_files),
+        "full" => rendered_tree = render_full_tree(&full_tree, &selected_nodes),
+        "none" | _ => (),
     }
 
-    let payload = build_clipboard_content(all_files, &tree, &root)?;
+    let payload = build_clipboard_content(all_files, &rendered_tree, &root)?;
 
     let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
         code: codes::CLIPBOARD_WRITE_ERROR,
