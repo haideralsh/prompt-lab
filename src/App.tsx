@@ -2,13 +2,20 @@ import { SidebarContent } from './components/Sidebar/SidebarContent'
 import { LaunchScreen } from './components/BlankState'
 import { useSidebarContext } from './components/Sidebar/SidebarContext'
 import { Main } from './components/Main'
-import { ResizableLayout } from './components/Sidebar/Sidebar'
+import { Layout } from './components/Layout'
+import { Footer } from './components/Footer'
 
 function App() {
   const { directory } = useSidebarContext()
 
   if (directory)
-    return <ResizableLayout sidebar={<SidebarContent />} main={<Main />} />
+    return (
+      <Layout
+        sidebar={<SidebarContent />}
+        main={<Main />}
+        footer={<Footer />}
+      />
+    )
 
   return <LaunchScreen />
 }

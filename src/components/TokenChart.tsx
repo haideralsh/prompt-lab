@@ -40,7 +40,7 @@ export default function TokenChart({
   const remainingFiles = files.slice(FILES_TO_DISPLAY_COUNT)
   const remainingTokens = remainingFiles.reduce(
     (sum, file) => sum + (file.tokenCount || 0),
-    0,
+    0
   )
   const otherPercentage =
     remainingTokens > 0
@@ -60,7 +60,7 @@ export default function TokenChart({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   return (
-    <div className="w-full mx-auto mt-6">
+    <div className="w-full mx-auto">
       <div className="relative h-3 bg-gray-700 rounded-full overflow-hidden mb-3">
         {chartData.map((file, index) => (
           <div
@@ -68,7 +68,9 @@ export default function TokenChart({
             className="absolute top-0 h-full transition-all duration-300 cursor-pointer"
             style={{
               backgroundColor: colors[index],
-              left: `${chartData.slice(0, index).reduce((sum, f) => sum + f.percentage, 0)}%`,
+              left: `${chartData
+                .slice(0, index)
+                .reduce((sum, f) => sum + f.percentage, 0)}%`,
               width: `${file.percentage}%`,
               opacity:
                 hoveredIndex !== null && hoveredIndex !== index ? 0.3 : 1,

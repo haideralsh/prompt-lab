@@ -31,3 +31,5 @@ export interface DirectoryError {
   code: number
   directory_name?: string
 }
+
+export type TreeMode = 'selected' | 'full' | 'none' | undefined
