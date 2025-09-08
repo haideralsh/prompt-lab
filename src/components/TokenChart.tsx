@@ -61,7 +61,7 @@ export default function TokenChart({
 
   return (
     <div className="w-full mx-auto">
-      <div className="relative h-3 bg-gray-700 rounded-full overflow-hidden mb-3">
+      <div className="relative h-1.5 bg-interactive-dark rounded-full overflow-hidden mb-2">
         {chartData.map((file, index) => (
           <div
             key={file.id}
@@ -81,11 +81,11 @@ export default function TokenChart({
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
         {chartData.map((file, index) => (
           <div
             key={file.id}
-            className="flex items-center gap-2 cursor-pointer transition-opacity duration-300"
+            className="flex items-center gap-1.5 cursor-pointer transition-opacity duration-300"
             style={{
               opacity:
                 hoveredIndex !== null && hoveredIndex !== index ? 0.3 : 1,
@@ -94,10 +94,10 @@ export default function TokenChart({
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <div
-              className="size-2.5 rounded-full"
+              className="size-2 rounded-full"
               style={{ backgroundColor: colors[index] }}
             />
-            <span className="text-gray-300">
+            <span className="text-text-light">
               {file.title} ({file.percentage}%)
             </span>
           </div>

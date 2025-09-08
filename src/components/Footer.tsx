@@ -1,11 +1,6 @@
 import { useSidebarContext } from './Sidebar/SidebarContext'
 import TokenChart from './TokenChart'
-import {
-  Key,
-  ToggleButton as RACToggleButton,
-  ToggleButtonGroup,
-} from 'react-aria-components'
-import { ToggleButton } from './ToggleButton'
+import { Key } from 'react-aria-components'
 import { useEffect, useMemo, useState } from 'react'
 import { listen } from '@tauri-apps/api/event'
 import { TreeMode } from '../types/FileTree'
@@ -22,9 +17,9 @@ export function Footer() {
   const { directory, selectedFiles, setSelectedFiles, tree, selectedNodes } =
     useSidebarContext()
   const [totalTokenCount, setTotalTokenCount] = useState(0)
-  let [treeFormat, setTreeFormat] = useState(new Set<Key>(['full']))
-  let [gitDiff, setGitDiff] = useState(false)
-  let [gitStatus, setGitStatus] = useState<GitStatusResult>(null)
+  let [treeFormat] = useState(new Set<Key>(['full']))
+  let [gitDiff] = useState(false)
+  let [, setGitStatus] = useState<GitStatusResult>(null)
 
   async function handleCopyToClipboard() {
     await invoke('copy_files_to_clipboard', {
@@ -78,11 +73,9 @@ export function Footer() {
   }, [selectedFiles])
 
   return (
-    <div className="flex gap-6 justify-between items-center">
-      {sortedFiles.length > 0 ? (
+    <div className="flex gap-8 justify-between items-center">
+      {sortedFiles.length > 0 && (
         <TokenChart files={sortedFiles} totalTokenCount={totalTokenCount} />
-      ) : (
-        'No files selected'
       )}
       {/* <div className="flex gap-8 flex-grow-0">
         <ToggleButton
@@ -221,7 +214,7 @@ export function Footer() {
       <button
         onClick={handleCopyToClipboard}
         type="button"
-        className="shrink-0 rounded-sm bg-gray-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 dark:bg-gray-500 dark:shadow-none dark:hover:bg-gray-400 dark:focus-visible:outline-gray-500"
+        className="shrink-0 rounded-sm bg-interactive-light px-2 py-1 text-xs font-semibold text-text-light ml-auto"
       >
         Copy to Clipboard
       </button>

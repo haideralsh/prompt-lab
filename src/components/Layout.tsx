@@ -1,30 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react'
 
+const MIN_SIDEBAR_WIDTH = 15
+const MAX_SIDEBAR_WIDTH = 1000
+
 interface LayoutProps {
   sidebar: React.ReactNode
   main: React.ReactNode
   footer: React.ReactNode
 }
 
-export const Layout = ({ sidebar, main, footer }: LayoutProps) => {
+export function Layout({ sidebar, main, footer }: LayoutProps) {
   const [sidebarWidth, setSidebarWidth] = useState(250)
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const minSidebarWidth = 15
-  const maxSidebarWidth = 1000
-
-  const startDragging = (e: React.MouseEvent) => {
+  function startDragging(e: React.MouseEvent) {
     e.preventDefault()
     setIsDragging(true)
   }
+
   const stopDragging = () => setIsDragging(false)
 
   const onMouseMove = (e: MouseEvent) => {
     if (isDragging && containerRef.current) {
       const containerRect = containerRef.current.getBoundingClientRect()
       const newWidth = e.clientX - containerRect.left
-      if (newWidth >= minSidebarWidth && newWidth <= maxSidebarWidth) {
+      if (newWidth >= MIN_SIDEBAR_WIDTH && newWidth <= MAX_SIDEBAR_WIDTH) {
         setSidebarWidth(newWidth)
       }
     }
@@ -44,13 +45,13 @@ export const Layout = ({ sidebar, main, footer }: LayoutProps) => {
   return (
     <div
       ref={containerRef}
-      className="h-screen flex flex-col text-white bg-black"
+      className="h-screen flex flex-col bg-background-dark"
     >
       {/* Top Section (scrolls) */}
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
         <div
-          className="bg-sidebar border-r border-sidebar-border relative flex-none"
+          className="bg-sidebar border-r border-border-dark relative flex-none"
           style={{ width: sidebarWidth }}
         >
           <div className="h-full overflow-auto">{sidebar}</div>
@@ -58,7 +59,7 @@ export const Layout = ({ sidebar, main, footer }: LayoutProps) => {
           {/* Drag handle */}
           <div
             onMouseDown={startDragging}
-            className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none"
+            className="absolute right-0 top-0 h-full w-[1px] cursor-col-resize select-none"
           />
         </div>
 
@@ -67,8 +68,8 @@ export const Layout = ({ sidebar, main, footer }: LayoutProps) => {
       </div>
 
       {/* Bottom Section (always visible) */}
-      <div className="flex-none bg-muted border-t border-border">
-        <div className="p-6">{footer}</div>
+      <div className="flex-none border-t border-border-dark">
+        <div className="p-3">{footer}</div>
       </div>
     </div>
   )
