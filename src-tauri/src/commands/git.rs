@@ -1,11 +1,14 @@
 use git2::{ErrorCode, Repository, Status, StatusOptions, StatusShow};
 use serde::Serialize;
+use std::collections::HashMap;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GitChange {
     pub path: String,
     pub change_type: String,
+    pub lines_added: i32,
+    pub lines_deleted: i32,
 }
 
 #[tauri::command]
@@ -15,6 +18,56 @@ pub(crate) fn git_status(root: String) -> Option<Vec<GitChange>> {
         Err(e) if e.code() == ErrorCode::NotFound => return None,
         Err(_) => return Some(Vec::new()),
     };
+
+    use git2::{DiffFindOptions, DiffOptions, Patch};
+
+    let head_tree = match repo.head().and_then(|h| h.peel_to_tree()) {
+        Ok(t) => Some(t),
+        Err(_) => match repo
+            .treebuilder(None)
+            .and_then(|tb| tb.write())
+            .and_then(|oid| repo.find_tree(oid))
+        {
+            Ok(t) => Some(t),
+            Err(_) => None,
+        },
+    };
+
+    let mut diff_opts = DiffOptions::new();
+    diff_opts
+        .include_untracked(true)
+        .recurse_untracked_dirs(true)
+        .ignore_submodules(true)
+        .include_typechange(true);
+
+    let mut diff =
+        match repo.diff_tree_to_workdir_with_index(head_tree.as_ref(), Some(&mut diff_opts)) {
+            Ok(d) => d,
+            Err(_) => return Some(Vec::new()),
+        };
+
+    let mut find_opts = DiffFindOptions::new();
+    find_opts.renames(true).copies(true);
+    let _ = diff.find_similar(Some(&mut find_opts));
+
+    let mut file_changes: HashMap<String, (i32, i32)> = HashMap::new();
+
+    let deltas_len = diff.deltas().len();
+    for i in 0..deltas_len {
+        if let Ok(Some(patch)) = Patch::from_diff(&diff, i) {
+            let (_ctx, adds, dels) = patch.line_stats().unwrap_or((0, 0, 0));
+
+            let delta = patch.delta();
+            if let Some(path) = delta
+                .new_file()
+                .path()
+                .or_else(|| delta.old_file().path())
+                .map(|p| p.to_string_lossy().into_owned())
+            {
+                file_changes.insert(path, (adds as i32, dels as i32));
+            }
+        }
+    }
 
     let mut opts = StatusOptions::new();
     opts.show(StatusShow::IndexAndWorkdir)
@@ -67,7 +120,13 @@ pub(crate) fn git_status(root: String) -> Option<Vec<GitChange>> {
         };
 
         if let Some(path) = path {
-            out.push(GitChange { path, change_type });
+            let (lines_added, lines_deleted) = file_changes.get(&path).copied().unwrap_or((0, 0));
+            out.push(GitChange {
+                path,
+                change_type,
+                lines_added,
+                lines_deleted,
+            });
         }
     }
 
