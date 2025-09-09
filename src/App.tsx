@@ -1,4 +1,4 @@
-import { SidebarContent } from './components/Sidebar/SidebarContent'
+import { Sidebar } from './components/Sidebar/Sidebar'
 import { LaunchScreen } from './components/BlankState'
 import { useSidebarContext } from './components/Sidebar/SidebarContext'
 import { Main } from './components/Main'
@@ -9,13 +9,7 @@ function App() {
   const { directory } = useSidebarContext()
 
   if (directory)
-    return (
-      <Layout
-        sidebar={<SidebarContent />}
-        main={<Main />}
-        footer={<Footer />}
-      />
-    )
+    return <Layout sidebar={<Sidebar />} main={<Main />} footer={<Footer />} />
 
   return <LaunchScreen />
 }

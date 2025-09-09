@@ -3,7 +3,7 @@ import { ERROR_CODES } from '../constants'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { DirectoryError } from '../types/FileTree'
 import { queue } from './ToastQueue'
-import { PlusIcon } from 'lucide-react'
+import { PlusIcon } from '@radix-ui/react-icons'
 
 interface DirectoryPickerProps {
   onPick: (dir: DirectoryInfo) => void
@@ -25,14 +25,12 @@ export function DirectoryPickerButton({ onPick }: DirectoryPickerProps) {
   }
 
   return (
-    <div className="bg-interactive-dark text-text-light">
-      <button
-        className="flex items-center col gap-1.5 text-sm cursor-pointer px-2 py-1"
-        onClick={openDirectory}
-      >
-        <PlusIcon className="size-4" />
-        <span>New directory</span>
-      </button>
-    </div>
+    <button
+      className="bg-interactive-dark text-text-light flex items-center col gap-1.5 text-sm cursor-pointer px-2 py-1 w-fit"
+      onClick={openDirectory}
+    >
+      <PlusIcon className="text-text-light" />
+      <span className="text-text-light">New directory</span>
+    </button>
   )
 }

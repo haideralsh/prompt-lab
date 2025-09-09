@@ -67,31 +67,33 @@ export function LaunchScreen() {
   }
 
   return (
-    <main className="min-h-screen h-full justify-center items-center gap-8 flex flex-col bg-background-dark">
-      <DirectoryPickerButton onPick={handleDirectoryPick} />
+    <main className="min-h-screen h-full justify-center items-center flex bg-background-dark">
+      <div className="flex flex-col max-w-72 gap-8">
+        <DirectoryPickerButton onPick={handleDirectoryPick} />
 
-      {recentOpened.length > 0 && (
-        <ul role="list" className="flex flex-col gap-3">
-          {recentOpened.map((dir) => (
-            <li
-              role="button"
-              tabIndex={0}
-              onClick={() => handleDirectoryPick(dir)}
-              key={`${dir.path}|${dir.name}`}
-              className="relative flex items-center cursor-pointer group"
-            >
-              <div className="flex flex-col">
-                <h2 className="text-sm text-text-dark group-hover:text-text-light">
-                  {dir.name}
-                </h2>
-                <span className="text-xs text-text-dark group-hover:text-text-light whitespace-nowrap">
-                  {dir.prettyPath}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+        {recentOpened.length > 0 && (
+          <ul role="list" className="flex flex-col gap-3">
+            {recentOpened.map((dir) => (
+              <li
+                role="button"
+                tabIndex={0}
+                onClick={() => handleDirectoryPick(dir)}
+                key={`${dir.path}|${dir.name}`}
+                className="relative flex items-center cursor-pointer group"
+              >
+                <div className="flex flex-col">
+                  <h2 className="text-sm text-text-dark group-hover:text-text-light">
+                    {dir.name}
+                  </h2>
+                  <span className="text-xs text-text-dark group-hover:text-text-light whitespace-nowrap">
+                    {dir.prettyPath}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </main>
   )
 }

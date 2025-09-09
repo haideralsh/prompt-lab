@@ -2,14 +2,12 @@ import { invoke } from '@tauri-apps/api/core'
 import { useSidebarContext } from './SidebarContext'
 import { SelectionResult, TreeNode } from '../../types/FileTree'
 import {
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
   FileIcon,
-  FolderClosedIcon,
-  FolderOpenIcon,
+  CheckIcon,
   MinusIcon,
-} from 'lucide-react'
+  TriangleDownIcon,
+  TriangleRightIcon,
+} from '@radix-ui/react-icons'
 import {
   Button,
   Checkbox,
@@ -18,6 +16,8 @@ import {
   TreeItemContent,
 } from 'react-aria-components'
 import React from 'react'
+import { FolderOpenIcon } from '@heroicons/react/16/solid'
+import { FolderIcon } from '@heroicons/react/16/solid'
 
 type TreeNodeItemProps = {
   item: TreeNode
@@ -53,12 +53,12 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       id={item.id}
       textValue={item.title}
       onPress={onToggle}
-      className="cursor-pointer hover:bg-gray-800 focus:bg-gray-900 focus:outline-none"
+      className="cursor-pointer hover:bg-interactive-dark focus:bg-interactive-dark focus:ring-border-mid focus:ring focus:outline-none"
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded }) => (
           <div
-            className="flex items-center space-x-2 py-1 px-2 pl-[calc(8px+var(--depth)*16px)]"
+            className="flex items-center space-x-1 py-0.5 px-2 pl-[calc(8px+var(--depth)*16px)]"
             style={{ '--depth': depth } as React.CSSProperties}
           >
             <Checkbox
@@ -67,10 +67,10 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
               isSelected={selected}
               isIndeterminate={indeterminate}
               onChange={onToggle}
-              className="flex h-4 w-4 items-center justify-center rounded border border-gray-500 bg-transparent text-white data-[selected]:bg-blue-600 data-[selected]:border-blue-600 data-[indeterminate]:bg-blue-600 data-[indeterminate]:border-blue-600 focus:outline-none focus:ring-0 focus:ring-blue-500 flex-shrink-0"
+              className="flex h-4 w-4 items-center justify-center rounded border border-border-dark bg-transparent text-text-light data-[selected]:bg-[#114837] data-[selected]:border-[#114837] data-[indeterminate]:bg-[#114837] data-[indeterminate]:border-[#114837] focus:outline-none focus:ring-0 focus:ring-[#114837] flex-shrink-0"
             >
-              {selected ? <CheckIcon className="size-3" /> : null}
-              {indeterminate ? <MinusIcon className="size-3" /> : null}
+              {selected && <CheckIcon />}
+              {indeterminate && <MinusIcon />}
             </Checkbox>
 
             {hasChildItems ? (
@@ -78,12 +78,8 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                 slot="chevron"
                 className="shrink-0 w-4 h-4 flex items-center justify-center bg-transparent border-0 cursor-pointer focus:outline-none"
               >
-                <span className="text-gray-400">
-                  {isExpanded ? (
-                    <ChevronDownIcon className="size-4" />
-                  ) : (
-                    <ChevronRightIcon className="size-4" />
-                  )}
+                <span className="text-text-dark">
+                  {isExpanded ? <TriangleDownIcon /> : <TriangleRightIcon />}
                 </span>
               </Button>
             ) : (
@@ -91,18 +87,18 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
             )}
 
             <div className="flex items-center space-x-1">
-              <span className="text-gray-400 text-sm">
+              <span className="text-text-dark text-sm">
                 {item.type === 'directory' ? (
                   isExpanded ? (
-                    <FolderOpenIcon />
+                    <FolderOpenIcon className="size-[15px]" />
                   ) : (
-                    <FolderClosedIcon />
+                    <FolderIcon className="size-[15px]" />
                   )
                 ) : (
                   <FileIcon />
                 )}
               </span>
-              <span className="text-sm text-white">{item.title}</span>
+              <span className="text-sm text-text-dark">{item.title}</span>
             </div>
           </div>
         )}

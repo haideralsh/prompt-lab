@@ -19,7 +19,7 @@ function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   return acc
 }
 
-export function SidebarContent() {
+export function Sidebar() {
   const {
     filteredTree,
     setFilteredTree,
@@ -96,7 +96,7 @@ export function SidebarContent() {
       />
 
       <div className="mt-3 flex-1">
-        <div className="h-full overflow-y-auto rounded-lg p-1">
+        <div className="h-full overflow-y-auto rounded-lg">
           {filteredTree.length === 0 ? (
             <div className="flex h-full items-center justify-center text-sm text-gray-500">
               No results found

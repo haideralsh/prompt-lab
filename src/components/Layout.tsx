@@ -47,27 +47,23 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
       ref={containerRef}
       className="h-screen flex flex-col bg-background-dark"
     >
-      {/* Top Section (scrolls) */}
       <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
         <div
-          className="bg-sidebar border-r border-border-dark relative flex-none"
+          className="bg-sidebar border-r border-border-dark relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light"
           style={{ width: sidebarWidth }}
         >
           <div className="h-full overflow-auto">{sidebar}</div>
 
-          {/* Drag handle */}
           <div
             onMouseDown={startDragging}
-            className="absolute right-0 top-0 h-full w-[1px] cursor-col-resize select-none"
+            data-sidebar-handle
+            className="absolute -right-1.25 top-0 h-full w-2 cursor-col-resize select-none"
           />
         </div>
 
-        {/* Main Content Area */}
         <div className="flex-1 overflow-auto bg-background">{main}</div>
       </div>
 
-      {/* Bottom Section (always visible) */}
       <div className="flex-none border-t border-border-dark">
         <div className="p-3">{footer}</div>
       </div>
