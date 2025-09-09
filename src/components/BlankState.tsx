@@ -1,28 +1,45 @@
 import { useEffect, useState } from 'react'
 import { DirectoryPickerButton } from './DirectoryPickerButton'
-import { FolderIcon } from './icons/folder'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { invoke } from '@tauri-apps/api/core'
 import { ERROR_CODES } from '../constants'
 import type { SearchResult, DirectoryError } from '../types/FileTree'
 import { useSidebarContext } from './Sidebar/SidebarContext'
+import { queue } from './ToastQueue'
+
+async function processDirectories(
+  directories: DirectoryInfo[],
+): Promise<DirectoryInfo[]> {
+  const prettyPaths = await Promise.all(
+    directories.map((d) =>
+      invoke<string>('pretty_directory_path', { path: d.path }),
+    ),
+  )
+  return directories.map((d, i) => ({ ...d, prettyPath: prettyPaths[i] }))
+}
 
 export function LaunchScreen() {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([])
   const { setTree, setDirectory, setFilteredTree } = useSidebarContext()
-  const [error, setError] = useState('')
 
   useEffect(() => {
-    function loadRecentOpened() {
-      invoke<DirectoryInfo[]>('get_recent_directories')
-        .then((list) => {
-          setRecentOpened(list)
-        })
-        .catch((err) => {
-          if (err.code === ERROR_CODES.STORE_READ_ERROR) {
-            setError('Failed to load recent directories.')
-          }
-        })
+    async function loadRecentOpened() {
+      try {
+        const directories = await invoke<DirectoryInfo[]>(
+          'get_recent_directories',
+        )
+
+        const processed = await processDirectories(directories)
+
+        setRecentOpened(processed)
+      } catch (err) {
+        const { code } = err as DirectoryError
+        if (code === ERROR_CODES.STORE_READ_ERROR) {
+          queue.add({
+            title: 'Failed to load recent directories.',
+          })
+        }
+      }
     }
 
     loadRecentOpened()
@@ -30,6 +47,7 @@ export function LaunchScreen() {
 
   async function handleDirectoryPick(directory: DirectoryInfo) {
     try {
+      // TODO: change command name; not really the most descriptive name
       const resp = await invoke<SearchResult>('search_tree', {
         path: directory.path,
       })
@@ -41,47 +59,39 @@ export function LaunchScreen() {
     } catch (err) {
       const e = err as DirectoryError
       if (e && e.code === ERROR_CODES.DIRECTORY_READ_ERROR) {
-        setError(`Error reading directory ${e.directory_name ?? ''}`)
+        queue.add({
+          title: `Error reading directory ${e.directory_name ?? ''}`,
+        })
       }
     }
   }
 
   return (
-    <main className="h-dvh flex flex-col text-[#D0D0D0] bg-black">
-      <div className="flex flex-col h-full items-center justify-center bg-black">
-        <DirectoryPickerButton
-          onError={setError}
-          onPick={handleDirectoryPick}
-        />
+    <main className="min-h-screen h-full justify-center items-center gap-8 flex flex-col bg-background-dark">
+      <DirectoryPickerButton onPick={handleDirectoryPick} />
 
-        {error && <p className="mt-6 text-red-400 text-sm">{error}</p>}
-
-        {recentOpened.length > 0 && (
-          <ul role="list" className="flex flex-col gap-1 mt-8 w-full max-w-sm">
-            <p className="mt-2 text-gray-400 text-sm mb-3">Recently opened</p>
-            {recentOpened.map((dir) => (
-              <li
-                role="button"
-                onClick={() => handleDirectoryPick(dir)}
-                key={`${dir.path}|${dir.name}`}
-                className="relative flex items-center py-3 hover:bg-gray-100 dark:hover:bg-gray-800 px-4 rounded-md -mx-4 cursor-pointer"
-              >
-                <div className="min-w-0 flex-auto">
-                  <div className="flex items-center gap-2">
-                    <FolderIcon className="size-5 flex-none text-gray-400" />
-                    <h2 className="min-w-0 text-sm/6 font-semibold text-gray-900 dark:text-white">
-                      {dir.name}
-                    </h2>
-                  </div>
-                  <div className="text-xs/5 text-gray-500 dark:text-gray-400 ml-7">
-                    <p className="whitespace-nowrap">{dir.path}</p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {recentOpened.length > 0 && (
+        <ul role="list" className="flex flex-col gap-3">
+          {recentOpened.map((dir) => (
+            <li
+              role="button"
+              tabIndex={0}
+              onClick={() => handleDirectoryPick(dir)}
+              key={`${dir.path}|${dir.name}`}
+              className="relative flex items-center cursor-pointer group"
+            >
+              <div className="flex flex-col">
+                <h2 className="text-sm text-text-dark group-hover:text-text-light">
+                  {dir.name}
+                </h2>
+                <span className="text-xs text-text-dark group-hover:text-text-light whitespace-nowrap">
+                  {dir.prettyPath}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   )
 }

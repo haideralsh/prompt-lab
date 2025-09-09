@@ -1,18 +1,15 @@
 import { invoke } from '@tauri-apps/api/core'
 import { ERROR_CODES } from '../constants'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
-import { OpenFolderIcon } from './icons/openFolder'
 import { DirectoryError } from '../types/FileTree'
+import { queue } from './ToastQueue'
+import { PlusIcon } from 'lucide-react'
 
 interface DirectoryPickerProps {
   onPick: (dir: DirectoryInfo) => void
-  onError: (error: string) => void
 }
 
-export function DirectoryPickerButton({
-  onPick,
-  onError,
-}: DirectoryPickerProps) {
+export function DirectoryPickerButton({ onPick }: DirectoryPickerProps) {
   async function openDirectory() {
     try {
       const picked = await invoke<DirectoryInfo>('open_directory')
@@ -20,19 +17,21 @@ export function DirectoryPickerButton({
     } catch (err) {
       const { code } = (err as DirectoryError) ?? {}
       if (code !== ERROR_CODES.DIALOG_CANCELLED) {
-        onError('Failed to open directory dialog')
+        queue.add({
+          title: 'Failed to open directory dialog',
+        })
       }
     }
   }
 
   return (
-    <div className="bg-grey-200">
+    <div className="bg-interactive-dark text-text-light">
       <button
-        className="flex items-center col gap-2 text-sm cursor-pointer"
+        className="flex items-center col gap-1.5 text-sm cursor-pointer px-2 py-1"
         onClick={openDirectory}
       >
-        <OpenFolderIcon className="size-6" />
-        <span>Open directory</span>
+        <PlusIcon className="size-4" />
+        <span>New directory</span>
       </button>
     </div>
   )
