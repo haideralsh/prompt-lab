@@ -12,6 +12,7 @@ pub fn run() {
             commands::directory::list::list_directory,
             commands::directory::recent::get_recent_directories,
             commands::directory::recent::add_recent_directory,
+            commands::directory::display::pretty_directory_path,
             commands::tree::search::search_tree,
             commands::tree::select::toggle_selection,
             commands::tree::select::clear_selection,
