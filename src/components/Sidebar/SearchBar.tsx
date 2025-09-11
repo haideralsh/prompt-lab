@@ -1,3 +1,8 @@
+import {
+  Cross2Icon,
+  LoopIcon,
+  MagnifyingGlassIcon,
+} from '@radix-ui/react-icons'
 import { SearchIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 
@@ -22,13 +27,13 @@ export function SearchBar({
   }
 
   return (
-    <div className="mt-3 px-3">
+    <div className="mx-2 mt-1 rounded-xs px-1.5 border border-border-dark group has-focus:border-border-mid">
       <label className="sr-only" htmlFor="sidebar-search">
         filter tree by file name
       </label>
       <div className="relative">
-        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
-          <SearchIcon className="h-4 w-4 text-gray-400" />
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center">
+          <MagnifyingGlassIcon className="text-text-dark group:has-focus:text-text-light" />
         </span>
 
         <input
@@ -43,7 +48,7 @@ export function SearchBar({
             onChange(e.target.value)
           }}
           disabled={disabled}
-          className="w-full rounded-md border text-text-dark border-gray-600 py-2 pl-8 pr-8 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
+          className="w-full text-text-light border-gray-600 py-1 pl-5.5 pr-5.5 text-sm placeholder:text-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
         />
 
         {/* Clear button */}
@@ -52,10 +57,10 @@ export function SearchBar({
             type="button"
             onClick={clear}
             aria-label="Clear search"
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 disabled:opacity-0 disabled:pointer-events-none"
+            className="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600 disabled:opacity-0 disabled:pointer-events-none"
           >
             <span className="text-base leading-none">
-              <XIcon className="size-4" />
+              <Cross2Icon className="text-text-light" />
             </span>
           </button>
         )}

@@ -40,7 +40,7 @@ export function Sidebar() {
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
-        : new Set(),
+        : new Set()
     )
   }
 
@@ -62,7 +62,7 @@ export function Sidebar() {
     <div className="flex h-full flex-col">
       <div className="flex flex-col gap-1.5 justify-between p-4">
         {directory?.name && (
-          <div className="text-sm font-semibold text-white">
+          <div className="text-xs font-bold tracking-wide text-text-dark uppercase">
             {directory.name}
           </div>
         )}
@@ -95,10 +95,10 @@ export function Sidebar() {
         onClear={() => search('')}
       />
 
-      <div className="mt-3 flex-1">
-        <div className="h-full overflow-y-auto rounded-lg">
+      <div className="mt-1 flex-1">
+        <div className="h-full overflow-x-hidden rounded-lg">
           {filteredTree.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-gray-500">
+            <div className="flex h-full items-center justify-center text-xs text-text-dark">
               No results found
             </div>
           ) : (

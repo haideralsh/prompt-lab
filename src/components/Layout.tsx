@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { ScrollArea } from './ScrollArea'
 
 const MIN_SIDEBAR_WIDTH = 15
 const MAX_SIDEBAR_WIDTH = 1000
@@ -52,7 +53,7 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
           className="bg-sidebar border-r border-border-dark relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light"
           style={{ width: sidebarWidth }}
         >
-          <div className="h-full overflow-auto">{sidebar}</div>
+          <ScrollArea>{sidebar}</ScrollArea>
 
           <div
             onMouseDown={startDragging}
@@ -61,7 +62,9 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
           />
         </div>
 
-        <div className="flex-1 overflow-auto bg-background">{main}</div>
+        <div className="flex-1">
+          <ScrollArea>{main}</ScrollArea>
+        </div>
       </div>
 
       <div className="flex-none border-t border-border-dark">

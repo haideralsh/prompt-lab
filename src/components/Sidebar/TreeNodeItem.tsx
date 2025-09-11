@@ -53,7 +53,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       id={item.id}
       textValue={item.title}
       onPress={onToggle}
-      className="cursor-pointer hover:bg-interactive-dark focus:bg-interactive-dark focus:ring-border-mid focus:ring focus:outline-none"
+      className="cursor-pointer hover:bg-interactive-dark focus:bg-interactive-dark focus:ring-border-mid focus:ring focus:outline-none select-none"
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded }) => (
@@ -67,7 +67,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
               isSelected={selected}
               isIndeterminate={indeterminate}
               onChange={onToggle}
-              className="flex h-4 w-4 items-center justify-center rounded border border-border-dark bg-transparent text-text-light data-[selected]:bg-[#114837] data-[selected]:border-[#114837] data-[indeterminate]:bg-[#114837] data-[indeterminate]:border-[#114837] focus:outline-none focus:ring-0 focus:ring-[#114837] flex-shrink-0"
+              className="flex items-center justify-center size-[15px] rounded-sm  border border-border-light bg-transparent data-[selected]:bg-accent-solid-dark data-[selected]:border-border-bg-accent-solid-dark data-[indeterminate]:bg-accent-solid-dark data-[indeterminate]:border-border-bg-accent-solid-dark focus:outline-none focus:ring-0 focus:ring-border-bg-text-dark flex-shrink-0 text-text-light"
             >
               {selected && <CheckIcon />}
               {indeterminate && <MinusIcon />}
@@ -83,10 +83,10 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                 </span>
               </Button>
             ) : (
-              <div className="shrink-0 w-4 h-4" />
+              <div className="shrink-0 size-4" />
             )}
 
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 text-nowrap">
               <span className="text-text-dark text-sm">
                 {item.type === 'directory' ? (
                   isExpanded ? (
@@ -98,7 +98,9 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                   <FileIcon />
                 )}
               </span>
-              <span className="text-sm text-text-dark">{item.title}</span>
+              <span title={item.id} className="text-sm text-text-light ">
+                {item.title}
+              </span>
             </div>
           </div>
         )}

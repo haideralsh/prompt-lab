@@ -213,8 +213,7 @@ export function Footer() {
       </div> */}
       <button
         onClick={handleCopyToClipboard}
-        type="button"
-        className="shrink-0 rounded-sm bg-interactive-light px-2 py-1 text-xs font-semibold text-text-light ml-auto"
+        className="ml-auto text-xs font-medium bg-accent-solid-dark hover:bg-accent-solid-light active:bg-accent-solid-light flex items-center col gap-1.5 rounded-sm cursor-pointer px-2 py-1 w-fit text-nowrap text-text-light"
       >
         Copy to Clipboard
       </button>
