@@ -15,16 +15,21 @@ interface TokenChartProps {
 }
 
 const colors = [
-  '#ef4444', // red
-  '#f97316', // orange
-  '#eab308', // yellow
-  '#a855f7', // purple
-  '#3b82f6', // blue
-  '#10b981', // green
-  '#6b7280', // gray for "other"
+  '#2F6E7F',
+  '#7EA9EC',
+  '#7545F3',
+  '#A86CD9',
+  '#A74091',
+  '#E8926B',
+  '#8C873E',
+  // '#70C5DF',
+  // '#3D78C2',
+  // '#BEAFFA',
+  // '#953CD2',
+  '#A7A7AD', // other
 ]
 
-const FILES_TO_DISPLAY_COUNT = 6
+const FILES_TO_DISPLAY_COUNT = 11 - 4 // still deciding the number of files to display
 
 export default function TokenChart({
   files,
@@ -40,7 +45,7 @@ export default function TokenChart({
   const remainingFiles = files.slice(FILES_TO_DISPLAY_COUNT)
   const remainingTokens = remainingFiles.reduce(
     (sum, file) => sum + (file.tokenCount || 0),
-    0
+    0,
   )
   const otherPercentage =
     remainingTokens > 0
@@ -65,13 +70,17 @@ export default function TokenChart({
         {chartData.map((file, index) => (
           <div
             key={file.id}
-            className="absolute top-0 h-full transition-all duration-300 cursor-pointer"
+            className="absolute top-0 h-full transition-all duration-300 cursor-pointer ease-linear"
             style={{
               backgroundColor: colors[index],
               left: `${chartData
                 .slice(0, index)
                 .reduce((sum, f) => sum + f.percentage, 0)}%`,
               width: `${file.percentage}%`,
+              borderRight:
+                index !== chartData.length - 1
+                  ? '3px solid var(--color-background-dark)'
+                  : undefined,
               opacity:
                 hoveredIndex !== null && hoveredIndex !== index ? 0.3 : 1,
             }}
