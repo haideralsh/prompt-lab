@@ -2,6 +2,8 @@
 
 @theme {
     /* =============== Colors =============== */
+
+    /* Grey */
     --color-background-dark: oklch(0.1776 0 0);
     --color-background-light: oklch(0.2134 0 0);
 
@@ -13,11 +15,30 @@
     --color-border-mid: oklch(0.4017 0 0);
     --color-border-light: oklch(0.4891 0 0);
 
-    --color-solid-light: oklch(0.5382 0 0);
-    --color-solid-dark: oklch(0.5829 0 0);
+    --color-solid-dark: oklch(0.5382 0 0);
+    --color-solid-light: oklch(0.5829 0 0);
 
     --color-text-dark: oklch(0.7699 0 0);
     --color-text-light: oklch(0.9491 0 0);
+
+    /* Accent - Blue */
+
+    --color-accent-background-dark: oklch(0.1936 0.0255 256.49);
+    --color-accent-background-light: oklch(0.2129 0.0303 261.25);
+
+    --color-accent-interactive-dark: oklch(0.2745 0.0663 253.93);
+    --color-accent-interactive-mid: oklch(0.3201 0.0968 252.35);
+    --color-accent-interactive-light: oklch(0.3671 0.1059 250.7);
+
+    --color-accent-border-dark: oklch(0.416 0.1133 252.01);
+    --color-accent-border-mid: oklch(0.4741 0.1219 253.09);
+    --color-accent-border-light: oklch(0.5406 0.1395 253.17);
+
+    --color-accent-solid-dark: oklch(0.6493 0.193 251.78);
+    --color-accent-solid-light: oklch(0.6884 0.1693 251.4);
+
+    --color-accent-text-dark: oklch(0.7642 0.1257 249.46);
+    --color-accent-text-light: oklch(0.9071 0.051 238.45);
 
     /* =============== Typography =============== */
     --font-sans: Inter, sans-serif;
