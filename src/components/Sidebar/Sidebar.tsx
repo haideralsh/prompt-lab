@@ -8,7 +8,6 @@ import type {
   SearchResult,
   SelectionResult,
 } from '../../types/FileTree'
-import { ChevronsDownUpIcon, SquareXIcon } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
@@ -40,7 +39,7 @@ export function Sidebar() {
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
-        : new Set()
+        : new Set(),
     )
   }
 
@@ -60,42 +59,36 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-col gap-1.5 justify-between p-4">
+      {/*<div className="flex flex-col gap-1.5 justify-between p-4">
         {directory?.name && (
           <div className="text-xs font-bold tracking-wide text-text-dark uppercase">
             {directory.name}
           </div>
         )}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={clearSelection}
-            className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-gray-400"
-            title="Clear selection"
-          >
-            <span aria-hidden className="text-base leading-none">
-              <SquareXIcon className="size-3" />
-            </span>
-            <span>Clear selection</span>
-          </button>
-          <button
-            onClick={collapseAll}
-            className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-gray-400"
-            title="Collapse all"
-          >
-            <span aria-hidden className="text-base leading-none">
-              <ChevronsDownUpIcon className="size-3" />
-            </span>
-            <span>Collapse all</span>
-          </button>
-        </div>
-      </div>
+      </div>*/}
 
+      <div className="flex items-center justify-end gap-0.5 px-2 pt-2">
+        <button
+          onClick={clearSelection}
+          className="inline-flex items-center gap-1 text-xs py-0.5 px-2 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
+          title="Deselect all"
+        >
+          <span>Deselect all</span>
+        </button>
+        <button
+          onClick={collapseAll}
+          className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
+          title="Collapse all"
+        >
+          <span>Collapse all</span>
+        </button>
+      </div>
       <SearchBar
         onChange={(value) => search(value)}
         onClear={() => search('')}
       />
 
-      <div className="mt-1 flex-1">
+      <div className="flex-1">
         <div className="h-full overflow-x-hidden rounded-lg">
           {filteredTree.length === 0 ? (
             <div className="flex h-full items-center justify-center text-xs text-text-dark">

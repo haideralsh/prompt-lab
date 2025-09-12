@@ -53,7 +53,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       id={item.id}
       textValue={item.title}
       onPress={onToggle}
-      className="cursor-pointer hover:bg-interactive-dark focus:bg-interactive-dark focus:ring-border-mid focus:ring focus:outline-none select-none"
+      className="cursor-pointer hover:bg-accent-interactive-dark focus:bg-accent-interactive-dark focus:ring-accent-border-dark focus:ring focus:outline-none select-none"
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded }) => (
@@ -67,7 +67,10 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
               isSelected={selected}
               isIndeterminate={indeterminate}
               onChange={onToggle}
-              className="flex items-center justify-center size-[15px] rounded-sm  border border-border-light bg-transparent data-[selected]:bg-accent-solid-dark data-[selected]:border-border-bg-accent-solid-dark data-[indeterminate]:bg-accent-solid-dark data-[indeterminate]:border-border-bg-accent-solid-dark focus:outline-none focus:ring-0 focus:ring-border-bg-text-dark flex-shrink-0 text-text-light"
+              className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+              border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
+              bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
+              flex-shrink-0"
             >
               {selected && <CheckIcon />}
               {indeterminate && <MinusIcon />}
@@ -98,7 +101,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                   <FileIcon />
                 )}
               </span>
-              <span title={item.id} className="text-sm text-text-light ">
+              <span title={item.id} className={`text-sm text-text-dark`}>
                 {item.title}
               </span>
             </div>

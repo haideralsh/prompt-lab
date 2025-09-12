@@ -50,7 +50,7 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
     >
       <div className="flex flex-1 min-h-0">
         <div
-          className="bg-sidebar border-r border-border-dark relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light"
+          className="bg-background-dark border-r border-border-dark relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light"
           style={{ width: sidebarWidth }}
         >
           <ScrollArea>{sidebar}</ScrollArea>
