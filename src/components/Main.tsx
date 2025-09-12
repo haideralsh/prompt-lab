@@ -35,16 +35,16 @@ export function Main() {
 
   return (
     <section className="flex-1 p-4 bg-background-dark">
-      <h2 className="text-sm font-semibold text-white mb-2">Selected files</h2>
+      <h2 className="text-sm font-normal text-text-dark mb-2">Selected files</h2>
       {sortedFiles.length > 0 && (
-        <ul className="space-y-4 text-sm text-white">
+        <ul className="space-y-4 text-sm text-text-dark">
           {Array.from(sortedFiles).map((path) => (
             <li key={path.id} className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
                   <span className="flex items-center gap-1">
-                    <span className="font-semibold">{path.title}</span>
-                    <span className="text-gray-400">
+                    <span className="font-normal">{path.title}</span>
+                    <span className="text-text-dark">
                       {path.tokenCount == null
                         ? 'counting...'
                         : `${path.tokenCount} tokens${
