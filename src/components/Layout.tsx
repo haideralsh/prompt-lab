@@ -8,9 +8,10 @@ interface LayoutProps {
   sidebar: React.ReactNode
   main: React.ReactNode
   footer: React.ReactNode
+  subfooter: React.ReactNode
 }
 
-export function Layout({ sidebar, main, footer }: LayoutProps) {
+export function Layout({ sidebar, main, footer, subfooter }: LayoutProps) {
   const [sidebarWidth, setSidebarWidth] = useState(250)
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -69,6 +70,10 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
 
       <div className="flex-none border-t border-border-dark">
         <div className="p-3">{footer}</div>
+      </div>
+
+      <div className="flex-none bg-interactive-mid text-text-dark text-xs">
+        <div className="py-1 px-2">{subfooter}</div>
       </div>
     </div>
   )

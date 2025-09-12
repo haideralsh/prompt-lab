@@ -9,7 +9,14 @@ function App() {
   const { directory } = useSidebarContext()
 
   if (directory)
-    return <Layout sidebar={<Sidebar />} main={<Main />} footer={<Footer />} />
+    return (
+      <Layout
+        sidebar={<Sidebar />}
+        main={<Main />}
+        footer={<Footer />}
+        subfooter={<>Subfooter</>}
+      />
+    )
 
   return <LaunchScreen />
 }
