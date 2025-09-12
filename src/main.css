@@ -2,6 +2,8 @@
 
 @theme {
     /* =============== Colors =============== */
+    /* Remove all default tailwind colors */
+    --color-*: initial;
 
     /* Grey */
     --color-background-dark: oklch(0.1776 0 0);
