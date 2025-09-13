@@ -42,6 +42,9 @@
     --color-accent-text-dark: oklch(0.7642 0.1257 249.46);
     --color-accent-text-light: oklch(0.9071 0.051 238.45);
 
+    /* Utility colors */
+    --color-red: #e5484d;
+    --color-green: #30a46c;
     /* =============== Typography =============== */
     --font-sans: Inter, sans-serif;
 

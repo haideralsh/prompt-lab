@@ -1,15 +1,22 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSidebarContext } from './Sidebar/SidebarContext'
 import { invoke } from '@tauri-apps/api/core'
 import { SelectionResult } from '../types/FileTree'
 import {
   Button,
+  Checkbox,
   Disclosure,
   DisclosureGroup,
   DisclosurePanel,
   Heading,
 } from 'react-aria-components'
-import { TriangleDownIcon, TriangleRightIcon } from '@radix-ui/react-icons'
+import {
+  CheckIcon,
+  CommitIcon,
+  FileIcon,
+  TriangleDownIcon,
+  TriangleRightIcon,
+} from '@radix-ui/react-icons'
 
 export function Main() {
   const {
@@ -20,6 +27,8 @@ export function Main() {
     setSelectedNodes,
     setIndeterminateNodes,
   } = useSidebarContext()
+
+  const [gitStatus, setGitStatus] = useState<GitStatusResult>(null)
 
   const sortedFiles = useMemo(() => {
     return selectedFiles.sort((a, b) => {
@@ -41,22 +50,43 @@ export function Main() {
     setIndeterminateNodes(new Set(selection.indeterminate))
   }
 
+  useEffect(() => {
+    invoke<GitStatusResult>('git_status', {
+      root: directory?.path,
+    }).then((change) => setGitStatus(change))
+  }, [directory?.path])
+
   return (
     <section className="flex-1 px-2 pb-2 bg-background-dark">
-      <DisclosureGroup defaultExpandedKeys={['selected']}>
-        <Disclosure id="selected">
+      <DisclosureGroup
+        defaultExpandedKeys={['selected', 'git']}
+        allowsMultipleExpanded
+      >
+        <Disclosure id="selected" className="border-b border-border-dark -mx-2">
           {({ isExpanded }) => (
             <>
-              <div className="sticky top-0 -mx-2 px-2 py-2 bg-background-dark border-b border-border-dark">
-                <Heading className="flex items-center gap-1 text-xs text-text-dark">
-                  <Button slot="trigger" className="flex items-center gap-1">
-                    {isExpanded ? (
-                      <TriangleDownIcon className="size-4" />
-                    ) : (
-                      <TriangleRightIcon className="size-4" />
-                    )}
+              <div className="sticky top-0 px-2 py-2 bg-background-dark">
+                <Heading className="flex items-center gap-1 text-text-dark">
+                  <Checkbox
+                    slot="selection"
+                    className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+                                border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
+                                bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
+                                flex-shrink-0"
+                  >
+                    {({ isSelected }) => isSelected && <CheckIcon />}
+                  </Checkbox>
+                  <Button
+                    slot="trigger"
+                    className="flex items-center gap-1 cursor-pointer"
+                  >
+                    {isExpanded ? <TriangleDownIcon /> : <TriangleRightIcon />}
+
+                    <FileIcon />
+                    <span className="text-xs">
+                      Selected files ({sortedFiles.length})
+                    </span>
                   </Button>
-                  <span>Selected files</span>
                 </Heading>
               </div>
               <DisclosurePanel>
@@ -90,6 +120,81 @@ export function Main() {
                       </li>
                     ))}
                   </ul>
+                )}
+              </DisclosurePanel>
+            </>
+          )}
+        </Disclosure>
+        <Disclosure id="git" className="border-b border-border-dark -mx-2">
+          {({ isExpanded }) => (
+            <>
+              <div className="sticky top-0 px-2 py-2 bg-background-dark">
+                <Heading className="flex items-center gap-1 text-xs text-text-dark">
+                  <Checkbox
+                    slot="selection"
+                    className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+                                border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
+                                bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
+                                flex-shrink-0"
+                  >
+                    {({ isSelected }) => isSelected && <CheckIcon />}
+                  </Checkbox>
+                  <Button
+                    slot="trigger"
+                    className="flex items-center gap-1 cursor-pointer"
+                  >
+                    {isExpanded ? (
+                      <TriangleDownIcon className="size-4" />
+                    ) : (
+                      <TriangleRightIcon className="size-4" />
+                    )}
+                    <CommitIcon />
+                    <span>
+                      Git (
+                      {gitStatus ? gitStatus.length : 'Not a Git repository'})
+                    </span>
+                  </Button>
+                </Heading>
+              </div>
+              <DisclosurePanel className="px-2 pb-4">
+                {gitStatus && gitStatus.length > 0 ? (
+                  <ul className="space-y-3 text-sm text-text-dark mt-2">
+                    {gitStatus.map((change) => (
+                      <li
+                        key={change.path}
+                        className="flex items-baseline gap-2"
+                      >
+                        <div className="flex flex-col">
+                          <div className="flex gap-2 items-center">
+                            <Checkbox
+                              slot="selection"
+                              className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+                                          border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
+                                          bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
+                                          flex-shrink-0"
+                            >
+                              {({ isSelected }) => isSelected && <CheckIcon />}
+                            </Checkbox>
+                            <span className="font-normal">{change.path}</span>
+                          </div>
+                          <span className="text-xs text-text-dark pl-[calc(15px+var(--spacing)*2)]">
+                            {/* TODO: make the change type an icon */}
+                            {change.changeType}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs font-semibold">
+                          <span className="text-red bg-red/15 px-1 py-0.5 rounded-sm">
+                            -{change.linesDeleted}
+                          </span>
+                          <span className="text-green bg-green/15 px-1 py-0.5 rounded-sm">
+                            +{change.linesAdded}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-xs text-text-dark mt-2">No changes</div>
                 )}
               </DisclosurePanel>
             </>
