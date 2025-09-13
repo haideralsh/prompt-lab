@@ -72,7 +72,7 @@ export function Layout({ sidebar, main, footer, subfooter }: LayoutProps) {
         <div className="p-3">{footer}</div>
       </div>
 
-      <div className="flex-none bg-interactive-mid text-text-dark text-xs">
+      <div className="flex-none bg-interactive-dark text-text-dark text-xs">
         <div className="py-1 px-2">{subfooter}</div>
       </div>
     </div>
