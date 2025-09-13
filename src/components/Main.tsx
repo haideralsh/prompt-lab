@@ -69,6 +69,7 @@ export function Main() {
                 <Heading className="flex items-center gap-1 text-text-dark">
                   <Checkbox
                     slot="selection"
+                    defaultSelected
                     className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
                                 border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
                                 bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
@@ -132,6 +133,7 @@ export function Main() {
                 <Heading className="flex items-center gap-1 text-xs text-text-dark">
                   <Checkbox
                     slot="selection"
+                    defaultSelected
                     className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
                                 border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
                                 bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light

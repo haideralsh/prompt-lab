@@ -4,6 +4,7 @@ import { useSidebarContext } from './components/Sidebar/SidebarContext'
 import { Main } from './components/Main'
 import { Layout } from './components/Layout'
 import { Footer } from './components/Footer'
+import { SubFooter } from './components/SubFooter'
 
 function App() {
   const { directory } = useSidebarContext()
@@ -14,7 +15,7 @@ function App() {
         sidebar={<Sidebar />}
         main={<Main />}
         footer={<Footer />}
-        subfooter={<>Subfooter</>}
+        subfooter={<SubFooter />}
       />
     )
 

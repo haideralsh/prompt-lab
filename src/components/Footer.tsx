@@ -14,9 +14,15 @@ function getTreeMode(treeFormat: Set<Key>): TreeMode {
 }
 
 export function Footer() {
-  const { directory, selectedFiles, setSelectedFiles, tree, selectedNodes } =
-    useSidebarContext()
-  const [totalTokenCount, setTotalTokenCount] = useState(0)
+  const {
+    directory,
+    selectedFiles,
+    setSelectedFiles,
+    tree,
+    selectedNodes,
+    totalTokenCount,
+    setTotalTokenCount,
+  } = useSidebarContext()
   let [treeFormat] = useState(new Set<Key>(['full']))
   let [gitDiff] = useState(false)
   let [, setGitStatus] = useState<GitStatusResult>(null)
@@ -77,140 +83,6 @@ export function Footer() {
       {sortedFiles.length > 0 && (
         <TokenChart files={sortedFiles} totalTokenCount={totalTokenCount} />
       )}
-      {/* <div className="flex gap-8 flex-grow-0">
-        <ToggleButton
-          isDisabled={!gitStatus}
-          isSelected={gitDiff}
-          onChange={setGitDiff}
-        >
-          Git diff
-          {gitStatus && (
-            <div className="ml-2 text-xs text-gray-400">
-              {gitStatus.length} changes
-            </div>
-          )}
-        </ToggleButton>
-        <ToggleButtonGroup
-          className="flex flex-grow"
-          selectionMode="single"
-          selectedKeys={treeFormat}
-          onSelectionChange={setTreeFormat}
-        >
-          <RACToggleButton
-            id="none"
-            className="
-                        flex-grow
-                        z-10
-                        -ml-0
-                        rounded-none
-                        first:rounded-l-md
-                        first:ml-0
-                        last:rounded-r-md
-                        border
-                        border-gray-300
-                        px-4
-                        py-2
-                        text-sm
-                        font-medium
-                        text-gray-700
-                        bg-white
-                        hover:bg-gray-50
-                        focus:z-20
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        data-[selected]:z-20
-                        data-[selected]:bg-blue-500
-                        data-[selected]:text-white
-                        data-[selected]:border-blue-500
-                        data-[disabled]:z-0
-                        data-[disabled]:opacity-50
-                        data-[disabled]:cursor-not-allowed
-                        -ml-px
-                      "
-          >
-            None
-          </RACToggleButton>
-          <RACToggleButton
-            id="selected"
-            className="
-                flex-grow
-                        z-10
-                        rounded-none
-                        first:rounded-l-md
-                        first:ml-0
-                        last:rounded-r-md
-                        border
-                        border-gray-300
-                        px-4
-                        py-2
-                        text-sm
-                        font-medium
-                        text-gray-700
-                        bg-white
-                        hover:bg-gray-50
-                        focus:z-20
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        data-[selected]:z-20
-                        data-[selected]:bg-blue-500
-                        data-[selected]:text-white
-                        data-[selected]:border-blue-500
-                        data-[disabled]:z-0
-                        data-[disabled]:opacity-50
-                        data-[disabled]:cursor-not-allowed
-                        -ml-px
-                      "
-          >
-            Selected
-          </RACToggleButton>
-          <RACToggleButton
-            id="full"
-            className="
-                flex-grow
-                        z-10
-                        rounded-none
-                        first:rounded-l-md
-                        first:ml-0
-                        last:rounded-r-md
-                        border
-                        border-gray-300
-                        px-4
-                        py-2
-                        text-sm
-                        font-medium
-                        text-gray-700
-                        bg-white
-                        hover:bg-gray-50
-                        focus:z-20
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        data-[selected]:z-20
-                        data-[selected]:bg-blue-500
-                        data-[selected]:text-white
-                        data-[selected]:border-blue-500
-                        data-[disabled]:z-0
-                        data-[disabled]:opacity-50
-                        data-[disabled]:cursor-not-allowed
-                        -ml-px
-                      "
-          >
-            Full
-          </RACToggleButton>
-        </ToggleButtonGroup>
-        <button
-          onClick={handleCopyToClipboard}
-          type="button"
-          className="flex-grow rounded-sm bg-gray-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-gray-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 dark:bg-gray-500 dark:shadow-none dark:hover:bg-gray-400 dark:focus-visible:outline-gray-500"
-        >
-          Copy to Clipboard
-        </button>
-      </div> */}
       <button
         onClick={handleCopyToClipboard}
         className="ml-auto text-xs font-medium bg-accent-solid-dark hover:bg-accent-solid-light active:bg-accent-solid-light flex items-center col gap-1.5 rounded-sm cursor-pointer px-2 py-1 w-fit text-nowrap text-text-light"
