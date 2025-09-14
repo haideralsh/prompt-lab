@@ -43,11 +43,11 @@
     --color-accent-text-light: oklch(0.9071 0.051 238.45);
 
     /* Utility colors */
-    --color-red: #e5484d;
-    --color-green: #30a46c;
+    --color-red: oklch(0.6256 0.1933 23.03);
+    --color-green: oklch(0.6406 0.1329 157.68);
+
     /* =============== Typography =============== */
     --font-sans: Inter, sans-serif;
-
     --text-xs: 0.75rem;
     --text-xs--line-height: calc(1 / 0.75);
 }

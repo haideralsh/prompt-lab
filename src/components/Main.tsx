@@ -82,8 +82,6 @@ export function Main() {
                     className="flex items-center gap-1 cursor-pointer"
                   >
                     {isExpanded ? <TriangleDownIcon /> : <TriangleRightIcon />}
-
-                    <FileIcon />
                     <span className="text-xs">
                       Selected files ({sortedFiles.length})
                     </span>
@@ -150,7 +148,6 @@ export function Main() {
                     ) : (
                       <TriangleRightIcon className="size-4" />
                     )}
-                    <CommitIcon />
                     <span>
                       Git (
                       {gitStatus ? gitStatus.length : 'Not a Git repository'})
@@ -162,33 +159,28 @@ export function Main() {
                 {gitStatus && gitStatus.length > 0 ? (
                   <ul className="space-y-3 text-sm text-text-dark mt-2">
                     {gitStatus.map((change) => (
-                      <li
-                        key={change.path}
-                        className="flex items-baseline gap-2"
-                      >
-                        <div className="flex flex-col">
-                          <div className="flex gap-2 items-center">
-                            <Checkbox
-                              slot="selection"
-                              className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+                      <li key={change.path} className="flex items-center gap-2">
+                        <Checkbox
+                          slot="selection"
+                          className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
                                           border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
                                           bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
                                           flex-shrink-0"
-                            >
-                              {({ isSelected }) => isSelected && <CheckIcon />}
-                            </Checkbox>
-                            <span className="font-normal">{change.path}</span>
-                          </div>
-                          <span className="text-xs text-text-dark pl-[calc(15px+var(--spacing)*2)]">
-                            {/* TODO: make the change type an icon */}
-                            {change.changeType}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-semibold">
-                          <span className="text-red bg-red/15 px-1 py-0.5 rounded-sm">
+                        >
+                          {({ isSelected }) => isSelected && <CheckIcon />}
+                        </Checkbox>
+                        <span className="font-normal">{change.path} </span>
+                        <span
+                          className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5"
+                          title={change.changeType}
+                        >
+                          {change.changeType.slice(0, 1).toUpperCase()}
+                        </span>
+                        <div className="flex items-center font-semibold">
+                          <span className="text-red bg-red/15 px-1 py-0.5 rounded-tl-sm rounded-bl-sm text-xs">
                             -{change.linesDeleted}
                           </span>
-                          <span className="text-green bg-green/15 px-1 py-0.5 rounded-sm">
+                          <span className="text-green bg-green/15 px-1 py-0.5 rounded-tr-sm rounded-br-sm text-xs">
                             +{change.linesAdded}
                           </span>
                         </div>
