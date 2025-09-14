@@ -1,6 +1,8 @@
 pub mod commands;
 pub mod errors;
 pub mod models;
+pub mod lifecycle;
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -20,6 +22,7 @@ pub fn run() {
             commands::git::git_status,
             commands::scrape::page_to_md,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(lifecycle::handle_run_event);
 }

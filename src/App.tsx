@@ -5,8 +5,11 @@ import { Main } from './components/Main'
 import { Layout } from './components/Layout'
 import { Footer } from './components/Footer'
 import { SubFooter } from './components/SubFooter'
+import useAppExitListener from './components/AppExitListener'
 
 function App() {
+  useAppExitListener()
+
   const { directory } = useSidebarContext()
 
   if (directory)
