@@ -1,10 +1,10 @@
-import { useSidebarContext } from './Sidebar/SidebarContext'
-import TokenChart from './TokenChart'
 import { Key } from 'react-aria-components'
 import { useEffect, useMemo, useState } from 'react'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
-import { TreeMode } from '../types/FileTree'
 import { invoke } from '@tauri-apps/api/core'
+import { useSidebarContext } from '../Sidebar/SidebarContext'
+import TokenChart from '../TokenChart'
+import { TreeMode } from '../../types/FileTree'
 
 function getTreeMode(treeFormat: Set<Key>): TreeMode {
   if (treeFormat.has('selected')) return 'selected'

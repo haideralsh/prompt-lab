@@ -1,10 +1,12 @@
 import { Sidebar } from './components/Sidebar/Sidebar'
 import { LaunchScreen } from './components/BlankState'
 import { useSidebarContext } from './components/Sidebar/SidebarContext'
-import { Main } from './components/Main'
-import { Layout } from './components/Layout'
-import { Footer } from './components/Footer'
-import { SubFooter } from './components/SubFooter'
+import { Layout } from './components/layout/Layout'
+import { Main } from './components/layout/Main'
+import { Footer } from './components/layout/Footer'
+import { SubFooter } from './components/layout/SubFooter'
+import { Tabs } from './components/layout/Tabs'
+
 import useAppExitListener from './hooks/useAppExitListener'
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
         main={<Main />}
         footer={<Footer />}
         subfooter={<SubFooter />}
+        tabs={<Tabs />}
       />
     )
 

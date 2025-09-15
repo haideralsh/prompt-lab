@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSidebarContext } from './Sidebar/SidebarContext'
 import { invoke } from '@tauri-apps/api/core'
-import { SelectionResult } from '../types/FileTree'
 import {
   Button,
   Checkbox,
@@ -15,6 +13,8 @@ import {
   TriangleDownIcon,
   TriangleRightIcon,
 } from '@radix-ui/react-icons'
+import { useSidebarContext } from '../Sidebar/SidebarContext'
+import { SelectionResult } from '../../types/FileTree'
 
 export function Main() {
   const {
@@ -159,11 +159,11 @@ export function Main() {
               </div>
               <DisclosurePanel className="pl-[calc(15px+var(--spacing)*2)] pr-2 pb-4">
                 {gitStatus && gitStatus.length > 0 ? (
-                  <ul className="space-y-1 text-sm text-text-light">
+                  <ul className="space-y-1 text-sm text-text-dark">
                     {gitStatus.map((change) => (
                       <li key={change.path}>
                         <Checkbox
-                          className="flex gap-2 items-center group"
+                          className="flex gap-2 items-center  group"
                           slot="selection"
                         >
                           {({ isSelected }) => (
@@ -178,7 +178,7 @@ export function Main() {
                               </span>
                               <span className="font-normal">{change.path}</span>
                               <span
-                                className="text-text-light bg-border-dark rounded-sm text-xs px-1 py-0.5"
+                                className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5"
                                 title={change.changeType}
                               >
                                 {change.changeType.slice(0, 1).toUpperCase()}

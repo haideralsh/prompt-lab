@@ -1,4 +1,4 @@
-import { useSidebarContext } from './Sidebar/SidebarContext'
+import { useSidebarContext } from '../Sidebar/SidebarContext'
 
 export function SubFooter() {
   const { selectedFiles, totalTokenCount } = useSidebarContext()

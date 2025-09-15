@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ScrollArea } from './ScrollArea'
+import { ScrollArea } from '../ScrollArea'
 
 const MIN_SIDEBAR_WIDTH = 15
 const MAX_SIDEBAR_WIDTH = 1000
@@ -9,9 +9,16 @@ interface LayoutProps {
   main: React.ReactNode
   footer: React.ReactNode
   subfooter: React.ReactNode
+  tabs: React.ReactNode
 }
 
-export function Layout({ sidebar, main, footer, subfooter }: LayoutProps) {
+export function Layout({
+  sidebar,
+  main,
+  footer,
+  subfooter,
+  tabs,
+}: LayoutProps) {
   const [sidebarWidth, setSidebarWidth] = useState(250)
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -49,6 +56,7 @@ export function Layout({ sidebar, main, footer, subfooter }: LayoutProps) {
       ref={containerRef}
       className="h-screen flex flex-col bg-background-dark"
     >
+      <div className="flex-none">{tabs}</div>
       <div className="flex flex-1 min-h-0">
         <div
           className="bg-background-dark border-r border-border-dark relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light"
