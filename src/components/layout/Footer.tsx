@@ -57,19 +57,20 @@ export function Footer() {
         'file-token-counts',
         (event) => {
           const { files, totalTokenCount: eventTotalTokenCount } = event.payload
-          if (!files?.length) return
-
           setTotalTokenCount(eventTotalTokenCount)
-          setSelectedFiles((prev) => {
-            const map = new Map(prev.map((f) => [f.id, f]))
-            for (const { id, tokenCount, tokenPercentage } of files) {
-              const node = map.get(id)
-              if (node) {
-                map.set(id, { ...node, tokenCount, tokenPercentage })
+
+          if (files?.length) {
+            setSelectedFiles((prev) => {
+              const map = new Map(prev.map((f) => [f.id, f]))
+              for (const { id, tokenCount, tokenPercentage } of files) {
+                const node = map.get(id)
+                if (node) {
+                  map.set(id, { ...node, tokenCount, tokenPercentage })
+                }
               }
-            }
-            return Array.from(map.values())
-          })
+              return Array.from(map.values())
+            })
+          }
         },
       )
     }

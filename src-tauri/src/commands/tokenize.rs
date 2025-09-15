@@ -155,6 +155,18 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
         let bpe = cl100k_base().ok();
         let sid = selection_id_for(&selection_ids);
 
+        if selection_ids.is_empty() {
+            let _ = app.emit(
+                "file-token-counts",
+                TokenCountsEvent {
+                    selection_id: sid,
+                    total_token_count: 0,
+                    files: Vec::new(),
+                },
+            );
+            return;
+        }
+
         let mut counts: Vec<(String, usize)> = Vec::with_capacity(selection_ids.len());
         let mut store_batch: Vec<(String, CacheEntry)> = Vec::new();
 

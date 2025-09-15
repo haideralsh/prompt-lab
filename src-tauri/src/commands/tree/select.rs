@@ -119,9 +119,7 @@ pub(crate) fn toggle_selection(
             let selected_files = collect_selected_files(tree_index, &set);
 
             let selection_ids: Vec<String> = selected_files.iter().map(|f| f.id.clone()).collect();
-            if !selection_ids.is_empty() {
-                spawn_token_count_task(app.clone(), path.clone(), selection_ids);
-            }
+            spawn_token_count_task(app.clone(), path.clone(), selection_ids);
 
             return Ok(SelectionResult {
                 selected_nodes: set.into_iter().collect(),
@@ -158,9 +156,7 @@ pub(crate) fn toggle_selection(
     let selected_files = collect_selected_files(tree_index, &set);
 
     let selection_ids: Vec<String> = selected_files.iter().map(|f| f.id.clone()).collect();
-    if !selection_ids.is_empty() {
-        spawn_token_count_task(app.clone(), path.clone(), selection_ids);
-    }
+    spawn_token_count_task(app.clone(), path.clone(), selection_ids);
 
     Ok(SelectionResult {
         selected_nodes: set.into_iter().collect(),
@@ -186,6 +182,8 @@ pub(crate) fn clear_selection(
 
     let indeterminates = compute_indeterminate(tree_index, &set);
     let selected_files = collect_selected_files(tree_index, &set);
+
+    spawn_token_count_task(app.clone(), path.clone(), Vec::new());
 
     Ok(SelectionResult {
         selected_nodes: Vec::new(),
