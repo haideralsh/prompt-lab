@@ -1,6 +1,6 @@
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
-import { useSidebarContext } from './Sidebar/SidebarContext'
+import { useSidebarContext } from '../components/Sidebar/SidebarContext'
 import { useEffect, useRef } from 'react'
 
 export default function useAppExitListener() {

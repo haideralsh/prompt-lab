@@ -12,8 +12,6 @@ import {
 } from 'react-aria-components'
 import {
   CheckIcon,
-  CommitIcon,
-  FileIcon,
   TriangleDownIcon,
   TriangleRightIcon,
 } from '@radix-ui/react-icons'
@@ -57,7 +55,7 @@ export function Main() {
   }, [directory?.path])
 
   return (
-    <section className="flex-1 px-2 pb-2 bg-background-dark">
+    <section className="flex-1 px-2 bg-background-dark">
       <DisclosureGroup
         defaultExpandedKeys={['selected', 'git']}
         allowsMultipleExpanded
@@ -82,22 +80,22 @@ export function Main() {
                     className="flex items-center gap-1 cursor-pointer"
                   >
                     {isExpanded ? <TriangleDownIcon /> : <TriangleRightIcon />}
-                    <span className="text-xs">
+                    <span className="uppercase font-semibold tracking-wide text-xs">
                       Selected files ({sortedFiles.length})
                     </span>
                   </Button>
                 </Heading>
               </div>
-              <DisclosurePanel>
-                {sortedFiles.length > 0 && (
-                  <ul className="space-y-4 text-sm text-text-dark mt-2">
+              <DisclosurePanel className="pl-[calc(15px+var(--spacing)*8)] pb-4">
+                {sortedFiles.length > 0 ? (
+                  <ul className="space-y-4 text-sm text-text-light">
                     {Array.from(sortedFiles).map((path) => (
                       <li key={path.id} className="flex flex-col gap-2">
                         <div className="flex justify-between items-center">
                           <div className="flex flex-col gap-2">
                             <span className="flex items-center gap-1">
                               <span className="font-normal">{path.title}</span>
-                              <span className="text-text-dark">
+                              <span className="text-text-light">
                                 {path.tokenCount == null
                                   ? 'counting...'
                                   : `${path.tokenCount} tokens${
@@ -119,6 +117,10 @@ export function Main() {
                       </li>
                     ))}
                   </ul>
+                ) : (
+                  <div className="text-xs text-text-dark">
+                    Files selected in the tree will appear here.
+                  </div>
                 )}
               </DisclosurePanel>
             </>
@@ -148,47 +150,55 @@ export function Main() {
                     ) : (
                       <TriangleRightIcon className="size-4" />
                     )}
-                    <span>
+                    <span className="uppercase font-semibold tracking-wide text-xs">
                       Git (
                       {gitStatus ? gitStatus.length : 'Not a Git repository'})
                     </span>
                   </Button>
                 </Heading>
               </div>
-              <DisclosurePanel className="px-2 pb-4">
+              <DisclosurePanel className="pl-[calc(15px+var(--spacing)*2)] pr-2 pb-4">
                 {gitStatus && gitStatus.length > 0 ? (
-                  <ul className="space-y-3 text-sm text-text-dark mt-2">
+                  <ul className="space-y-1 text-sm text-text-light">
                     {gitStatus.map((change) => (
-                      <li key={change.path} className="flex items-center gap-2">
+                      <li key={change.path}>
                         <Checkbox
+                          className="flex gap-2 items-center group"
                           slot="selection"
-                          className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
-                                          border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
-                                          bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
-                                          flex-shrink-0"
                         >
-                          {({ isSelected }) => isSelected && <CheckIcon />}
+                          {({ isSelected }) => (
+                            <>
+                              <span
+                                className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+                                            border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
+                                            bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
+                                            flex-shrink-0"
+                              >
+                                {isSelected && <CheckIcon />}
+                              </span>
+                              <span className="font-normal">{change.path}</span>
+                              <span
+                                className="text-text-light bg-border-dark rounded-sm text-xs px-1 py-0.5"
+                                title={change.changeType}
+                              >
+                                {change.changeType.slice(0, 1).toUpperCase()}
+                              </span>
+                              <div className="flex items-center font-semibold">
+                                <span className="text-red bg-red/15 px-1 py-0.5 rounded-tl-sm rounded-bl-sm text-xs">
+                                  -{change.linesDeleted}
+                                </span>
+                                <span className="text-green bg-green/15 px-1 py-0.5 rounded-tr-sm rounded-br-sm text-xs">
+                                  +{change.linesAdded}
+                                </span>
+                              </div>
+                            </>
+                          )}
                         </Checkbox>
-                        <span className="font-normal">{change.path} </span>
-                        <span
-                          className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5"
-                          title={change.changeType}
-                        >
-                          {change.changeType.slice(0, 1).toUpperCase()}
-                        </span>
-                        <div className="flex items-center font-semibold">
-                          <span className="text-red bg-red/15 px-1 py-0.5 rounded-tl-sm rounded-bl-sm text-xs">
-                            -{change.linesDeleted}
-                          </span>
-                          <span className="text-green bg-green/15 px-1 py-0.5 rounded-tr-sm rounded-br-sm text-xs">
-                            +{change.linesAdded}
-                          </span>
-                        </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="text-xs text-text-dark mt-2">No changes</div>
+                  <div className="text-xs text-text-light mt-2">No changes</div>
                 )}
               </DisclosurePanel>
             </>
