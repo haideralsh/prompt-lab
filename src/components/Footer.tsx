@@ -2,7 +2,7 @@ import { useSidebarContext } from './Sidebar/SidebarContext'
 import TokenChart from './TokenChart'
 import { Key } from 'react-aria-components'
 import { useEffect, useMemo, useState } from 'react'
-import { listen } from '@tauri-apps/api/event'
+import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { TreeMode } from '../types/FileTree'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -50,22 +50,36 @@ export function Footer() {
   }, [directory?.path])
 
   useEffect(() => {
-    listen<TokenCountsEvent>('file-token-counts', (event) => {
-      const { files, totalTokenCount: eventTotalTokenCount } = event.payload
-      if (!files?.length) return
+    let unlisten: UnlistenFn
 
-      setTotalTokenCount(eventTotalTokenCount)
-      setSelectedFiles((prev) => {
-        const map = new Map(prev.map((f) => [f.id, f]))
-        for (const { id, tokenCount, tokenPercentage } of files) {
-          const node = map.get(id)
-          if (node) {
-            map.set(id, { ...node, tokenCount, tokenPercentage })
-          }
-        }
-        return Array.from(map.values())
-      })
-    })
+    async function listenToTokenCounts() {
+      unlisten = await listen<TokenCountsEvent>(
+        'file-token-counts',
+        (event) => {
+          const { files, totalTokenCount: eventTotalTokenCount } = event.payload
+          if (!files?.length) return
+
+          setTotalTokenCount(eventTotalTokenCount)
+          setSelectedFiles((prev) => {
+            const map = new Map(prev.map((f) => [f.id, f]))
+            for (const { id, tokenCount, tokenPercentage } of files) {
+              const node = map.get(id)
+              if (node) {
+                map.set(id, { ...node, tokenCount, tokenPercentage })
+              }
+            }
+            return Array.from(map.values())
+          })
+        },
+      )
+    }
+
+    function cleanup() {
+      if (unlisten) unlisten()
+    }
+
+    listenToTokenCounts()
+    return cleanup
   }, [])
 
   // TODO: this is duplicated from Main.tsx - refactor into a hook
