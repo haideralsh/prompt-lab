@@ -8,7 +8,7 @@ export function Tabs() {
   return (
     <div
       role="tablist"
-      className="relative z-0 flex items-center gap-2 px-1 bg-interactive-mid"
+      className="relative z-0 flex items-center gap-2 px-1 bg-interactive-dark"
       data-orientation="horizontal"
       data-activation-direction="left"
     >

@@ -59,14 +59,6 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full flex-col">
-      {/*<div className="flex flex-col gap-1.5 justify-between p-4">
-        {directory?.name && (
-          <div className="text-xs font-bold tracking-wide text-text-dark uppercase">
-            {directory.name}
-          </div>
-        )}
-      </div>*/}
-
       <div className="flex items-center justify-end gap-0.5 px-2 pt-2">
         <button
           onClick={clearSelection}
