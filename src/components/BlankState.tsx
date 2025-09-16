@@ -8,12 +8,12 @@ import { useSidebarContext } from './Sidebar/SidebarContext'
 import { queue } from './ToastQueue'
 
 async function processDirectories(
-  directories: DirectoryInfo[],
+  directories: DirectoryInfo[]
 ): Promise<DirectoryInfo[]> {
   const prettyPaths = await Promise.all(
     directories.map((d) =>
-      invoke<string>('pretty_directory_path', { path: d.path }),
-    ),
+      invoke<string>('pretty_directory_path', { path: d.path })
+    )
   )
   return directories.map((d, i) => ({ ...d, prettyPath: prettyPaths[i] }))
 }
@@ -26,7 +26,7 @@ export function LaunchScreen() {
     async function loadRecentOpened() {
       try {
         const directories = await invoke<DirectoryInfo[]>(
-          'get_recent_directories',
+          'get_recent_directories'
         )
 
         const processed = await processDirectories(directories)
