@@ -42,17 +42,7 @@ export function LaunchScreen() {
       }
     }
 
-    async function loadApplicationData() {
-      try {
-        const data = await invoke('load_application_data')
-        console.log('Application data:', data)
-      } catch (err) {
-        console.error('Failed to load application data:', err)
-      }
-    }
-
     loadRecentOpened()
-    loadApplicationData()
   }, [])
 
   async function handleDirectoryPick(directory: DirectoryInfo) {

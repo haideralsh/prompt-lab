@@ -7,11 +7,7 @@ import { Footer } from './components/layout/Footer'
 import { SubFooter } from './components/layout/SubFooter'
 import { Tabs } from './components/layout/Tabs'
 
-import useAppExitListener from './hooks/useAppExitListener'
-
 function App() {
-  useAppExitListener()
-
   const { directory } = useSidebarContext()
 
   if (directory)
