@@ -1,5 +1,6 @@
 use rfd::FileDialog;
 
+use crate::commands::directory::display::pretty_directory_path;
 use crate::errors::{codes, DirectoryError};
 use crate::models::PickedDirectory;
 
@@ -14,10 +15,13 @@ pub(crate) fn open_directory() -> Result<PickedDirectory, DirectoryError> {
             .file_name()
             .map(|s| s.to_string_lossy().into_owned())
             .unwrap_or_else(|| path.to_string_lossy().into_owned());
+        let path_string = path.to_string_lossy().into_owned();
+        let pretty_path = pretty_directory_path(&path_string);
 
         Ok(PickedDirectory {
             name,
-            path: path.to_string_lossy().into_owned(),
+            path: path_string,
+            pretty_path,
         })
     } else {
         Err(DirectoryError {

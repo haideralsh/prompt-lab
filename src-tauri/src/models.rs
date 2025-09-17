@@ -41,6 +41,7 @@ pub struct SearchMatch {
 pub struct PickedDirectory {
     pub name: String,
     pub path: String,
+    pub pretty_path: String,
 }
 
 pub struct NodeInfo {

@@ -7,17 +7,6 @@ import type { SearchResult, DirectoryError } from '../types/FileTree'
 import { useSidebarContext } from './Sidebar/SidebarContext'
 import { queue } from './ToastQueue'
 
-async function processDirectories(
-  directories: DirectoryInfo[]
-): Promise<DirectoryInfo[]> {
-  const prettyPaths = await Promise.all(
-    directories.map((d) =>
-      invoke<string>('pretty_directory_path', { path: d.path })
-    )
-  )
-  return directories.map((d, i) => ({ ...d, prettyPath: prettyPaths[i] }))
-}
-
 export function LaunchScreen() {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([])
   const { setTree, setDirectory, setFilteredTree } = useSidebarContext()
@@ -26,12 +15,10 @@ export function LaunchScreen() {
     async function loadRecentOpened() {
       try {
         const directories = await invoke<DirectoryInfo[]>(
-          'get_recent_directories'
+          'get_recent_directories',
         )
 
-        const processed = await processDirectories(directories)
-
-        setRecentOpened(processed)
+        setRecentOpened(directories)
       } catch (err) {
         const { code } = err as DirectoryError
         if (code === ERROR_CODES.STORE_READ_ERROR) {
