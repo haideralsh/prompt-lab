@@ -54,12 +54,12 @@ export function Layout({
   return (
     <div
       ref={containerRef}
-      className="h-screen flex flex-col bg-background-dark"
+      className="h-screen overflow-hidden flex flex-col bg-background-dark"
     >
       <div className="flex-none">{tabs}</div>
       <div className="flex flex-1 min-h-0">
         <div
-          className="bg-background-dark border-r border-border-dark relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light"
+          className="border-r border-interactive-mid relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light bg-background-light"
           style={{ width: sidebarWidth }}
         >
           <ScrollArea>{sidebar}</ScrollArea>
@@ -76,7 +76,7 @@ export function Layout({
         </div>
       </div>
 
-      <div className="flex-none border-t border-border-dark">
+      <div className="flex-none border-t border-interactive-mid bg-background-light">
         <div className="p-3">{footer}</div>
       </div>
 

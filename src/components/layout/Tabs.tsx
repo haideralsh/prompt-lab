@@ -26,7 +26,7 @@ function Tab(props: React.ComponentPropsWithoutRef<'button'>) {
       aria-selected
       data-selected
       tabIndex={0}
-      className={`flex items-center justify-center px-3 py-1.5 border-0 text-xs font-medium whitespace-nowrap bg-background-dark text-text-light outline-none select-none hover:text-text-light focus-visible:relative ${props.className}`}
+      className={`flex items-center justify-center px-3 py-1.5 border-0 text-xs font-medium whitespace-nowrap bg-background-light text-text-dark outline-none select-none hover:text-text-light focus-visible:relative ${props.className}`}
       {...props}
     >
       {props.children}

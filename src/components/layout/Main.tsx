@@ -14,7 +14,7 @@ import {
   TriangleRightIcon,
 } from '@radix-ui/react-icons'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
-import { SelectionResult } from '../../types/FileTree'
+import { Id, SelectionResult } from '../../types/FileTree'
 
 export function Main() {
   const {
@@ -37,15 +37,15 @@ export function Main() {
     })
   }, [selectedFiles])
 
-  async function deselect(id: string | number) {
+  async function deselect(path: Id) {
     const selection = await invoke<SelectionResult>('toggle_selection', {
-      path: directory?.path,
+      directoryPath: directory?.path,
       current: Array.from(selectedNodes),
-      id: id,
+      nodePath: path,
     })
-    setSelectedNodes(new Set(selection.selectedNodes))
+    setSelectedNodes(new Set(selection.selectedNodesPaths))
     setSelectedFiles(selection.selectedFiles)
-    setIndeterminateNodes(new Set(selection.indeterminate))
+    setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
   }
 
   useEffect(() => {
@@ -60,10 +60,16 @@ export function Main() {
         defaultExpandedKeys={['selected', 'git']}
         allowsMultipleExpanded
       >
-        <Disclosure id="selected" className="border-b border-border-dark -mx-2">
+        <Disclosure
+          id="selected"
+          className="border-b border-interactive-mid -mx-2"
+        >
           {({ isExpanded }) => (
             <>
-              <div className="sticky top-0 px-2 py-2 bg-background-dark">
+              <Button
+                slot="trigger"
+                className="flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-2 bg-background-light"
+              >
                 <Heading className="flex items-center gap-1 text-text-dark">
                   <Checkbox
                     slot="selection"
@@ -75,45 +81,58 @@ export function Main() {
                   >
                     {({ isSelected }) => isSelected && <CheckIcon />}
                   </Checkbox>
-                  <Button
-                    slot="trigger"
-                    className="flex items-center gap-1 cursor-pointer"
-                  >
-                    {isExpanded ? <TriangleDownIcon /> : <TriangleRightIcon />}
-                    <span className="uppercase font-semibold tracking-wide text-xs">
-                      Selected files ({sortedFiles.length})
-                    </span>
-                  </Button>
+
+                  {isExpanded ? <TriangleDownIcon /> : <TriangleRightIcon />}
+                  <span className="uppercase font-semibold tracking-wide text-xs">
+                    Selected files ({sortedFiles.length})
+                  </span>
                 </Heading>
-              </div>
+              </Button>
               <DisclosurePanel className="pl-[calc(15px+var(--spacing)*8)] pb-4">
                 {sortedFiles.length > 0 ? (
-                  <ul className="space-y-4 text-sm text-text-light">
-                    {Array.from(sortedFiles).map((path) => (
-                      <li key={path.id} className="flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
-                          <div className="flex flex-col gap-2">
-                            <span className="flex items-center gap-1">
-                              <span className="font-normal">{path.title}</span>
-                              <span className="text-text-light">
-                                {path.tokenCount == null
-                                  ? 'counting...'
-                                  : `${path.tokenCount} tokens${
-                                      path.tokenPercentage == null
-                                        ? ''
-                                        : ` (${Math.ceil(path.tokenPercentage)}%)`
-                                    }`}
+                  <ul className="text-sm text-text-dark">
+                    {Array.from(sortedFiles).map((file) => (
+                      <li key={file.path}>
+                        <Checkbox
+                          defaultSelected
+                          slot="selection"
+                          className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
+                          onChange={(isSelected) => {
+                            if (!isSelected) void deselect(file.path)
+                          }}
+                        >
+                          {({ isSelected }) => (
+                            <>
+                              <span
+                                className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
+                                            border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
+                                            bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
+                                            flex-shrink-0"
+                              >
+                                {isSelected && <CheckIcon />}
                               </span>
-                            </span>
-                            <span className="text-xs">{path.id}</span>
-                          </div>
-                          <button
-                            className="text-xs bg-interactive-dark hover:bg-interactive-mid active:bg-interactive-light flex items-center col gap-1.5 rounded-xs cursor-pointer px-2 py-1 w-fit text-text-light"
-                            onClick={() => deselect(path.id)}
-                          >
-                            Deselect
-                          </button>
-                        </div>
+                              <span className="flex flex-col gap-0.5 text-left">
+                                <span className="font-normal text-text-dark break-all">
+                                  {file.title}
+                                </span>
+                                <span className="text-xs text-text-light break-all">
+                                  {file.path}
+                                </span>
+                                <span className="text-xs text-text-light">
+                                  {file.tokenCount == null
+                                    ? 'counting...'
+                                    : `${file.tokenCount} tokens${
+                                        file.tokenPercentage == null
+                                          ? ''
+                                          : ` (${Math.ceil(
+                                              file.tokenPercentage,
+                                            )}%)`
+                                      }`}
+                                </span>
+                              </span>
+                            </>
+                          )}
+                        </Checkbox>
                       </li>
                     ))}
                   </ul>
@@ -126,10 +145,13 @@ export function Main() {
             </>
           )}
         </Disclosure>
-        <Disclosure id="git" className="border-b border-border-dark -mx-2">
+        <Disclosure id="git" className="border-b border-interactive-mid -mx-2">
           {({ isExpanded }) => (
             <>
-              <div className="sticky top-0 px-2 py-2 bg-background-dark">
+              <Button
+                slot="trigger"
+                className="flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-2 bg-background-light"
+              >
                 <Heading className="flex items-center gap-1 text-xs text-text-dark">
                   <Checkbox
                     slot="selection"
@@ -141,56 +163,51 @@ export function Main() {
                   >
                     {({ isSelected }) => isSelected && <CheckIcon />}
                   </Checkbox>
-                  <Button
-                    slot="trigger"
-                    className="flex items-center gap-1 cursor-pointer"
-                  >
-                    {isExpanded ? (
-                      <TriangleDownIcon className="size-4" />
-                    ) : (
-                      <TriangleRightIcon className="size-4" />
-                    )}
-                    <span className="uppercase font-semibold tracking-wide text-xs">
-                      Git (
-                      {gitStatus ? gitStatus.length : 'Not a Git repository'})
-                    </span>
-                  </Button>
+                  {isExpanded ? (
+                    <TriangleDownIcon className="size-4" />
+                  ) : (
+                    <TriangleRightIcon className="size-4" />
+                  )}
+                  <span className="uppercase font-semibold tracking-wide text-xs">
+                    Git ({(gitStatus && gitStatus.length) ?? 0})
+                  </span>
                 </Heading>
-              </div>
+              </Button>
               <DisclosurePanel className="pl-[calc(15px+var(--spacing)*2)] pr-2 pb-4">
                 {gitStatus && gitStatus.length > 0 ? (
-                  <ul className="space-y-1 text-sm text-text-dark">
+                  <ul className="text-sm text-text-dark">
                     {gitStatus.map((change) => (
                       <li key={change.path}>
                         <Checkbox
-                          className="flex gap-2 items-center  group"
+                          defaultSelected
+                          className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
                           slot="selection"
                         >
                           {({ isSelected }) => (
                             <>
                               <span
-                                className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+                                className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
                                             border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
                                             bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
                                             flex-shrink-0"
                               >
                                 {isSelected && <CheckIcon />}
                               </span>
-                              <span className="font-normal">{change.path}</span>
+                              <span className="font-normal text-text-dark break-all">
+                                {change.path}
+                              </span>
+                              <span className="text-red bg-red/15 px-1 py-0.5 rounded-l-sm rounded-r-none text-xs font-semibold justify-self-start tabular-nums">
+                                -{change.linesDeleted}
+                              </span>
+                              <span className="text-green bg-green/15 px-1 py-0.5 rounded-r-sm rounded-l-none text-xs font-semibold justify-self-start tabular-nums -ml-3">
+                                +{change.linesAdded}
+                              </span>
                               <span
-                                className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5"
+                                className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5 justify-self-start"
                                 title={change.changeType}
                               >
                                 {change.changeType.slice(0, 1).toUpperCase()}
                               </span>
-                              <div className="flex items-center font-semibold">
-                                <span className="text-red bg-red/15 px-1 py-0.5 rounded-tl-sm rounded-bl-sm text-xs">
-                                  -{change.linesDeleted}
-                                </span>
-                                <span className="text-green bg-green/15 px-1 py-0.5 rounded-tr-sm rounded-br-sm text-xs">
-                                  +{change.linesAdded}
-                                </span>
-                              </div>
                             </>
                           )}
                         </Checkbox>
@@ -198,7 +215,11 @@ export function Main() {
                     ))}
                   </ul>
                 ) : (
-                  <div className="text-xs text-text-light mt-2">No changes</div>
+                  <div className="text-xs text-text-dark pl-[calc(15px+var(--spacing)*2)]">
+                    {gitStatus && gitStatus.length === 0
+                      ? 'Your Git changes will appear here.'
+                      : 'This directory does not appear to be a Git repository'}
+                  </div>
                 )}
               </DisclosurePanel>
             </>
