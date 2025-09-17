@@ -26,6 +26,7 @@ pub struct FileNode {
     pub path: String,
     pub title: String,
     pub token_count: Option<usize>,
+    pub pretty_path: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

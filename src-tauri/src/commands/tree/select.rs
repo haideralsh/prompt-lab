@@ -1,3 +1,4 @@
+use crate::commands::directory::display::pretty_directory_path;
 use crate::commands::tokenize::{
     ensure_cache_loaded_for_dir, get_cached_count, spawn_token_count_task,
 };
@@ -87,6 +88,7 @@ fn collect_selected_files(tree_index: &TreeIndex, selected: &HashSet<String>) ->
                         path: path.clone(),
                         title: n.title.clone(),
                         token_count: get_cached_count(path),
+                        pretty_path: pretty_directory_path(path),
                     })
                 } else {
                     None

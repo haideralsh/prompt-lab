@@ -116,7 +116,7 @@ export function Main() {
                                   {file.title}
                                 </span>
                                 <span className="text-xs text-text-light break-all">
-                                  {file.path}
+                                  {file.prettyPath}
                                 </span>
                                 <span className="text-xs text-text-light">
                                   {file.tokenCount == null

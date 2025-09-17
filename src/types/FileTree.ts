@@ -19,6 +19,7 @@ export interface FileNode {
   title: string
   tokenCount?: number
   tokenPercentage?: number
+  prettyPath: string
 }
 
 export interface SelectionResult {
