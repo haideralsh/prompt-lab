@@ -48,6 +48,7 @@ export default function TokenChart({
   if (otherPercentage > 0) {
     chartData.push({
       path: 'CONTEXTER_OTHER_CATAGORY_KEY',
+      prettyPath: 'CONTEXTER_OTHER_CATAGORY_KEY',
       title: 'other',
       tokenCount: remainingTokens,
       percentage: otherPercentage,
