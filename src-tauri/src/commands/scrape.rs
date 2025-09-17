@@ -1,10 +1,27 @@
 use htmd;
 use kuchikiki::{traits::TendrilSink, NodeRef};
+use serde::Serialize;
 use spider::website::Website;
+use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, Wry};
+use tauri_plugin_store::StoreExt;
 use url::Url;
 
+const STORE_FILE: &str = "store.json";
+const PAGE_KEY_PREFIX: &str = "SCRAPED_PAGE";
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SavedPageMetadata {
+    url: String,
+    timestamp: String,
+}
+
 #[tauri::command]
-pub async fn page_to_md(url: String) -> Result<String, String> {
+pub async fn save_page_as_md(
+    app: AppHandle<Wry>,
+    url: String,
+) -> Result<SavedPageMetadata, String> {
     let mut website = Website::new(&url)
         .with_limit(1)
         .with_subdomains(false)
@@ -171,7 +188,26 @@ pub async fn page_to_md(url: String) -> Result<String, String> {
     let mut md = htmd::convert(&content_html).map_err(|e| format!("htmd convert error: {e}"))?;
     md = normalize_whitespace(&md);
 
-    Ok(md)
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|_| "system clock before UNIX epoch".to_string())?
+        .as_millis()
+        .to_string();
+
+    let store_key = format!("{}::{}::{}", PAGE_KEY_PREFIX, final_url, timestamp);
+    let metadata = SavedPageMetadata {
+        url: final_url.clone(),
+        timestamp: timestamp.clone(),
+    };
+    let store = app
+        .store(STORE_FILE)
+        .map_err(|e| format!("store open error: {e}"))?;
+
+    store.set(&store_key, serde_json::Value::String(md));
+    store.save().map_err(|e| format!("store save error: {e}"))?;
+    store.close_resource();
+
+    Ok(metadata)
 }
 
 fn strip_nodes(root: &NodeRef, selectors: &[&str]) {
