@@ -1,4 +1,4 @@
-type Id = string
+export type Id = string
 
 export type Tree = TreeNode[]
 
@@ -15,15 +15,15 @@ export interface SearchResult {
 }
 
 export interface FileNode {
-  id: Id
+  path: Id
   title: string
   tokenCount?: number
   tokenPercentage?: number
 }
 
 export interface SelectionResult {
-  selectedNodes: Id[]
-  indeterminate: Id[]
+  selectedNodesPaths: Id[]
+  indeterminateNodesPaths: Id[]
   selectedFiles: FileNode[]
 }
 

@@ -23,7 +23,7 @@ pub struct DirectoryNode {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FileNode {
-    pub id: String,
+    pub path: String,
     pub title: String,
     pub token_count: Option<usize>,
 }
@@ -64,7 +64,7 @@ pub struct NodeTree {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SelectionResult {
-    pub selected_nodes: Vec<String>,
-    pub indeterminate: Vec<String>,
+    pub selected_nodes_paths: Vec<String>,
+    pub indeterminate_nodes_paths: Vec<String>,
     pub selected_files: Vec<FileNode>,
 }

@@ -1,13 +1,5 @@
 import { useState } from 'react'
-
-export type Id = string | number
-
-export interface FileNode {
-  id: Id
-  title: string
-  tokenCount?: number
-  tokenPercentage?: number
-}
+import { FileNode } from '../types/FileTree'
 
 interface TokenChartProps {
   files: FileNode[]
@@ -55,7 +47,7 @@ export default function TokenChart({
   const chartData = [...topFiles]
   if (otherPercentage > 0) {
     chartData.push({
-      id: 'other',
+      path: 'CONTEXTER_OTHER_CATAGORY_KEY',
       title: 'other',
       tokenCount: remainingTokens,
       percentage: otherPercentage,
@@ -69,7 +61,7 @@ export default function TokenChart({
       <div className="relative h-1.5 bg-interactive-dark rounded-full overflow-hidden mb-2">
         {chartData.map((file, index) => (
           <div
-            key={file.id}
+            key={file.path}
             className="absolute top-0 h-full transition-all duration-300 cursor-pointer ease-linear"
             style={{
               backgroundColor: colors[index],
@@ -93,7 +85,7 @@ export default function TokenChart({
       <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
         {chartData.map((file, index) => (
           <div
-            key={file.id}
+            key={file.path}
             className="flex items-center gap-1.5 cursor-pointer transition-opacity duration-300"
             style={{
               opacity:

@@ -61,7 +61,7 @@ export function Footer() {
 
           if (files?.length) {
             setSelectedFiles((prev) => {
-              const map = new Map(prev.map((f) => [f.id, f]))
+              const map = new Map(prev.map((f) => [f.path, f]))
               for (const { id, tokenCount, tokenPercentage } of files) {
                 const node = map.get(id)
                 if (node) {

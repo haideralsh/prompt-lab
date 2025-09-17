@@ -38,13 +38,13 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
 
   async function onToggle() {
     const selection = await invoke<SelectionResult>('toggle_selection', {
-      path: directory?.path,
+      directoryPath: directory?.path,
       current: Array.from(selectedNodes) as string[],
-      id: item.id,
+      nodePath: item.id,
     })
-    setSelectedNodes(new Set(selection.selectedNodes))
+    setSelectedNodes(new Set(selection.selectedNodesPaths))
     setSelectedFiles(selection.selectedFiles)
-    setIndeterminateNodes(new Set(selection.indeterminate))
+    setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
   }
 
   return (
