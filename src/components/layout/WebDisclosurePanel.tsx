@@ -25,9 +25,11 @@ export function WebDisclosurePanel() {
   const [isSavingWeb, setIsSavingWeb] = useState(false)
 
   useEffect(() => {
-    async function loadSavedPages() {
+    async function loadSavedPages(selectedDirectoryPath: string) {
       try {
-        const pages = await invoke<WebEntry[]>('list_saved_pages')
+        const pages = await invoke<WebEntry[]>('list_saved_pages', {
+          directoryPath: selectedDirectoryPath,
+        })
         setWebEntries(pages)
       } catch (error) {
         const message = getErrorMessage(error)
@@ -39,8 +41,13 @@ export function WebDisclosurePanel() {
       }
     }
 
-    void loadSavedPages()
-  }, [])
+    if (!directory?.path) {
+      setWebEntries([])
+      return
+    }
+
+    void loadSavedPages(directory.path)
+  }, [directory?.path])
 
   function handleCancelWeb() {
     if (isSavingWeb) return
@@ -60,8 +67,16 @@ export function WebDisclosurePanel() {
     setIsSavingWeb(true)
 
     try {
+      if (!directory?.path) {
+        queue.add({
+          title: 'No directory selected',
+          description: 'Select a directory before saving pages.',
+        })
+        return
+      }
+
       const page = await invoke<WebEntry>('save_page_as_md', {
-        directoryName: directory?.name,
+        directoryPath: directory.path,
         url: trimmedUrl,
       })
 

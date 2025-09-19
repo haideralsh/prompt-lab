@@ -1,6 +1,7 @@
 pub mod commands;
 pub mod errors;
 pub mod models;
+pub mod store;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -18,7 +19,8 @@ pub fn run() {
             commands::tree::select::clear_selection,
             commands::clipboard::copy_files_to_clipboard,
             commands::git::git_status,
-            commands::scrape::save_page_as_md,
+            commands::web::save_page_as_md,
+            commands::web::list_saved_pages,
             commands::app::load_application_data,
         ])
         .run(tauri::generate_context!())

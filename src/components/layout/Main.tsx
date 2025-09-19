@@ -7,7 +7,7 @@ export function Main() {
   return (
     <section className="flex-1 px-2 bg-background-dark">
       <DisclosureGroup
-        defaultExpandedKeys={['selected', 'git']}
+        defaultExpandedKeys={['selected', 'git', 'web']}
         allowsMultipleExpanded
       >
         <SelectedFilesPanel />

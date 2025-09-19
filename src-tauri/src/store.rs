@@ -19,6 +19,7 @@ pub struct StoreDataKey;
 
 impl StoreDataKey {
     pub const TOKEN_CACHE: &'static str = "token_cache";
+    pub const SAVED_WEB_PAGES: &'static str = "saved_web_pages";
 }
 
 impl StoreCategoryKey {

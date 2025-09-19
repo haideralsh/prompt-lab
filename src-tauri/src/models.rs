@@ -70,3 +70,10 @@ pub struct SelectionResult {
     pub indeterminate_nodes_paths: Vec<String>,
     pub selected_files: Vec<FileNode>,
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SavedPageMetadata {
+    pub url: String,
+    pub title: String,
+}
