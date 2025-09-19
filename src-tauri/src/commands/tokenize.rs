@@ -1,18 +1,17 @@
+use crate::store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME};
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::{
     collections::{HashMap, HashSet},
     fs,
-    path::Path,
-    sync::{Mutex, OnceLock, RwLock},
+    sync::{OnceLock, RwLock},
     time::UNIX_EPOCH,
 };
 use tauri::{AppHandle, Emitter, Wry};
 use tauri_plugin_store::StoreExt;
-use tiktoken_rs::{cl100k_base, CoreBPE};
-
-use crate::store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME};
+use tiktoken_rs::cl100k_base;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct CacheEntry {
@@ -32,22 +31,6 @@ fn loaded_dirs() -> &'static RwLock<HashSet<String>> {
     LOADED_DIRS.get_or_init(|| RwLock::new(HashSet::new()))
 }
 
-static STORE_WRITE_GUARD: OnceLock<Mutex<()>> = OnceLock::new();
-fn store_mutex() -> &'static Mutex<()> {
-    STORE_WRITE_GUARD.get_or_init(|| Mutex::new(()))
-}
-
-static ENCODER: OnceLock<Option<CoreBPE>> = OnceLock::new();
-fn encoder() -> Option<&'static CoreBPE> {
-    ENCODER.get_or_init(|| cl100k_base().ok()).as_ref()
-}
-
-fn normalize_path(path: &str) -> String {
-    fs::canonicalize(Path::new(path))
-        .map(|p| p.to_string_lossy().to_string())
-        .unwrap_or_else(|_| path.to_string())
-}
-
 fn file_sig(path: &str) -> Option<(u128, u64)> {
     let meta = fs::metadata(path).ok()?;
 
@@ -63,9 +46,8 @@ fn file_sig(path: &str) -> Option<(u128, u64)> {
 
 pub fn get_cached_count(path: &str) -> Option<usize> {
     let (mtime_ms, size) = file_sig(path)?;
-    let key = normalize_path(path);
     let cache = cache().read().ok()?;
-    cache.get(&key).and_then(|e| {
+    cache.get(path).and_then(|e| {
         if e.mtime_ms == mtime_ms && e.size == size {
             Some(e.count)
         } else {
@@ -75,17 +57,15 @@ pub fn get_cached_count(path: &str) -> Option<usize> {
 }
 
 fn set_cache(path: &str, mtime_ms: u128, size: u64, count: usize) {
-    let key = normalize_path(path);
-    if let Ok(mut cache) = cache().write() {
-        cache.insert(
-            key,
-            CacheEntry {
-                mtime_ms,
-                size,
-                count,
-            },
-        );
-    }
+    let mut cache = cache().write().expect("cache write poisoned");
+    cache.insert(
+        path.to_string(),
+        CacheEntry {
+            mtime_ms,
+            size,
+            count,
+        },
+    );
 }
 
 #[derive(Clone, Serialize)]
@@ -125,22 +105,16 @@ pub fn ensure_cache_loaded_for_dir(app: &AppHandle<Wry>, root: &str) {
 
     if let Ok(store) = app.store(STORE_FILE_NAME) {
         if let Some(data_value) = store.get(StoreCategoryKey::DATA) {
-            // Expecting an object of the shape:
-            // data: {
-            //   "<root>": {
-            //     StoreDataKey::TOKEN_CACHE: { "<path>": CacheEntry, ... }
-            //   }
-            // }
-            if let Some(data_obj) = data_value.as_object() {
-                if let Some(dir_value) = data_obj.get(root) {
-                    if let Some(dir_obj) = dir_value.as_object() {
-                        if let Some(token_cache_value) = dir_obj.get(StoreDataKey::TOKEN_CACHE) {
-                            if let Ok(map) = serde_json::from_value::<HashMap<String, CacheEntry>>(
-                                token_cache_value.clone(),
-                            ) {
+            if let Some(data_object) = data_value.as_object() {
+                if let Some(directory_value) = data_object.get(root) {
+                    if let Some(directory_object) = directory_value.as_object() {
+                        if let Some(value) = directory_object.get(StoreDataKey::TOKEN_CACHE) {
+                            if let Ok(map) =
+                                serde_json::from_value::<HashMap<String, CacheEntry>>(value.clone())
+                            {
                                 if let Ok(mut c) = cache().write() {
                                     for (path, entry) in map {
-                                        c.insert(normalize_path(&path), entry);
+                                        c.insert(path, entry);
                                     }
                                 }
                             }
@@ -162,56 +136,39 @@ fn save_cache_batch_to_store(app: &AppHandle<Wry>, root: &str, batch: &[(String,
         return;
     }
 
-    let _guard = store_mutex().lock().ok();
-
     if let Ok(store) = app.store(STORE_FILE_NAME) {
-        let mut data: serde_json::Value = store
+        let mut data: Map<String, Value> = store
             .get(StoreCategoryKey::DATA)
-            .and_then(|v| serde_json::from_value(v.clone()).ok())
-            .unwrap_or_else(|| serde_json::json!({}));
+            .and_then(|value| value.as_object().cloned())
+            .unwrap_or_else(Map::new);
 
-        if !data.is_object() {
-            data = serde_json::json!({});
+        let directory_entry = data
+            .entry(root.to_string())
+            .or_insert_with(|| Value::Object(Map::new()));
+
+        if !directory_entry.is_object() {
+            *directory_entry = Value::Object(Map::new());
         }
 
-        let data_obj = match data.as_object_mut() {
-            Some(o) => o,
-            None => {
-                store.close_resource();
-                return;
+        let directory_object = directory_entry.as_object_mut().unwrap();
+
+        let token_cache_entry = directory_object
+            .entry(StoreDataKey::TOKEN_CACHE.to_string())
+            .or_insert_with(|| Value::Object(Map::new()));
+
+        if !token_cache_entry.is_object() {
+            *token_cache_entry = Value::Object(Map::new());
+        }
+
+        if let Some(token_cache_object) = token_cache_entry.as_object_mut() {
+            for (path, entry) in batch {
+                if let Ok(entry_value) = serde_json::to_value(entry.clone()) {
+                    token_cache_object.insert(path.clone(), entry_value);
+                }
             }
-        };
-
-        if !data_obj.contains_key(root) {
-            data_obj.insert(root.to_string(), serde_json::json!({}));
         }
 
-        let dir_value = data_obj.get_mut(root).unwrap();
-        if !dir_value.is_object() {
-            *dir_value = serde_json::json!({});
-        }
-        let dir_obj = dir_value.as_object_mut().unwrap();
-
-        let mut existing: HashMap<String, CacheEntry> = dir_obj
-            .get(StoreDataKey::TOKEN_CACHE)
-            .and_then(|v| serde_json::from_value::<HashMap<String, CacheEntry>>(v.clone()).ok())
-            .unwrap_or_default();
-
-        for (path, entry) in batch {
-            existing.insert(normalize_path(path), entry.clone());
-        }
-
-        if let Ok(serialized) = serde_json::to_value(existing) {
-            dir_obj.insert(StoreDataKey::TOKEN_CACHE.to_string(), serialized);
-        } else {
-            store.close_resource();
-            return;
-        }
-
-        store.set(
-            StoreCategoryKey::DATA,
-            serde_json::Value::Object(data_obj.clone()),
-        );
+        store.set(StoreCategoryKey::DATA, Value::Object(data));
 
         let _ = store.save();
         store.close_resource();
@@ -220,8 +177,7 @@ fn save_cache_batch_to_store(app: &AppHandle<Wry>, root: &str, batch: &[(String,
 
 pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: Vec<String>) {
     std::thread::spawn(move || {
-        let enc_opt = encoder();
-
+        let bpe = cl100k_base().ok();
         let sid = selection_id_for(&selection_ids);
 
         if selection_ids.is_empty() {
@@ -248,7 +204,7 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
                     .ok()
                     .map(|bytes| {
                         let text = String::from_utf8_lossy(&bytes);
-                        if let Some(enc) = enc_opt {
+                        if let Some(enc) = &bpe {
                             enc.encode_with_special_tokens(&text).len()
                         } else {
                             0
