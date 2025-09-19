@@ -21,6 +21,7 @@ pub fn run() {
             commands::git::git_status,
             commands::web::save_page_as_md,
             commands::web::delete_saved_page,
+            commands::web::copy_page_to_clipboard,
             commands::web::list_saved_pages,
             commands::app::load_application_data,
         ])

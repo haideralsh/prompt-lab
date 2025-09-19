@@ -1,3 +1,4 @@
+use arboard::Clipboard;
 use serde_json::{json, Map, Value};
 use tauri::{AppHandle, Wry};
 use tauri_plugin_store::StoreExt;
@@ -7,6 +8,12 @@ use crate::{
     models::SavedPageMetadata,
     store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
 };
+
+const PAGE_NOT_FOUND_ERROR: &str = "Saved page not found.";
+
+fn page_not_found() -> String {
+    PAGE_NOT_FOUND_ERROR.to_string()
+}
 
 fn extract_saved_pages_from_directory(value: &Value) -> Vec<SavedPageMetadata> {
     let Some(directory_object) = value.as_object() else {
@@ -178,4 +185,59 @@ pub fn list_saved_pages(
     store.close_resource();
 
     Ok(saved_pages)
+}
+
+#[tauri::command]
+pub fn copy_page_to_clipboard(
+    app: AppHandle<Wry>,
+    directory_path: String,
+    url: String,
+) -> Result<(), String> {
+    let store = app
+        .store(STORE_FILE_NAME)
+        .map_err(|e| format!("store open error: {e}"))?;
+
+    let data_value = store
+        .get(StoreCategoryKey::DATA)
+        .ok_or_else(page_not_found)?;
+
+    let data_object = data_value
+        .as_object()
+        .ok_or_else(page_not_found)?;
+
+    let directory_value = data_object
+        .get(&directory_path)
+        .ok_or_else(page_not_found)?;
+
+    let directory_object = directory_value
+        .as_object()
+        .ok_or_else(page_not_found)?;
+
+    let saved_pages_value = directory_object
+        .get(StoreDataKey::SAVED_WEB_PAGES)
+        .ok_or_else(page_not_found)?;
+
+    let saved_pages_object = saved_pages_value
+        .as_object()
+        .ok_or_else(page_not_found)?;
+
+    let page_value = saved_pages_object
+        .get(&url)
+        .ok_or_else(page_not_found)?;
+
+    let content_text = page_value
+        .get("content")
+        .and_then(|content_value| content_value.as_str())
+        .ok_or_else(page_not_found)?;
+
+    let content = content_text.to_string();
+
+    store.close_resource();
+
+    let mut clipboard = Clipboard::new()
+        .map_err(|_| "Failed to access system clipboard.".to_string())?;
+
+    clipboard
+        .set_text(content)
+        .map_err(|_| "Failed to write to system clipboard.".to_string())
 }

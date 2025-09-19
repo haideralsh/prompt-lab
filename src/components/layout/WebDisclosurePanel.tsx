@@ -1,7 +1,12 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox } from 'react-aria-components'
-import { CheckIcon, ReloadIcon, TrashIcon } from '@radix-ui/react-icons'
+import {
+  CheckIcon,
+  CopyIcon,
+  ReloadIcon,
+  TrashIcon,
+} from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
@@ -168,6 +173,28 @@ export function WebDisclosurePanel() {
     }
   }
 
+  async function handleCopyToClipboard(entry: WebEntry) {
+    if (!directory?.path) return
+
+    try {
+      await invoke<void>('copy_page_to_clipboard', {
+        directoryPath: directory.path,
+        url: entry.url,
+      })
+
+      queue.add({
+        title: 'Page copied to clipboard',
+      })
+    } catch (error) {
+      const message = getErrorMessage(error)
+
+      queue.add({
+        title: 'Failed to copy page',
+        description: message,
+      })
+    }
+  }
+
   return (
     <PanelDisclosure
       id="web"
@@ -269,9 +296,18 @@ export function WebDisclosurePanel() {
                       <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
                         <Button
                           onPress={() => {
+                            void handleCopyToClipboard(entry)
+                          }}
+                          className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                          isDisabled={isReloading}
+                        >
+                          <CopyIcon />
+                        </Button>
+                        <Button
+                          onPress={() => {
                             void handleReload(entry)
                           }}
-                          className="text-text-light/75 hover:text-text-light"
+                          className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                           isDisabled={isReloading}
                         >
                           <ReloadIcon />
@@ -280,7 +316,7 @@ export function WebDisclosurePanel() {
                           onPress={() => {
                             void handleDelete(entry)
                           }}
-                          className=" text-red/75 hover:text-red px-1"
+                          className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
                           isDisabled={isReloading}
                         >
                           <TrashIcon />
