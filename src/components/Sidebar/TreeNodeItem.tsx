@@ -53,7 +53,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       id={item.id}
       textValue={item.title}
       onPress={onToggle}
-      className="cursor-default rounded-sm hover:bg-accent-interactive-dark focus:bg-accent-interactive-dark focus:outline-accent-border-dark focus:outline-1 focus:outline-offset-[-1px] select-none"
+      className="cursor-default rounded-sm group hover:bg-accent-interactive-dark focus:bg-accent-interactive-dark focus:outline-accent-border-dark focus:outline-1 focus:outline-offset-[-1px] select-none"
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded }) => (
@@ -90,7 +90,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
             )}
 
             <div className="flex items-center space-x-1 text-nowrap">
-              <span className="text-text-dark text-sm">
+              <span className="text-text-dark  text-sm">
                 {item.type === 'directory' ? (
                   isExpanded ? (
                     <FolderOpenIcon className="size-[15px]" />
@@ -101,7 +101,10 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                   <FileIcon />
                 )}
               </span>
-              <span title={item.id} className={`text-sm text-text-dark`}>
+              <span
+                title={item.id}
+                className={`text-sm text-text-dark group-hover:text-text-light`}
+              >
                 {item.title}
               </span>
             </div>

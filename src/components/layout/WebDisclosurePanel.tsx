@@ -156,7 +156,7 @@ export function WebDisclosurePanel() {
       )}
 
       {webEntries.length > 0 ? (
-        <ul className="text-sm text-text-dark">
+        <ul className="text-sm ">
           {webEntries.map((entry) => (
             <li key={`${entry.url}`}>
               <Checkbox
@@ -174,8 +174,13 @@ export function WebDisclosurePanel() {
                     >
                       {isSelected && <CheckIcon />}
                     </span>
-                    <span className="font-normal text-text-dark break-all">
-                      {entry.title}
+                    <span className="flex items-center gap-1.5 w-full">
+                      <span className="font-normal shrink-0 text-text-dark break-all group-hover:text-text-light">
+                        {entry.title}
+                      </span>
+                      <span className="hidden group-hover:inline text-text-dark truncate">
+                        {entry.url}
+                      </span>
                     </span>
                   </>
                 )}
