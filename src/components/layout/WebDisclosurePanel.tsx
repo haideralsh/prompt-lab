@@ -75,12 +75,16 @@ export function WebDisclosurePanel() {
         return
       }
 
-      const page = await invoke<WebEntry>('save_page_as_md', {
+      await invoke<WebEntry>('save_page_as_md', {
         directoryPath: directory.path,
         url: trimmedUrl,
       })
 
-      setWebEntries((prev) => [...prev, page])
+      const pages = await invoke<WebEntry[]>('list_saved_pages', {
+        directoryPath: directory.path,
+      })
+
+      setWebEntries(pages)
       setWebUrl('')
       setIsAddingWeb(false)
     } catch (error) {
