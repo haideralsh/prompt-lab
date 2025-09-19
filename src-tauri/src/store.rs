@@ -3,18 +3,11 @@
  * {
  *     config: { },
  *     state: {
- *           recent_opened: [...]
- *           currently_opened: [...]
+ *           recently_opened_directories: [PickedDirectory, ...]
  *     },
  *     data: {
- *           [directory_name]: {
- *         		saved_instructions: {
- *
- *         		},
- *
- *         		saved_websites: {
- *
- *         		},
+ *           [<directory_root>]: {
+ *              token_cache: { "<path>": CacheEntry, ... }
  *           }
  *     }
  * }
@@ -22,6 +15,11 @@
 
 pub struct StoreStateKey;
 pub struct StoreCategoryKey;
+pub struct StoreDataKey;
+
+impl StoreDataKey {
+    pub const TOKEN_CACHE: &'static str = "token_cache";
+}
 
 impl StoreCategoryKey {
     pub const DATA: &'static str = "data";
