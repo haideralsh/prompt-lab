@@ -53,7 +53,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       id={item.id}
       textValue={item.title}
       onPress={onToggle}
-      className="cursor-pointer hover:bg-accent-interactive-dark focus:bg-accent-interactive-dark focus:ring-accent-border-dark focus:ring focus:outline-none select-none"
+      className="cursor-default rounded-sm hover:bg-accent-interactive-dark focus:bg-accent-interactive-dark focus:outline-accent-border-dark focus:outline-1 focus:outline-offset-[-1px] select-none"
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded }) => (

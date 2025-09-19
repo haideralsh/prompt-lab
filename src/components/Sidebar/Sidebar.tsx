@@ -49,7 +49,7 @@ export function Sidebar() {
 
   async function clearSelection() {
     const selection = await invoke<SelectionResult>('clear_selection', {
-      path: directory?.path,
+      directoryPath: directory?.path,
     })
 
     setSelectedNodes(new Set(selection.selectedNodesPaths))
@@ -80,7 +80,7 @@ export function Sidebar() {
         onClear={() => search('')}
       />
 
-      <div className="flex-1">
+      <div className="flex-1 px-2">
         <div className="h-full overflow-x-hidden rounded-lg">
           {filteredTree.length === 0 ? (
             <div className="flex h-full items-center justify-center text-xs text-text-dark">
