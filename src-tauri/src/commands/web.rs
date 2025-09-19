@@ -102,6 +102,57 @@ pub async fn save_page_as_md(
 }
 
 #[tauri::command]
+pub fn delete_saved_page(
+    app: AppHandle<Wry>,
+    directory_path: String,
+    url: String,
+) -> Result<(), String> {
+    let store = app
+        .store(STORE_FILE_NAME)
+        .map_err(|e| format!("store open error: {e}"))?;
+
+    let mut data: Map<String, Value> = store
+        .get(StoreCategoryKey::DATA)
+        .and_then(|value| value.as_object().cloned())
+        .unwrap_or_else(Map::new);
+
+    let mut should_remove_directory_entry = false;
+
+    if let Some(directory_value) = data.get_mut(&directory_path) {
+        if let Some(directory_object) = directory_value.as_object_mut() {
+            let mut should_remove_saved_pages_key = false;
+
+            if let Some(saved_pages_value) = directory_object.get_mut(StoreDataKey::SAVED_WEB_PAGES)
+            {
+                if let Some(saved_pages_object) = saved_pages_value.as_object_mut() {
+                    saved_pages_object.remove(&url);
+
+                    if saved_pages_object.is_empty() {
+                        should_remove_saved_pages_key = true;
+                    }
+                }
+            }
+
+            if should_remove_saved_pages_key {
+                directory_object.remove(StoreDataKey::SAVED_WEB_PAGES);
+            }
+
+            should_remove_directory_entry = directory_object.is_empty();
+        }
+    }
+
+    if should_remove_directory_entry {
+        data.remove(&directory_path);
+    }
+
+    store.set(StoreCategoryKey::DATA, Value::Object(data));
+    store.save().map_err(|e| format!("store save error: {e}"))?;
+    store.close_resource();
+
+    Ok(())
+}
+
+#[tauri::command]
 pub fn list_saved_pages(
     app: AppHandle<Wry>,
     directory_path: String,

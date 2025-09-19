@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox } from 'react-aria-components'
-import { CheckIcon } from '@radix-ui/react-icons'
+import { CheckIcon, ReloadIcon, TrashIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
@@ -23,6 +23,9 @@ export function WebDisclosurePanel() {
   const [isAddingWeb, setIsAddingWeb] = useState(false)
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
+  const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
+    () => new Set(),
+  )
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
@@ -99,6 +102,72 @@ export function WebDisclosurePanel() {
     }
   }
 
+  async function handleReload(entry: WebEntry) {
+    if (!directory || reloadingUrls.has(entry.url)) return
+
+    setReloadingUrls((prev) => {
+      const next = new Set(prev)
+      next.add(entry.url)
+      return next
+    })
+
+    try {
+      await invoke<void>('delete_saved_page', {
+        directoryPath: directory.path,
+        url: entry.url,
+      })
+
+      await invoke<void>('save_page_as_md', {
+        directoryPath: directory.path,
+        url: entry.url,
+      })
+
+      const pages = await invoke<WebEntry[]>('list_saved_pages', {
+        directoryPath: directory.path,
+      })
+
+      setWebEntries(pages)
+    } catch (error) {
+      const message = getErrorMessage(error)
+
+      queue.add({
+        title: 'Failed to reload page',
+        description: message,
+      })
+    } finally {
+      setReloadingUrls((prev) => {
+        const next = new Set(prev)
+        next.delete(entry.url)
+        return next
+      })
+    }
+  }
+
+  async function handleDelete(entry: WebEntry) {
+    // TODO: Show a confirmation dialog before deleting
+    if (!directory) return
+
+    try {
+      await invoke<void>('delete_saved_page', {
+        directoryPath: directory.path,
+        url: entry.url,
+      })
+
+      const pages = await invoke<WebEntry[]>('list_saved_pages', {
+        directoryPath: directory.path,
+      })
+
+      setWebEntries(pages)
+    } catch (error) {
+      const message = getErrorMessage(error)
+
+      queue.add({
+        title: 'Failed to delete page',
+        description: message,
+      })
+    }
+  }
+
   return (
     <PanelDisclosure
       id="web"
@@ -161,36 +230,68 @@ export function WebDisclosurePanel() {
 
       {webEntries.length > 0 ? (
         <ul className="text-sm ">
-          {webEntries.map((entry) => (
-            <li key={`${entry.url}`}>
-              <Checkbox
-                defaultSelected
-                className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
-                slot="selection"
+          {webEntries.map((entry) => {
+            const isReloading = reloadingUrls.has(entry.url)
+
+            return (
+              <li
+                key={`${entry.url}`}
+                className={`${isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'}`}
               >
-                {({ isSelected }) => (
-                  <>
-                    <span
-                      className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
+                <Checkbox
+                  defaultSelected
+                  isDisabled={isReloading}
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
+                            hover:bg-accent-interactive-dark
+                            data-[hovered]:bg-accent-interactive-dark
+                            data-[disabled]:opacity-75
+                            data-[disabled]:hover:bg-transparent"
+                  slot="selection"
+                >
+                  {({ isSelected }) => (
+                    <>
+                      <span
+                        className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
                                   border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
                                   bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
                                   flex-shrink-0"
-                    >
-                      {isSelected && <CheckIcon />}
-                    </span>
-                    <span className="flex items-center gap-1.5 w-full">
-                      <span className="font-normal shrink-0 text-text-dark break-all group-hover:text-text-light">
-                        {entry.title}
+                      >
+                        {isSelected && <CheckIcon />}
                       </span>
-                      <span className="hidden group-hover:inline text-text-dark truncate">
-                        {entry.url}
+                      <span className="flex items-center gap-1.5 w-full">
+                        <span className="font-normal shrink-0 text-text-dark break-all">
+                          {entry.title}
+                        </span>
+                        <span className="hidden group-hover:inline text-solid-light truncate">
+                          {entry.url}
+                        </span>
                       </span>
-                    </span>
-                  </>
-                )}
-              </Checkbox>
-            </li>
-          ))}
+                      <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
+                        <Button
+                          onPress={() => {
+                            void handleReload(entry)
+                          }}
+                          className="text-text-light/75 hover:text-text-light"
+                          isDisabled={isReloading}
+                        >
+                          <ReloadIcon />
+                        </Button>
+                        <Button
+                          onPress={() => {
+                            void handleDelete(entry)
+                          }}
+                          className=" text-red/75 hover:text-red px-1"
+                          isDisabled={isReloading}
+                        >
+                          <TrashIcon />
+                        </Button>
+                      </span>
+                    </>
+                  )}
+                </Checkbox>
+              </li>
+            )
+          })}
         </ul>
       ) : (
         <div className="text-xs text-text-dark">

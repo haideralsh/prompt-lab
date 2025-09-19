@@ -20,6 +20,7 @@ pub fn run() {
             commands::clipboard::copy_files_to_clipboard,
             commands::git::git_status,
             commands::web::save_page_as_md,
+            commands::web::delete_saved_page,
             commands::web::list_saved_pages,
             commands::app::load_application_data,
         ])
