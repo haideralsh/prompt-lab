@@ -7,18 +7,14 @@ interface TokenChartProps {
 }
 
 const colors = [
-  '#2F6E7F',
-  '#7EA9EC',
-  '#7545F3',
-  '#A86CD9',
-  '#A74091',
-  '#E8926B',
-  '#8C873E',
-  // '#70C5DF',
-  // '#3D78C2',
-  // '#BEAFFA',
-  // '#953CD2',
-  '#A7A7AD', // other
+  'var(--color-visualize-1)',
+  'var(--color-visualize-2)',
+  'var(--color-visualize-3)',
+  'var(--color-visualize-4)',
+  'var(--color-visualize-5)',
+  'var(--color-visualize-6)',
+  'var(--color-visualize-7)',
+  'var(--color-visualize-other)', // other
 ]
 
 const FILES_TO_DISPLAY_COUNT = 11 - 4 // still deciding the number of files to display

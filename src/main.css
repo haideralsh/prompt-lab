@@ -46,6 +46,16 @@
     --color-red: oklch(0.6256 0.1933 23.03);
     --color-green: oklch(0.6406 0.1329 157.68);
 
+    /* Visualization palette */
+    --color-visualize-1: #2f6e7f;
+    --color-visualize-2: #7ea9ec;
+    --color-visualize-3: #7545f3;
+    --color-visualize-4: #a86cd9;
+    --color-visualize-5: #a74091;
+    --color-visualize-6: #e8926b;
+    --color-visualize-7: #8c873e;
+    --color-visualize-other: #a7a7ad;
+
     /* =============== Typography =============== */
     --font-sans: Inter, sans-serif;
     --text-xs: 0.75rem;
