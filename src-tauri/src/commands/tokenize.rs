@@ -13,6 +13,14 @@ use tauri::{AppHandle, Emitter, Wry};
 use tauri_plugin_store::StoreExt;
 use tiktoken_rs::cl100k_base;
 
+pub(crate) fn count_tokens_for_text(text: &str) -> usize {
+    if let Ok(enc) = cl100k_base() {
+        enc.encode_with_special_tokens(text).len()
+    } else {
+        0
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 struct CacheEntry {
     mtime_ms: u128,

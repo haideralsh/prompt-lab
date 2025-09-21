@@ -5,6 +5,7 @@ use tauri_plugin_store::StoreExt;
 
 use crate::{
     commands::scrape::{page_to_md, ScrapedPage},
+    commands::tokenize::count_tokens_for_text,
     models::SavedPageMetadata,
     store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
 };
@@ -61,6 +62,8 @@ pub async fn save_page_as_md(
         content,
     } = scraped_page;
 
+    let token_count = count_tokens_for_text(&content);
+
     let metadata = SavedPageMetadata {
         url: url.clone(),
         title: title.clone(),
@@ -97,6 +100,7 @@ pub async fn save_page_as_md(
                 "url": url,
                 "title": title,
                 "content": content,
+                "tokenCount": token_count,
             }),
         );
     }
@@ -201,29 +205,21 @@ pub fn copy_page_to_clipboard(
         .get(StoreCategoryKey::DATA)
         .ok_or_else(page_not_found)?;
 
-    let data_object = data_value
-        .as_object()
-        .ok_or_else(page_not_found)?;
+    let data_object = data_value.as_object().ok_or_else(page_not_found)?;
 
     let directory_value = data_object
         .get(&directory_path)
         .ok_or_else(page_not_found)?;
 
-    let directory_object = directory_value
-        .as_object()
-        .ok_or_else(page_not_found)?;
+    let directory_object = directory_value.as_object().ok_or_else(page_not_found)?;
 
     let saved_pages_value = directory_object
         .get(StoreDataKey::SAVED_WEB_PAGES)
         .ok_or_else(page_not_found)?;
 
-    let saved_pages_object = saved_pages_value
-        .as_object()
-        .ok_or_else(page_not_found)?;
+    let saved_pages_object = saved_pages_value.as_object().ok_or_else(page_not_found)?;
 
-    let page_value = saved_pages_object
-        .get(&url)
-        .ok_or_else(page_not_found)?;
+    let page_value = saved_pages_object.get(&url).ok_or_else(page_not_found)?;
 
     let content_text = page_value
         .get("content")
@@ -234,8 +230,8 @@ pub fn copy_page_to_clipboard(
 
     store.close_resource();
 
-    let mut clipboard = Clipboard::new()
-        .map_err(|_| "Failed to access system clipboard.".to_string())?;
+    let mut clipboard =
+        Clipboard::new().map_err(|_| "Failed to access system clipboard.".to_string())?;
 
     clipboard
         .set_text(content)
