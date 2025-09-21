@@ -11,9 +11,10 @@ import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
 
-interface WebEntry {
+interface SavedPageMetadata {
   title: string
   url: string
+  tokenCount: number
 }
 
 function getErrorMessage(error: unknown) {
@@ -24,7 +25,7 @@ function getErrorMessage(error: unknown) {
 
 export function WebDisclosurePanel() {
   const { directory } = useSidebarContext()
-  const [webEntries, setWebEntries] = useState<WebEntry[]>([])
+  const [webEntries, setWebEntries] = useState<SavedPageMetadata[]>([])
   const [isAddingWeb, setIsAddingWeb] = useState(false)
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
@@ -35,7 +36,7 @@ export function WebDisclosurePanel() {
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
       try {
-        const pages = await invoke<WebEntry[]>('list_saved_pages', {
+        const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
           directoryPath: selectedDirectoryPath,
         })
         setWebEntries(pages)
@@ -83,12 +84,12 @@ export function WebDisclosurePanel() {
         return
       }
 
-      await invoke<WebEntry>('save_page_as_md', {
+      await invoke<SavedPageMetadata>('save_page_as_md', {
         directoryPath: directory.path,
         url: trimmedUrl,
       })
 
-      const pages = await invoke<WebEntry[]>('list_saved_pages', {
+      const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
         directoryPath: directory.path,
       })
 
@@ -107,7 +108,7 @@ export function WebDisclosurePanel() {
     }
   }
 
-  async function handleReload(entry: WebEntry) {
+  async function handleReload(entry: SavedPageMetadata) {
     if (!directory || reloadingUrls.has(entry.url)) return
 
     setReloadingUrls((prev) => {
@@ -117,12 +118,12 @@ export function WebDisclosurePanel() {
     })
 
     try {
-      await invoke<WebEntry>('save_page_as_md', {
+      await invoke<SavedPageMetadata>('save_page_as_md', {
         directoryPath: directory.path,
         url: entry.url,
       })
 
-      const pages = await invoke<WebEntry[]>('list_saved_pages', {
+      const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
         directoryPath: directory.path,
       })
 
@@ -143,7 +144,7 @@ export function WebDisclosurePanel() {
     }
   }
 
-  async function handleDelete(entry: WebEntry) {
+  async function handleDelete(entry: SavedPageMetadata) {
     // TODO: Show a confirmation dialog before deleting
     if (!directory) return
 
@@ -153,7 +154,7 @@ export function WebDisclosurePanel() {
         url: entry.url,
       })
 
-      const pages = await invoke<WebEntry[]>('list_saved_pages', {
+      const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
         directoryPath: directory.path,
       })
 
@@ -168,7 +169,7 @@ export function WebDisclosurePanel() {
     }
   }
 
-  async function handleCopyToClipboard(entry: WebEntry) {
+  async function handleCopyToClipboard(entry: SavedPageMetadata) {
     if (!directory?.path) return
 
     try {
@@ -263,7 +264,7 @@ export function WebDisclosurePanel() {
                 <Checkbox
                   defaultSelected
                   isDisabled={isReloading}
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
+                  className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
                             hover:bg-accent-interactive-dark
                             data-[hovered]:bg-accent-interactive-dark
                             data-[disabled]:opacity-75
@@ -288,34 +289,39 @@ export function WebDisclosurePanel() {
                           {entry.url}
                         </span>
                       </span>
-                      <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                        <Button
-                          onPress={() => {
-                            void handleCopyToClipboard(entry)
-                          }}
-                          className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                          isDisabled={isReloading}
-                        >
-                          <CopyIcon />
-                        </Button>
-                        <Button
-                          onPress={() => {
-                            void handleReload(entry)
-                          }}
-                          className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                          isDisabled={isReloading}
-                        >
-                          <ReloadIcon />
-                        </Button>
-                        <Button
-                          onPress={() => {
-                            void handleDelete(entry)
-                          }}
-                          className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
-                          isDisabled={isReloading}
-                        >
-                          <TrashIcon />
-                        </Button>
+                      <span>
+                        <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
+                          <Button
+                            onPress={() => {
+                              void handleCopyToClipboard(entry)
+                            }}
+                            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                            isDisabled={isReloading}
+                          >
+                            <CopyIcon />
+                          </Button>
+                          <Button
+                            onPress={() => {
+                              void handleReload(entry)
+                            }}
+                            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                            isDisabled={isReloading}
+                          >
+                            <ReloadIcon />
+                          </Button>
+                          <Button
+                            onPress={() => {
+                              void handleDelete(entry)
+                            }}
+                            className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
+                            isDisabled={isReloading}
+                          >
+                            <TrashIcon />
+                          </Button>
+                        </span>
+                      </span>
+                      <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase">
+                        {entry.tokenCount?.toLocaleString() ?? '–'}
                       </span>
                     </>
                   )}

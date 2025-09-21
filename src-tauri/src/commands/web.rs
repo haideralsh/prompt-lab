@@ -39,6 +39,10 @@ fn extract_saved_pages_from_directory(value: &Value) -> Vec<SavedPageMetadata> {
             Some(SavedPageMetadata {
                 url: url.to_string(),
                 title: title.to_string(),
+                token_count: page_object
+                    .get("tokenCount")
+                    .and_then(|v| v.as_u64())
+                    .map(|v| v as usize),
             })
         })
         .collect()
@@ -67,6 +71,7 @@ pub async fn save_page_as_md(
     let metadata = SavedPageMetadata {
         url: url.clone(),
         title: title.clone(),
+        token_count: Some(token_count),
     };
 
     let mut data: Map<String, Value> = store

@@ -71,9 +71,10 @@ pub struct SelectionResult {
     pub selected_files: Vec<FileNode>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct SavedPageMetadata {
+pub struct SavedPageMetadata {
     pub url: String,
     pub title: String,
+    pub token_count: Option<usize>,
 }
