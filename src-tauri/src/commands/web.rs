@@ -226,12 +226,17 @@ pub fn copy_page_to_clipboard(
 
     let page_value = saved_pages_object.get(&url).ok_or_else(page_not_found)?;
 
+    let title_text = page_value
+        .get("title")
+        .and_then(|title_value| title_value.as_str())
+        .ok_or_else(page_not_found)?;
+
     let content_text = page_value
         .get("content")
         .and_then(|content_value| content_value.as_str())
         .ok_or_else(page_not_found)?;
 
-    let content = content_text.to_string();
+    let composed = format!("{}\n{}", title_text, content_text);
 
     store.close_resource();
 
@@ -239,6 +244,6 @@ pub fn copy_page_to_clipboard(
         Clipboard::new().map_err(|_| "Failed to access system clipboard.".to_string())?;
 
     clipboard
-        .set_text(content)
+        .set_text(composed)
         .map_err(|_| "Failed to write to system clipboard.".to_string())
 }
