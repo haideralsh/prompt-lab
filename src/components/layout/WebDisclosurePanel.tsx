@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Button, Checkbox } from 'react-aria-components'
+import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
   CheckIcon,
   CopyIcon,
@@ -252,84 +252,86 @@ export function WebDisclosurePanel() {
       )}
 
       {webEntries.length > 0 ? (
-        <ul className="text-sm ">
-          {webEntries.map((entry) => {
-            const isReloading = reloadingUrls.has(entry.url)
+        <CheckboxGroup aria-label="Saved pages" defaultValue={webEntries.map((e) => e.url)}>
+          <ul className="text-sm ">
+            {webEntries.map((entry) => {
+              const isReloading = reloadingUrls.has(entry.url)
 
-            return (
-              <li
-                key={`${entry.url}`}
-                className={`${isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'}`}
-              >
-                <Checkbox
-                  defaultSelected
-                  isDisabled={isReloading}
-                  className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
-                            hover:bg-accent-interactive-dark
-                            data-[hovered]:bg-accent-interactive-dark
-                            data-[disabled]:opacity-75
-                            data-[disabled]:hover:bg-transparent"
-                  slot="selection"
+              return (
+                <li
+                  key={`${entry.url}`}
+                  className={`${isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'}`}
                 >
-                  {({ isSelected }) => (
-                    <>
-                      <span
-                        className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
-                                  border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
-                                  bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
-                                  flex-shrink-0"
-                      >
-                        {isSelected && <CheckIcon />}
-                      </span>
-                      <span className="flex items-center gap-1.5 w-full">
-                        <span className="font-normal shrink-0 text-text-dark break-all">
-                          {entry.title}
+                  <Checkbox
+                    value={entry.url}
+                    isDisabled={isReloading}
+                    className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
+                              hover:bg-accent-interactive-dark
+                              data-[hovered]:bg-accent-interactive-dark
+                              data-[disabled]:opacity-75
+                              data-[disabled]:hover:bg-transparent"
+                    slot="selection"
+                  >
+                    {({ isSelected }) => (
+                      <>
+                        <span
+                          className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
+                                    border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
+                                    bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
+                                    flex-shrink-0"
+                        >
+                          {isSelected && <CheckIcon />}
                         </span>
-                        <span className="hidden group-hover:inline text-solid-light truncate">
-                          {entry.url}
+                        <span className="flex items-center gap-1.5 w-full">
+                          <span className="font-normal shrink-0 text-text-dark break-all">
+                            {entry.title}
+                          </span>
+                          <span className="hidden group-hover:inline text-solid-light truncate">
+                            {entry.url}
+                          </span>
                         </span>
-                      </span>
-                      <span>
-                        <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                          <Button
-                            onPress={() => {
-                              void handleCopyToClipboard(entry)
-                            }}
-                            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                            isDisabled={isReloading}
-                          >
-                            <CopyIcon />
-                          </Button>
-                          <Button
-                            onPress={() => {
-                              void handleReload(entry)
-                            }}
-                            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                            isDisabled={isReloading}
-                          >
-                            <ReloadIcon />
-                          </Button>
-                          <Button
-                            onPress={() => {
-                              void handleDelete(entry)
-                            }}
-                            className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
-                            isDisabled={isReloading}
-                          >
-                            <TrashIcon />
-                          </Button>
+                        <span>
+                          <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
+                            <Button
+                              onPress={() => {
+                                void handleCopyToClipboard(entry)
+                              }}
+                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                              isDisabled={isReloading}
+                            >
+                              <CopyIcon />
+                            </Button>
+                            <Button
+                              onPress={() => {
+                                void handleReload(entry)
+                              }}
+                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                              isDisabled={isReloading}
+                            >
+                              <ReloadIcon />
+                            </Button>
+                            <Button
+                              onPress={() => {
+                                void handleDelete(entry)
+                              }}
+                              className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
+                              isDisabled={isReloading}
+                            >
+                              <TrashIcon />
+                            </Button>
+                          </span>
                         </span>
-                      </span>
-                      <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase">
-                        {entry.tokenCount?.toLocaleString() ?? '–'}
-                      </span>
-                    </>
-                  )}
-                </Checkbox>
-              </li>
-            )
-          })}
-        </ul>
+                        <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase">
+                          {entry.tokenCount?.toLocaleString() ?? '–'}
+                        </span>
+                      </>
+                    )}
+                  </Checkbox>
+                </li>
+              )
+            })}
+          </ul>
+        </CheckboxGroup>
       ) : (
         <div className="text-xs text-text-dark">
           Saved pages will appear here after scraping.
