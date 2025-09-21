@@ -117,12 +117,7 @@ export function WebDisclosurePanel() {
     })
 
     try {
-      await invoke<void>('delete_saved_page', {
-        directoryPath: directory.path,
-        url: entry.url,
-      })
-
-      await invoke<void>('save_page_as_md', {
+      await invoke<WebEntry>('save_page_as_md', {
         directoryPath: directory.path,
         url: entry.url,
       })
