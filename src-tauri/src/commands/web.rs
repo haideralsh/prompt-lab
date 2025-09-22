@@ -50,6 +50,46 @@ fn extract_saved_pages_from_directory(value: &Value) -> Vec<SavedPageMetadata> {
         .collect()
 }
 
+pub(crate) fn load_page_contents_from_store(
+    store: &tauri_plugin_store::Store<Wry>,
+    directory_path: &str,
+    urls: &[String],
+) -> Vec<String> {
+    let Some(data_value) = store.get(StoreCategoryKey::DATA) else {
+        return Vec::new();
+    };
+
+    let Some(data_object) = data_value.as_object() else {
+        return Vec::new();
+    };
+
+    let Some(directory_value) = data_object.get(directory_path) else {
+        return Vec::new();
+    };
+
+    let Some(directory_object) = directory_value.as_object() else {
+        return Vec::new();
+    };
+
+    let Some(saved_pages_value) = directory_object.get(StoreDataKey::SAVED_WEB_PAGES) else {
+        return Vec::new();
+    };
+
+    let Some(saved_pages_object) = saved_pages_value.as_object() else {
+        return Vec::new();
+    };
+
+    urls.iter()
+        .filter_map(|url| {
+            let page_value = saved_pages_object.get(url.as_str())?;
+            let title = page_value.get("title")?.as_str()?;
+            let content = page_value.get("content")?.as_str()?;
+
+            Some(format!("{title}\n{content}"))
+        })
+        .collect()
+}
+
 #[tauri::command]
 pub async fn save_page_as_md(
     app: AppHandle<Wry>,
@@ -269,30 +309,7 @@ pub fn copy_all_pages_to_clipboard(
         .store(STORE_FILE_NAME)
         .map_err(|e| format!("store open error: {e}"))?;
 
-    let mut parts: Vec<String> = Vec::new();
-
-    if let Some(data_value) = store.get(StoreCategoryKey::DATA) {
-        if let Some(data_object) = data_value.as_object() {
-            if let Some(directory_value) = data_object.get(&directory_path) {
-                if let Some(directory_object) = directory_value.as_object() {
-                    if let Some(saved_pages_value) = directory_object.get(StoreDataKey::SAVED_WEB_PAGES) {
-                        if let Some(saved_pages_object) = saved_pages_value.as_object() {
-                            for url in urls {
-                                if let Some(page_value) = saved_pages_object.get(&url) {
-                                    let title_opt = page_value.get("title").and_then(|v| v.as_str());
-                                    let content_opt = page_value.get("content").and_then(|v| v.as_str());
-                                    if let (Some(title), Some(content)) = (title_opt, content_opt) {
-                                        let composed = format!("{}\n{}", title, content);
-                                        parts.push(composed);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    let parts = load_page_contents_from_store(&store, &directory_path, &urls);
 
     store.close_resource();
 

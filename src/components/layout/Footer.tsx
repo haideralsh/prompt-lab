@@ -22,6 +22,7 @@ export function Footer() {
     selectedNodes,
     totalTokenCount,
     setTotalTokenCount,
+    selectedPagesIds,
   } = useSidebarContext()
   let [treeFormat] = useState(new Set<Key>(['full']))
   let [gitDiff] = useState(false)
@@ -34,6 +35,7 @@ export function Footer() {
       root: directory?.path ?? '',
       selectedNodes: Array.from(selectedNodes).map(String),
       addGitDiff: gitDiff,
+      urls: selectedPagesIds,
     })
   }
 

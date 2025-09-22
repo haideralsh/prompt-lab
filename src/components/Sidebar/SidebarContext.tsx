@@ -14,6 +14,8 @@ type SidebarContext = {
   setSelectedNodes: (nodes: Set<Key>) => void
   selectedFiles: FileNode[]
   setSelectedFiles: Dispatch<SetStateAction<FileNode[]>>
+  selectedPagesIds: string[]
+  setSelectedPagesIds: Dispatch<SetStateAction<string[]>>
   totalTokenCount: number
   setTotalTokenCount: Dispatch<SetStateAction<number>>
   indeterminateNodes: Set<Key>
@@ -40,6 +42,7 @@ export function useSidebarContext() {
 export function SidebarContextProvider(props: SidebarContextProps) {
   const [selectedNodes, setSelectedNodes] = useState<Set<Key>>(new Set())
   const [selectedFiles, setSelectedFiles] = useState<FileNode[]>([])
+  const [selectedPagesIds, setSelectedPagesIds] = useState<string[]>([])
   const [totalTokenCount, setTotalTokenCount] = useState<number>(0)
   const [indeterminateNodes, setIndeterminateNodes] = useState<Set<Key>>(
     new Set()
@@ -55,6 +58,8 @@ export function SidebarContextProvider(props: SidebarContextProps) {
         setSelectedNodes,
         selectedFiles,
         setSelectedFiles,
+        selectedPagesIds,
+        setSelectedPagesIds,
         totalTokenCount,
         setTotalTokenCount,
         indeterminateNodes,

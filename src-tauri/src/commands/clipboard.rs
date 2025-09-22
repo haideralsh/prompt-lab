@@ -5,8 +5,12 @@ use std::path::PathBuf;
 
 use crate::commands::git::git_diff_text;
 use crate::commands::tree::render::{render_full_tree, render_selected_tree};
+use crate::commands::web::load_page_contents_from_store;
 use crate::errors::{codes, ClipboardError};
 use crate::models::DirectoryNode;
+use crate::store::STORE_FILE_NAME;
+use tauri::{AppHandle, Wry};
+use tauri_plugin_store::StoreExt;
 
 const FILE_CONTENTS_OPENING_TAG: &str = "<file_contents>";
 const FILE_CONTENTS_CLOSING_TAG: &str = "</file_contents>";
@@ -18,6 +22,10 @@ const TREE_LEGEND: &str =
 
 const GIT_DIFF_OPENING_TAG: &str = "<git_diff>";
 const GIT_DIFF_CLOSING_TAG: &str = "</git_diff>";
+
+const WEB_PAGES_OPENING_TAG: &str = "<web_pages>";
+const WEB_PAGES_CLOSING_TAG: &str = "</web_pages>";
+const WEB_PAGES_SEPARATOR: &str = "\n* * *\n";
 
 fn concatenate_files(selected_files: &HashSet<String>) -> Result<String, ClipboardError> {
     let mut concatenated_files = String::new();
@@ -76,6 +84,36 @@ fn build_git_diff(root: &str, add_git_diff: bool) -> String {
     "".to_string()
 }
 
+fn build_web_pages_section(
+    app: &AppHandle<Wry>,
+    directory_path: &str,
+    urls_opt: &Option<Vec<String>>,
+) -> Result<String, ClipboardError> {
+    let urls = match urls_opt {
+        Some(u) if !u.is_empty() => u,
+        _ => return Ok(String::new()),
+    };
+
+    let store = app.store(STORE_FILE_NAME).map_err(|_| ClipboardError {
+        code: codes::STORE_READ_ERROR,
+        message: Some("Failed to open store".to_string()),
+    })?;
+
+    let parts = load_page_contents_from_store(&store, directory_path, urls);
+
+    store.close_resource();
+
+    if parts.is_empty() {
+        return Ok(String::new());
+    }
+
+    let payload = parts.join(WEB_PAGES_SEPARATOR);
+    Ok(format!(
+        "{}\n{}\n{}\n",
+        WEB_PAGES_OPENING_TAG, payload, WEB_PAGES_CLOSING_TAG
+    ))
+}
+
 fn build_clipboard_content(
     add_git_diff: bool,
     selected_nodes: &HashSet<String>,
@@ -98,11 +136,13 @@ fn build_clipboard_content(
 
 #[tauri::command]
 pub(crate) fn copy_files_to_clipboard(
+    app: AppHandle<Wry>,
     tree_mode: &str,
     full_tree: Vec<DirectoryNode>,
     selected_nodes: HashSet<String>,
     add_git_diff: bool,
     root: String,
+    urls: Option<Vec<String>>,
 ) -> Result<(), ClipboardError> {
     let rendered_tree = match tree_mode {
         "selected" => render_selected_tree(&full_tree, &selected_nodes),
@@ -110,7 +150,15 @@ pub(crate) fn copy_files_to_clipboard(
         "none" | _ => String::new(),
     };
 
-    let payload = build_clipboard_content(add_git_diff, &selected_nodes, &rendered_tree, &root)?;
+    let base_payload =
+        build_clipboard_content(add_git_diff, &selected_nodes, &rendered_tree, &root)?;
+
+    let web_pages_section = build_web_pages_section(&app, &root, &urls)?;
+    let payload = if web_pages_section.is_empty() {
+        base_payload
+    } else {
+        format!("{}{}", base_payload, web_pages_section)
+    };
 
     let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
         code: codes::CLIPBOARD_WRITE_ERROR,

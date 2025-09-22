@@ -37,7 +37,7 @@ function getErrorMessage(error: unknown) {
 }
 
 export function WebDisclosurePanel() {
-  const { directory } = useSidebarContext()
+  const { directory, selectedPagesIds, setSelectedPagesIds } = useSidebarContext()
   const [savedPages, setSavedPages] = useState<SavedPages>(noSavedPages)
   const [isAddingNewPage, setIsAddingWeb] = useState(false)
   const [webUrl, setWebUrl] = useState('')
@@ -45,7 +45,6 @@ export function WebDisclosurePanel() {
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
     () => new Set(),
   )
-  const [selectedPagesIds, setSelectedPagesIds] = useState<string[]>([])
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
