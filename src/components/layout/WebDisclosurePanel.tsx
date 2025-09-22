@@ -4,6 +4,7 @@ import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
   CheckIcon,
   CopyIcon,
+  PlusIcon,
   ReloadIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
@@ -17,6 +18,18 @@ interface SavedPageMetadata {
   tokenCount: number
 }
 
+interface SavedPages {
+  savedPages: SavedPageMetadata[]
+  totalPages: number
+  totalTokens: number
+}
+
+const noSavedPages: SavedPages = {
+  savedPages: [],
+  totalPages: 0,
+  totalTokens: 0,
+}
+
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
   if (typeof error === 'string') return error
@@ -25,21 +38,23 @@ function getErrorMessage(error: unknown) {
 
 export function WebDisclosurePanel() {
   const { directory } = useSidebarContext()
-  const [webEntries, setWebEntries] = useState<SavedPageMetadata[]>([])
-  const [isAddingWeb, setIsAddingWeb] = useState(false)
+  const [savedPages, setSavedPages] = useState<SavedPages>(noSavedPages)
+  const [isAddingNewPage, setIsAddingWeb] = useState(false)
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
     () => new Set(),
   )
+  const [selectedPagesIds, setSelectedPagesIds] = useState<string[]>([])
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
       try {
-        const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
+        const pages = await invoke<SavedPages>('list_saved_pages', {
           directoryPath: selectedDirectoryPath,
         })
-        setWebEntries(pages)
+        setSavedPages(pages)
+        setSelectedPagesIds(pages.savedPages.map((e) => e.url))
       } catch (error) {
         const message = getErrorMessage(error)
 
@@ -51,7 +66,8 @@ export function WebDisclosurePanel() {
     }
 
     if (!directory?.path) {
-      setWebEntries([])
+      setSavedPages(noSavedPages)
+      setSelectedPagesIds([])
       return
     }
 
@@ -65,7 +81,7 @@ export function WebDisclosurePanel() {
     setWebUrl('')
   }
 
-  async function handleWebSubmit(event?: FormEvent<HTMLFormElement>) {
+  async function handleAddNewPage(event?: FormEvent<HTMLFormElement>) {
     if (event) {
       event.preventDefault()
     }
@@ -89,11 +105,12 @@ export function WebDisclosurePanel() {
         url: trimmedUrl,
       })
 
-      const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
+      const pages = await invoke<SavedPages>('list_saved_pages', {
         directoryPath: directory.path,
       })
 
-      setWebEntries(pages)
+      setSavedPages(pages)
+      setSelectedPagesIds(pages.savedPages.map((e) => e.url))
       setWebUrl('')
       setIsAddingWeb(false)
     } catch (error) {
@@ -123,11 +140,14 @@ export function WebDisclosurePanel() {
         url: entry.url,
       })
 
-      const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
+      const pages = await invoke<SavedPages>('list_saved_pages', {
         directoryPath: directory.path,
       })
 
-      setWebEntries(pages)
+      setSavedPages(pages)
+      setSelectedPagesIds((prev) =>
+        prev.filter((url) => pages.savedPages.some((p) => p.url === url)),
+      )
     } catch (error) {
       const message = getErrorMessage(error)
 
@@ -154,11 +174,12 @@ export function WebDisclosurePanel() {
         url: entry.url,
       })
 
-      const pages = await invoke<SavedPageMetadata[]>('list_saved_pages', {
+      const pages = await invoke<SavedPages>('list_saved_pages', {
         directoryPath: directory.path,
       })
 
-      setWebEntries(pages)
+      setSavedPages(pages)
+      setSelectedPagesIds((prev) => prev.filter((url) => url !== entry.url))
     } catch (error) {
       const message = getErrorMessage(error)
 
@@ -191,17 +212,83 @@ export function WebDisclosurePanel() {
     }
   }
 
+  async function handleCopySelectedToClipboard() {
+    if (!directory?.path) return
+
+    try {
+      await invoke<void>('copy_all_pages_to_clipboard', {
+        directoryPath: directory.path,
+        urls: selectedPagesIds,
+      })
+
+      queue.add({
+        title: 'Page selected pages to clipboard',
+      })
+    } catch (error) {
+      const message = getErrorMessage(error)
+
+      queue.add({
+        title: 'Failed to copy page',
+        description: message,
+      })
+    }
+  }
+
+  function selectAll() {
+    setSelectedPagesIds(savedPages.savedPages.map((e) => e.url))
+  }
+
+  function deselectAll() {
+    setSelectedPagesIds([])
+  }
+
+  const isGroupSelected =
+    savedPages.totalPages > 0 &&
+    selectedPagesIds.length === savedPages.totalPages
+  const isGroupIndeterminate =
+    selectedPagesIds.length > 0 &&
+    selectedPagesIds.length < savedPages.totalPages
+
   return (
     <PanelDisclosure
       id="web"
       label="Web"
-      count={webEntries.length}
+      count={savedPages.totalPages}
       panelClassName="pl-[calc(15px+var(--spacing)*2)] pr-2 pb-4 flex flex-col gap-3"
+      isGroupSelected={isGroupSelected}
+      isGroupIndeterminate={isGroupIndeterminate}
+      onSelectAll={selectAll}
+      onDeselectAll={deselectAll}
+      tokenCount={savedPages.totalTokens}
+      actions={
+        <>
+          {!isAddingNewPage && (
+            <Button
+              type="button"
+              onPress={() => {
+                setIsAddingWeb(true)
+                setWebUrl('')
+              }}
+              className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
+            >
+              <PlusIcon />
+            </Button>
+          )}
+          <Button
+            onPress={() => {
+              void handleCopySelectedToClipboard()
+            }}
+            className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
+          >
+            <CopyIcon />
+          </Button>
+        </>
+      }
     >
-      {isAddingWeb ? (
+      {isAddingNewPage && (
         <form
           onSubmit={(event) => {
-            void handleWebSubmit(event)
+            void handleAddNewPage(event)
           }}
           className="flex flex-col gap-2"
         >
@@ -238,23 +325,16 @@ export function WebDisclosurePanel() {
             </Button>
           </div>
         </form>
-      ) : (
-        <Button
-          type="button"
-          onPress={() => {
-            setIsAddingWeb(true)
-            setWebUrl('')
-          }}
-          className="w-fit px-2 py-1 text-xs rounded-sm bg-accent-interactive-dark text-text-light"
-        >
-          Add
-        </Button>
       )}
 
-      {webEntries.length > 0 ? (
-        <CheckboxGroup aria-label="Saved pages" defaultValue={webEntries.map((e) => e.url)}>
+      {savedPages.totalPages > 0 ? (
+        <CheckboxGroup
+          aria-label="Saved pages"
+          value={selectedPagesIds}
+          onChange={setSelectedPagesIds}
+        >
           <ul className="text-sm ">
-            {webEntries.map((entry) => {
+            {savedPages.savedPages.map((entry) => {
               const isReloading = reloadingUrls.has(entry.url)
 
               return (
@@ -321,7 +401,7 @@ export function WebDisclosurePanel() {
                             </Button>
                           </span>
                         </span>
-                        <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase">
+                        <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
                           {entry.tokenCount?.toLocaleString() ?? '–'}
                         </span>
                       </>

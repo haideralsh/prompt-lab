@@ -78,3 +78,11 @@ pub struct SavedPageMetadata {
     pub title: String,
     pub token_count: Option<usize>,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedPages {
+    pub saved_pages: Vec<SavedPageMetadata>,
+    pub total_pages: usize,
+    pub total_tokens: usize,
+}

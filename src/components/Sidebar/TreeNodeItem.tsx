@@ -101,10 +101,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                   <FileIcon />
                 )}
               </span>
-              <span
-                title={item.id}
-                className={`text-sm text-text-dark group-hover:text-text-light`}
-              >
+              <span title={item.id} className="text-sm text-text-dark">
                 {item.title}
               </span>
             </div>

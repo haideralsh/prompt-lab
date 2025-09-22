@@ -4,9 +4,11 @@ use tauri::{AppHandle, Wry};
 use tauri_plugin_store::StoreExt;
 
 use crate::{
-    commands::scrape::{page_to_md, ScrapedPage},
-    commands::tokenize::count_tokens_for_text,
-    models::SavedPageMetadata,
+    commands::{
+        scrape::{page_to_md, ScrapedPage},
+        tokenize::count_tokens_for_text,
+    },
+    models::{SavedPageMetadata, SavedPages},
     store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
 };
 
@@ -169,10 +171,7 @@ pub fn delete_saved_page(
 }
 
 #[tauri::command]
-pub fn list_saved_pages(
-    app: AppHandle<Wry>,
-    directory_path: String,
-) -> Result<Vec<SavedPageMetadata>, String> {
+pub fn list_saved_pages(app: AppHandle<Wry>, directory_path: String) -> Result<SavedPages, String> {
     let store = app
         .store(STORE_FILE_NAME)
         .map_err(|e| format!("store open error: {e}"))?;
@@ -193,7 +192,17 @@ pub fn list_saved_pages(
 
     store.close_resource();
 
-    Ok(saved_pages)
+    let total_pages = saved_pages.len();
+    let total_tokens: usize = saved_pages
+        .iter()
+        .map(|page| page.token_count.unwrap_or(0))
+        .sum();
+
+    Ok(SavedPages {
+        saved_pages,
+        total_pages,
+        total_tokens,
+    })
 }
 
 #[tauri::command]
@@ -245,5 +254,58 @@ pub fn copy_page_to_clipboard(
 
     clipboard
         .set_text(composed)
+        .map_err(|_| "Failed to write to system clipboard.".to_string())
+}
+
+#[tauri::command]
+pub fn copy_all_pages_to_clipboard(
+    app: AppHandle<Wry>,
+    directory_path: String,
+    urls: Vec<String>,
+) -> Result<(), String> {
+    const PAGE_SEPARATOR: &str = "\n* * *\n";
+
+    let store = app
+        .store(STORE_FILE_NAME)
+        .map_err(|e| format!("store open error: {e}"))?;
+
+    let mut parts: Vec<String> = Vec::new();
+
+    if let Some(data_value) = store.get(StoreCategoryKey::DATA) {
+        if let Some(data_object) = data_value.as_object() {
+            if let Some(directory_value) = data_object.get(&directory_path) {
+                if let Some(directory_object) = directory_value.as_object() {
+                    if let Some(saved_pages_value) = directory_object.get(StoreDataKey::SAVED_WEB_PAGES) {
+                        if let Some(saved_pages_object) = saved_pages_value.as_object() {
+                            for url in urls {
+                                if let Some(page_value) = saved_pages_object.get(&url) {
+                                    let title_opt = page_value.get("title").and_then(|v| v.as_str());
+                                    let content_opt = page_value.get("content").and_then(|v| v.as_str());
+                                    if let (Some(title), Some(content)) = (title_opt, content_opt) {
+                                        let composed = format!("{}\n{}", title, content);
+                                        parts.push(composed);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    store.close_resource();
+
+    if parts.is_empty() {
+        return Err(page_not_found());
+    }
+
+    let payload = parts.join(PAGE_SEPARATOR);
+
+    let mut clipboard =
+        Clipboard::new().map_err(|_| "Failed to access system clipboard.".to_string())?;
+
+    clipboard
+        .set_text(payload)
         .map_err(|_| "Failed to write to system clipboard.".to_string())
 }

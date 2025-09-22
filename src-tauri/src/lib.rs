@@ -22,6 +22,7 @@ pub fn run() {
             commands::web::save_page_as_md,
             commands::web::delete_saved_page,
             commands::web::copy_page_to_clipboard,
+            commands::web::copy_all_pages_to_clipboard,
             commands::web::list_saved_pages,
             commands::app::load_application_data,
         ])

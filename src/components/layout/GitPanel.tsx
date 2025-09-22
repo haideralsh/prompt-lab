@@ -28,7 +28,7 @@ export function GitPanel() {
             <li key={change.path}>
               <Checkbox
                 defaultSelected
-                className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
+                className="flex items-center gap-3 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
                 slot="selection"
               >
                 {({ isSelected }) => (
@@ -41,20 +41,20 @@ export function GitPanel() {
                     >
                       {isSelected && <CheckIcon />}
                     </span>
-                    <span className="font-normal text-text-dark break-all">
-                      {change.path}
-                    </span>
-                    <span className="text-red bg-red/15 px-1 py-0.5 rounded-l-sm rounded-r-none text-xs font-semibold justify-self-start tabular-nums">
-                      -{change.linesDeleted}
-                    </span>
-                    <span className="text-green bg-green/15 px-1 py-0.5 rounded-r-sm rounded-l-none text-xs font-semibold justify-self-start tabular-nums -ml-3">
-                      +{change.linesAdded}
-                    </span>
                     <span
-                      className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5 justify-self-start"
+                      className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5 justify-self-start -mr-1"
                       title={change.changeType}
                     >
                       {change.changeType.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span className="font-normal text-text-dark break-all">
+                      {change.path}
+                    </span>
+                    <span className="text-red bg-red/15 px-1 py-0.5 rounded-l-sm rounded-r-none text-xs font-semibold justify-self-start">
+                      -{change.linesDeleted}
+                    </span>
+                    <span className="text-green bg-green/15 px-1 py-0.5 rounded-r-sm rounded-l-none text-xs font-semibold justify-self-start -ml-3">
+                      +{change.linesAdded}
                     </span>
                   </>
                 )}
