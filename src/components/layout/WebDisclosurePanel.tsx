@@ -22,7 +22,7 @@ interface SavedPageMetadata {
 
 type SavedPages = SavedPageMetadata[]
 
-function getErrorMessage(error: unknown) {
+export function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
   if (typeof error === 'string') return error
   return 'Something went wrong.'
@@ -390,7 +390,7 @@ export function WebDisclosurePanel() {
                   value={webUrl}
                   onChange={(event) => setWebUrl(event.target.value)}
                   disabled={isSavingWeb}
-                  className="block w-full rounded-l-sm bg-background-dark py-0.75 px-2 text-text-dark outline-1 -outline-offset-1 outline-interactive-light placeholder:text-solid-light focus:outline-1 focus:-outline-offset-1 focus:outline-accent-interactive-light text-sm"
+                  className="block w-full -mr-px rounded-l-sm bg-background-dark py-0.75 px-2 text-text-dark outline-1 -outline-offset-1 outline-interactive-light placeholder:text-solid-light focus:outline-1 focus:-outline-offset-1 focus:outline-accent-interactive-light text-sm"
                 />
                 <div className="rounded-r-sm flex outline-1 -outline-offset-1  outline-interactive-light group-has-focus:outline-accent-interactive-light">
                   <Button

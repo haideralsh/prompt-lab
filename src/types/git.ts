@@ -3,6 +3,7 @@ interface GitChange {
   changeType: string
   linesAdded: number
   linesDeleted: number
+  tokenCount: number
 }
 
 type GitStatusResult = GitChange[] | null

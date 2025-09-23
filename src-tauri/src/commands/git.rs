@@ -2,6 +2,8 @@ use git2::{ErrorCode, Repository, Status, StatusOptions, StatusShow};
 use serde::Serialize;
 use std::collections::HashMap;
 
+use super::tokenize::count_tokens_for_text;
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GitChange {
@@ -9,11 +11,12 @@ pub struct GitChange {
     pub change_type: String,
     pub lines_added: i32,
     pub lines_deleted: i32,
+    pub token_count: usize,
 }
 
 #[tauri::command]
 pub(crate) fn git_status(root: String) -> Option<Vec<GitChange>> {
-    let repo = match Repository::discover(root) {
+    let repo = match Repository::discover(&root) {
         Ok(r) => r,
         Err(e) if e.code() == ErrorCode::NotFound => return None,
         Err(_) => return Some(Vec::new()),
@@ -85,6 +88,7 @@ pub(crate) fn git_status(root: String) -> Option<Vec<GitChange>> {
     };
 
     let mut out: Vec<GitChange> = Vec::new();
+    let mut token_counts: HashMap<String, usize> = HashMap::new();
 
     for entry in statuses.iter() {
         let st = entry.status();
@@ -121,11 +125,21 @@ pub(crate) fn git_status(root: String) -> Option<Vec<GitChange>> {
 
         if let Some(path) = path {
             let (lines_added, lines_deleted) = file_changes.get(&path).copied().unwrap_or((0, 0));
+            let token_count = if let Some(count) = token_counts.get(&path) {
+                *count
+            } else {
+                let count = git_diff_text(&root, vec![path.clone()])
+                    .map(|diff| count_tokens_for_text(&diff))
+                    .unwrap_or(0);
+                token_counts.insert(path.clone(), count);
+                count
+            };
             out.push(GitChange {
                 path,
                 change_type,
                 lines_added,
                 lines_deleted,
+                token_count,
             });
         }
     }
@@ -147,7 +161,7 @@ fn classify_change(st: Status) -> Option<String> {
     }
 }
 
-pub(crate) fn git_diff_text(root: &str) -> Option<String> {
+pub(crate) fn git_diff_text(root: &str, paths: Vec<String>) -> Option<String> {
     use git2::{DiffFindOptions, DiffFormat, DiffOptions};
 
     let repo = match Repository::discover(root) {
@@ -175,6 +189,12 @@ pub(crate) fn git_diff_text(root: &str) -> Option<String> {
         .recurse_untracked_dirs(true)
         .ignore_submodules(true)
         .include_typechange(true);
+
+    if !paths.is_empty() {
+        for path in &paths {
+            opts.pathspec(path);
+        }
+    }
 
     let mut diff = match repo.diff_tree_to_workdir_with_index(head_tree.as_ref(), Some(&mut opts)) {
         Ok(d) => d,

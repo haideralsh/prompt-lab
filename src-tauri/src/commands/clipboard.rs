@@ -79,7 +79,7 @@ fn build_file_tree(rendered_tree: &str, root: &str) -> String {
 
 fn build_git_diff(root: &str, add_git_diff: bool) -> String {
     if add_git_diff {
-        if let Some(diff) = git_diff_text(root) {
+        if let Some(diff) = git_diff_text(root, vec![]) {
             return format!(
                 "{}\n{}\n{}",
                 GIT_DIFF_OPENING_TAG, diff, GIT_DIFF_CLOSING_TAG
