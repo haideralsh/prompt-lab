@@ -8,7 +8,7 @@ use crate::commands::tree::render::{render_full_tree, render_selected_tree};
 use crate::commands::web::load_page_contents_from_store;
 use crate::errors::{codes, ClipboardError};
 use crate::models::DirectoryNode;
-use crate::store::STORE_FILE_NAME;
+use crate::store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME};
 use tauri::{AppHandle, Wry};
 use tauri_plugin_store::StoreExt;
 
@@ -26,6 +26,12 @@ const GIT_DIFF_CLOSING_TAG: &str = "</git_diff>";
 const WEB_PAGES_OPENING_TAG: &str = "<web_pages>";
 const WEB_PAGES_CLOSING_TAG: &str = "</web_pages>";
 const WEB_PAGES_SEPARATOR: &str = "\n* * *\n";
+
+fn page_not_found() -> String {
+    PAGE_NOT_FOUND_ERROR.to_string()
+}
+
+const PAGE_NOT_FOUND_ERROR: &str = "Saved page not found.";
 
 fn concatenate_files(selected_files: &HashSet<String>) -> Result<String, ClipboardError> {
     let mut concatenated_files = String::new();
@@ -171,4 +177,79 @@ pub(crate) fn copy_files_to_clipboard(
     })?;
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn copy_page_to_clipboard(
+    app: AppHandle<Wry>,
+    directory_path: String,
+    url: String,
+) -> Result<(), String> {
+    let store = app
+        .store(STORE_FILE_NAME)
+        .map_err(|e| format!("store open error: {e}"))?;
+
+    let data_value = store
+        .get(StoreCategoryKey::DATA)
+        .ok_or_else(page_not_found)?;
+
+    let data_object = data_value.as_object().ok_or_else(page_not_found)?;
+
+    let directory_value = data_object
+        .get(&directory_path)
+        .ok_or_else(page_not_found)?;
+
+    let directory_object = directory_value.as_object().ok_or_else(page_not_found)?;
+
+    let saved_pages_value = directory_object
+        .get(StoreDataKey::SAVED_WEB_PAGES)
+        .ok_or_else(page_not_found)?;
+
+    let saved_pages_object = saved_pages_value.as_object().ok_or_else(page_not_found)?;
+
+    let page_value = saved_pages_object.get(&url).ok_or_else(page_not_found)?;
+
+    let content_text = page_value
+        .get("content")
+        .and_then(|content_value| content_value.as_str())
+        .ok_or_else(page_not_found)?;
+
+    store.close_resource();
+
+    let mut clipboard =
+        Clipboard::new().map_err(|_| "Failed to access system clipboard.".to_string())?;
+
+    clipboard
+        .set_text(content_text)
+        .map_err(|_| "Failed to write to system clipboard.".to_string())
+}
+
+#[tauri::command]
+pub fn copy_all_pages_to_clipboard(
+    app: AppHandle<Wry>,
+    directory_path: String,
+    urls: Vec<String>,
+) -> Result<(), String> {
+    const PAGE_SEPARATOR: &str = "\n* * *\n";
+
+    let store = app
+        .store(STORE_FILE_NAME)
+        .map_err(|e| format!("store open error: {e}"))?;
+
+    let parts = load_page_contents_from_store(&store, &directory_path, &urls);
+
+    store.close_resource();
+
+    if parts.is_empty() {
+        return Err(page_not_found());
+    }
+
+    let payload = parts.join(PAGE_SEPARATOR);
+
+    let mut clipboard =
+        Clipboard::new().map_err(|_| "Failed to access system clipboard.".to_string())?;
+
+    clipboard
+        .set_text(payload)
+        .map_err(|_| "Failed to write to system clipboard.".to_string())
 }
