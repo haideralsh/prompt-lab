@@ -1,9 +1,10 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
   CheckIcon,
   CopyIcon,
+  Cross2Icon,
   PlusIcon,
   ReloadIcon,
   TrashIcon,
@@ -11,6 +12,7 @@ import {
 import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
+import { flushSync } from 'react-dom'
 
 interface SavedPageMetadata {
   title: string
@@ -18,17 +20,7 @@ interface SavedPageMetadata {
   tokenCount: number
 }
 
-interface SavedPages {
-  savedPages: SavedPageMetadata[]
-  totalPages: number
-  totalTokens: number
-}
-
-const noSavedPages: SavedPages = {
-  savedPages: [],
-  totalPages: 0,
-  totalTokens: 0,
-}
+type SavedPages = SavedPageMetadata[]
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message
@@ -37,14 +29,16 @@ function getErrorMessage(error: unknown) {
 }
 
 export function WebDisclosurePanel() {
-  const { directory, selectedPagesIds, setSelectedPagesIds } = useSidebarContext()
-  const [savedPages, setSavedPages] = useState<SavedPages>(noSavedPages)
+  const { directory, selectedPagesIds, setSelectedPagesIds } =
+    useSidebarContext()
+  const [savedPages, setSavedPages] = useState<SavedPages>([])
   const [isAddingNewPage, setIsAddingWeb] = useState(false)
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
     () => new Set(),
   )
+  const webUrlInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
@@ -53,7 +47,7 @@ export function WebDisclosurePanel() {
           directoryPath: selectedDirectoryPath,
         })
         setSavedPages(pages)
-        setSelectedPagesIds(pages.savedPages.map((e) => e.url))
+        setSelectedPagesIds(pages.map((e) => e.url))
       } catch (error) {
         const message = getErrorMessage(error)
 
@@ -65,13 +59,22 @@ export function WebDisclosurePanel() {
     }
 
     if (!directory?.path) {
-      setSavedPages(noSavedPages)
+      setSavedPages([])
       setSelectedPagesIds([])
       return
     }
 
     void loadSavedPages(directory.path)
   }, [directory?.path])
+
+  function showAddNewPageForm() {
+    flushSync(() => {
+      setWebUrl('')
+      setIsAddingWeb(true)
+    })
+
+    webUrlInputRef.current?.focus()
+  }
 
   function handleCancelWeb() {
     if (isSavingWeb) return
@@ -109,7 +112,7 @@ export function WebDisclosurePanel() {
       })
 
       setSavedPages(pages)
-      setSelectedPagesIds(pages.savedPages.map((e) => e.url))
+      setSelectedPagesIds(pages.map((e) => e.url))
       setWebUrl('')
       setIsAddingWeb(false)
     } catch (error) {
@@ -145,7 +148,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((prev) =>
-        prev.filter((url) => pages.savedPages.some((p) => p.url === url)),
+        prev.filter((url) => pages.some((p) => p.url === url)),
       )
     } catch (error) {
       const message = getErrorMessage(error)
@@ -234,7 +237,7 @@ export function WebDisclosurePanel() {
   }
 
   function selectAll() {
-    setSelectedPagesIds(savedPages.savedPages.map((e) => e.url))
+    setSelectedPagesIds(savedPages.map((e) => e.url))
   }
 
   function deselectAll() {
@@ -242,32 +245,29 @@ export function WebDisclosurePanel() {
   }
 
   const isGroupSelected =
-    savedPages.totalPages > 0 &&
-    selectedPagesIds.length === savedPages.totalPages
+    savedPages.length > 0 && selectedPagesIds.length === savedPages.length
   const isGroupIndeterminate =
-    selectedPagesIds.length > 0 &&
-    selectedPagesIds.length < savedPages.totalPages
+    selectedPagesIds.length > 0 && selectedPagesIds.length < savedPages.length
 
   return (
     <PanelDisclosure
       id="web"
       label="Web"
-      count={savedPages.totalPages}
-      panelClassName="pl-[calc(15px+var(--spacing)*2)] pr-2 pb-4 flex flex-col gap-3"
+      count={savedPages.length}
+      panelClassName="p-2 flex flex-col gap-1"
       isGroupSelected={isGroupSelected}
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={selectAll}
       onDeselectAll={deselectAll}
-      tokenCount={savedPages.totalTokens}
+      tokenCount={savedPages
+        .filter((page) => selectedPagesIds.includes(page.url))
+        .reduce((acc, page) => acc + page.tokenCount, 0)}
       actions={
         <>
           {!isAddingNewPage && (
             <Button
               type="button"
-              onPress={() => {
-                setIsAddingWeb(true)
-                setWebUrl('')
-              }}
+              onPress={showAddNewPageForm}
               className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
             >
               <PlusIcon />
@@ -284,133 +284,135 @@ export function WebDisclosurePanel() {
         </>
       }
     >
-      {isAddingNewPage && (
-        <form
-          onSubmit={(event) => {
-            void handleAddNewPage(event)
-          }}
-          className="flex flex-col gap-2"
-        >
-          <label className="sr-only" htmlFor="web-url">
-            Enter URL to scrape
-          </label>
-          <input
-            id="web-url"
-            type="url"
-            placeholder="https://example.com"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            value={webUrl}
-            onChange={(event) => setWebUrl(event.target.value)}
-            disabled={isSavingWeb}
-            className="placeholder:text-sm placeholder:text-solid-light w-full text-text-light py-1 px-2 text-sm rounded-sm bg-background-light border border-interactive-mid focus:outline-none focus:border-accent-border-mid disabled:opacity-70"
-          />
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onPress={handleCancelWeb}
-              isDisabled={isSavingWeb}
-              className="px-2 py-1 text-xs rounded-sm border border-interactive-mid text-text-dark hover:bg-interactive-mid data-[disabled]:opacity-60"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              isDisabled={isSavingWeb || !webUrl.trim()}
-              className="px-2 py-1 text-xs rounded-sm bg-accent-interactive-dark text-text-light data-[disabled]:opacity-60"
-            >
-              {isSavingWeb ? 'Adding...' : 'Add'}
-            </Button>
-          </div>
-        </form>
-      )}
+      {savedPages.length > 0 ? (
+        <>
+          <CheckboxGroup
+            aria-label="Saved pages"
+            value={selectedPagesIds}
+            onChange={setSelectedPagesIds}
+          >
+            <ul className="text-sm ">
+              {savedPages.map((entry) => {
+                const isReloading = reloadingUrls.has(entry.url)
 
-      {savedPages.totalPages > 0 ? (
-        <CheckboxGroup
-          aria-label="Saved pages"
-          value={selectedPagesIds}
-          onChange={setSelectedPagesIds}
-        >
-          <ul className="text-sm ">
-            {savedPages.savedPages.map((entry) => {
-              const isReloading = reloadingUrls.has(entry.url)
-
-              return (
-                <li
-                  key={`${entry.url}`}
-                  className={`${isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'}`}
-                >
-                  <Checkbox
-                    value={entry.url}
-                    isDisabled={isReloading}
-                    className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
+                return (
+                  <li
+                    key={`${entry.url}`}
+                    className={`${isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'}`}
+                  >
+                    <Checkbox
+                      value={entry.url}
+                      isDisabled={isReloading}
+                      className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
                               hover:bg-accent-interactive-dark
                               data-[hovered]:bg-accent-interactive-dark
                               data-[disabled]:opacity-75
                               data-[disabled]:hover:bg-transparent"
-                    slot="selection"
-                  >
-                    {({ isSelected }) => (
-                      <>
-                        <span
-                          className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
+                      slot="selection"
+                    >
+                      {({ isSelected }) => (
+                        <>
+                          <span
+                            className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
                                     border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
                                     bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
                                     flex-shrink-0"
-                        >
-                          {isSelected && <CheckIcon />}
-                        </span>
-                        <span className="flex items-center gap-1.5 w-full">
-                          <span className="font-normal shrink-0 text-text-dark break-all">
-                            {entry.title}
+                          >
+                            {isSelected && <CheckIcon />}
                           </span>
-                          <span className="hidden group-hover:inline text-solid-light truncate">
-                            {entry.url}
+                          <span className="flex items-center gap-1.5 w-full">
+                            <span className="font-normal shrink-0 text-text-dark break-all">
+                              {entry.title}
+                            </span>
+                            <span className="hidden group-hover:inline text-solid-light truncate">
+                              {entry.url}
+                            </span>
                           </span>
-                        </span>
-                        <span>
-                          <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                            <Button
-                              onPress={() => {
-                                void handleCopyToClipboard(entry)
-                              }}
-                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                              isDisabled={isReloading}
-                            >
-                              <CopyIcon />
-                            </Button>
-                            <Button
-                              onPress={() => {
-                                void handleReload(entry)
-                              }}
-                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                              isDisabled={isReloading}
-                            >
-                              <ReloadIcon />
-                            </Button>
-                            <Button
-                              onPress={() => {
-                                void handleDelete(entry)
-                              }}
-                              className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
-                              isDisabled={isReloading}
-                            >
-                              <TrashIcon />
-                            </Button>
+                          <span>
+                            <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
+                              <Button
+                                onPress={() => {
+                                  void handleCopyToClipboard(entry)
+                                }}
+                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                                isDisabled={isReloading}
+                              >
+                                <CopyIcon />
+                              </Button>
+                              <Button
+                                onPress={() => {
+                                  void handleReload(entry)
+                                }}
+                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                                isDisabled={isReloading}
+                              >
+                                <ReloadIcon />
+                              </Button>
+                              <Button
+                                onPress={() => {
+                                  void handleDelete(entry)
+                                }}
+                                className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
+                                isDisabled={isReloading}
+                              >
+                                <TrashIcon />
+                              </Button>
+                            </span>
                           </span>
-                        </span>
-                        <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
-                          {entry.tokenCount?.toLocaleString() ?? '–'}
-                        </span>
-                      </>
-                    )}
-                  </Checkbox>
-                </li>
-              )
-            })}
-          </ul>
-        </CheckboxGroup>
+                          <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
+                            {entry.tokenCount?.toLocaleString() ?? '–'}
+                          </span>
+                        </>
+                      )}
+                    </Checkbox>
+                  </li>
+                )
+              })}
+            </ul>
+          </CheckboxGroup>
+
+          {isAddingNewPage && (
+            // Todo Move this whole thing into a modal
+            <form
+              onSubmit={(event) => {
+                void handleAddNewPage(event)
+              }}
+            >
+              <div className="group flex ml-8.5 mr-2 mt-1 mb-2">
+                <input
+                  id="web-url"
+                  type="url"
+                  placeholder="Enter a full URL"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  ref={webUrlInputRef}
+                  value={webUrl}
+                  onChange={(event) => setWebUrl(event.target.value)}
+                  disabled={isSavingWeb}
+                  className="block w-full rounded-l-sm bg-background-dark py-0.75 px-2 text-text-dark outline-1 -outline-offset-1 outline-interactive-light placeholder:text-solid-light focus:outline-1 focus:-outline-offset-1 focus:outline-accent-interactive-light text-sm"
+                />
+                <div className="rounded-r-sm flex outline-1 -outline-offset-1  outline-interactive-light group-has-focus:outline-accent-interactive-light">
+                  <Button
+                    type="submit"
+                    isDisabled={isSavingWeb || !webUrl.trim()}
+                    className="px-3 bg-accent-interactive-mid hover:bg-accent-interactive-light text-accent-text-light data-[disabled]:bg-interactive-mid data-[disabled]:text-text-dark"
+                  >
+                    <CheckIcon aria-hidden="true" />
+                  </Button>
+                  <Button
+                    type="button"
+                    onPress={handleCancelWeb}
+                    isDisabled={isSavingWeb}
+                    className="px-3 text-text-dark hover:bg-accent-background-light"
+                  >
+                    <Cross2Icon aria-hidden="true" />
+                  </Button>
+                </div>
+              </div>
+            </form>
+          )}
+        </>
       ) : (
         <div className="text-xs text-text-dark">
           Saved pages will appear here after scraping.

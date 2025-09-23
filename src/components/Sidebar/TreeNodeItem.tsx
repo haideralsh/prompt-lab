@@ -101,9 +101,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                   <FileIcon />
                 )}
               </span>
-              <span title={item.id} className="text-sm text-text-dark">
-                {item.title}
-              </span>
+              <span className="text-sm text-text-dark">{item.title}</span>
             </div>
           </div>
         )}

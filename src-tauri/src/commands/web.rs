@@ -8,7 +8,7 @@ use crate::{
         scrape::{page_to_md, ScrapedPage},
         tokenize::count_tokens_for_text,
     },
-    models::{SavedPageMetadata, SavedPages},
+    models::SavedPageMetadata,
     store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
 };
 
@@ -211,7 +211,10 @@ pub fn delete_saved_page(
 }
 
 #[tauri::command]
-pub fn list_saved_pages(app: AppHandle<Wry>, directory_path: String) -> Result<SavedPages, String> {
+pub fn list_saved_pages(
+    app: AppHandle<Wry>,
+    directory_path: String,
+) -> Result<Vec<SavedPageMetadata>, String> {
     let store = app
         .store(STORE_FILE_NAME)
         .map_err(|e| format!("store open error: {e}"))?;
@@ -232,17 +235,7 @@ pub fn list_saved_pages(app: AppHandle<Wry>, directory_path: String) -> Result<S
 
     store.close_resource();
 
-    let total_pages = saved_pages.len();
-    let total_tokens: usize = saved_pages
-        .iter()
-        .map(|page| page.token_count.unwrap_or(0))
-        .sum();
-
-    Ok(SavedPages {
-        saved_pages,
-        total_pages,
-        total_tokens,
-    })
+    Ok(saved_pages)
 }
 
 #[tauri::command]
