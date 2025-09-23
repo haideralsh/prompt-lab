@@ -28,10 +28,6 @@ tauri-plugin-store = "2"
 ignore = "0.4"
 tiktoken-rs = "0.7"
 git2 = { version = "0.18", features = ["vendored-libgit2"] }
-reqwest = { version = "0.11", features = ["blocking", "rustls-tls", "gzip", "brotli", "deflate"] }
-htmd = "0.3"
-spider = { version = "2" }
-
-# Fork of kuchiki maintained by Brave
-kuchikiki = "0.8.2"
-url = "2"
+twars-url2md = "1.4.2" 
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"

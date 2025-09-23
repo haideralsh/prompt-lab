@@ -100,18 +100,20 @@ pub async fn save_page_as_md(
         .store(STORE_FILE_NAME)
         .map_err(|e| format!("store open error: {e}"))?;
 
-    let scraped_page = page_to_md(url.clone()).await?;
+    let scraped_page = page_to_md(&url)
+        .await
+        .map_err(|err| format!("page scrape failed: {err}"))?;
 
     let ScrapedPage {
-        url,
+        url: scraped_url,
         title,
-        content,
+        markdown,
     } = scraped_page;
 
-    let token_count = count_tokens_for_text(&content);
+    let token_count = count_tokens_for_text(&markdown);
 
     let metadata = SavedPageMetadata {
-        url: url.clone(),
+        url: scraped_url.clone(),
         title: title.clone(),
         token_count: Some(token_count),
     };
@@ -140,13 +142,13 @@ pub async fn save_page_as_md(
     }
 
     if let Some(saved_pages_object) = saved_pages_entry.as_object_mut() {
-        let page_key = url.clone();
+        let page_key = scraped_url.clone();
         saved_pages_object.insert(
             page_key,
             json!({
-                "url": url,
+                "url": scraped_url,
                 "title": title,
-                "content": content,
+                "content": markdown,
                 "tokenCount": token_count,
             }),
         );
