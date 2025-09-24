@@ -3,23 +3,72 @@ use crate::{
         classify_change, diff_hash, ensure_git_cache_loaded_for_dir, get_git_cached_entry,
         spawn_git_token_count_task,
     },
-    models::{GitChange, GitDiffData, GitDiffWorkItem},
+    models::{GitChange, GitDiffData, GitDiffWorkItem, GitStatusEvent},
 };
 use git2::{
     DiffFindOptions, DiffOptions, ErrorCode, Patch, Repository, Status, StatusOptions, StatusShow,
 };
-use std::{collections::HashMap, sync::Arc};
-use tauri::{AppHandle, Wry};
+use notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
+use std::{
+    collections::HashMap,
+    path::Path,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex, OnceLock,
+    },
+    time::Duration,
+};
+use tauri::{AppHandle, Emitter, Wry};
+use tokio::time::sleep;
+
+struct GitWatcherHandle {
+    #[allow(dead_code)]
+    watcher: RecommendedWatcher,
+    #[allow(dead_code)]
+    debounce: Arc<AtomicBool>,
+}
+
+static GIT_WATCHERS: OnceLock<Mutex<HashMap<String, Arc<GitWatcherHandle>>>> = OnceLock::new();
+
+fn git_watchers_registry() -> &'static Mutex<HashMap<String, Arc<GitWatcherHandle>>> {
+    GIT_WATCHERS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+enum GitStatusComputation {
+    NotRepository,
+    Finished {
+        changes: Vec<GitChange>,
+        work_items: Vec<GitDiffWorkItem>,
+    },
+}
 
 #[tauri::command]
 pub(crate) fn git_status(app: AppHandle<Wry>, root: String) -> Option<Vec<GitChange>> {
-    let repo = match Repository::discover(&root) {
+    match compute_git_status(&app, &root) {
+        GitStatusComputation::NotRepository => None,
+        GitStatusComputation::Finished { changes, work_items } => {
+            if !work_items.is_empty() {
+                spawn_git_token_count_task(app.clone(), root.clone(), work_items);
+            }
+            ensure_git_watcher_started(app, root);
+            Some(changes)
+        }
+    }
+}
+
+fn compute_git_status(app: &AppHandle<Wry>, root: &str) -> GitStatusComputation {
+    let repo = match Repository::discover(root) {
         Ok(r) => r,
-        Err(e) if e.code() == ErrorCode::NotFound => return None,
-        Err(_) => return Some(Vec::new()),
+        Err(e) if e.code() == ErrorCode::NotFound => return GitStatusComputation::NotRepository,
+        Err(_) => {
+            return GitStatusComputation::Finished {
+                changes: Vec::new(),
+                work_items: Vec::new(),
+            }
+        }
     };
 
-    ensure_git_cache_loaded_for_dir(&app, &root);
+    ensure_git_cache_loaded_for_dir(app, root);
 
     let head_tree = match repo.head().and_then(|h| h.peel_to_tree()) {
         Ok(t) => Some(t),
@@ -40,11 +89,15 @@ pub(crate) fn git_status(app: AppHandle<Wry>, root: String) -> Option<Vec<GitCha
         .ignore_submodules(true)
         .include_typechange(true);
 
-    let mut diff =
-        match repo.diff_tree_to_workdir_with_index(head_tree.as_ref(), Some(&mut diff_opts)) {
-            Ok(d) => d,
-            Err(_) => return Some(Vec::new()),
-        };
+    let mut diff = match repo.diff_tree_to_workdir_with_index(head_tree.as_ref(), Some(&mut diff_opts)) {
+        Ok(d) => d,
+        Err(_) => {
+            return GitStatusComputation::Finished {
+                changes: Vec::new(),
+                work_items: Vec::new(),
+            }
+        }
+    };
 
     let mut find_opts = DiffFindOptions::new();
     find_opts.renames(true).copies(true);
@@ -102,7 +155,12 @@ pub(crate) fn git_status(app: AppHandle<Wry>, root: String) -> Option<Vec<GitCha
 
     let statuses = match repo.statuses(Some(&mut opts)) {
         Ok(s) => s,
-        Err(_) => return Some(Vec::new()),
+        Err(_) => {
+            return GitStatusComputation::Finished {
+                changes: Vec::new(),
+                work_items: Vec::new(),
+            }
+        }
     };
 
     let mut out: Vec<GitChange> = Vec::new();
@@ -153,7 +211,7 @@ pub(crate) fn git_status(app: AppHandle<Wry>, root: String) -> Option<Vec<GitCha
 
             if let Some(diff_data) = data {
                 if !diff_data.diff_hash.is_empty() {
-                    if let Some(entry) = get_git_cached_entry(&root, &path) {
+                    if let Some(entry) = get_git_cached_entry(root, &path) {
                         if entry.diff_hash == diff_data.diff_hash {
                             token_count = Some(entry.token_count);
                         }
@@ -180,9 +238,91 @@ pub(crate) fn git_status(app: AppHandle<Wry>, root: String) -> Option<Vec<GitCha
         }
     }
 
-    if !work_items.is_empty() {
-        spawn_git_token_count_task(app.clone(), root.clone(), work_items);
+    GitStatusComputation::Finished {
+        changes: out,
+        work_items,
+    }
+}
+
+fn ensure_git_watcher_started(app: AppHandle<Wry>, root: String) {
+    if root.is_empty() {
+        return;
     }
 
-    Some(out)
+    if !Path::new(&root).exists() {
+        return;
+    }
+
+    {
+        if let Ok(registry) = git_watchers_registry().lock() {
+            if registry.contains_key(&root) {
+                return;
+            }
+        }
+    }
+
+    let debounce_flag = Arc::new(AtomicBool::new(false));
+    let debounce_for_watch = debounce_flag.clone();
+    let watch_root = root.clone();
+    let app_handle = app.clone();
+
+    let mut watcher = match notify::recommended_watcher(move |res: notify::Result<Event>| {
+        if res.is_err() {
+            return;
+        }
+
+        let app = app_handle.clone();
+        let root = watch_root.clone();
+        let debounce = debounce_for_watch.clone();
+
+        if debounce.swap(true, Ordering::SeqCst) {
+            return;
+        }
+
+        tauri::async_runtime::spawn(async move {
+            sleep(Duration::from_millis(200)).await;
+            emit_git_status_event(app.clone(), root.clone());
+            debounce.store(false, Ordering::SeqCst);
+        });
+    }) {
+        Ok(watcher) => watcher,
+        Err(_) => return,
+    };
+
+    if watcher
+        .watch(Path::new(&root), RecursiveMode::Recursive)
+        .is_err()
+    {
+        return;
+    }
+
+    if let Ok(mut registry) = git_watchers_registry().lock() {
+        if registry.contains_key(&root) {
+            return;
+        }
+
+        registry.insert(
+            root,
+            Arc::new(GitWatcherHandle {
+                watcher,
+                debounce: debounce_flag,
+            }),
+        );
+    }
+}
+
+fn emit_git_status_event(app: AppHandle<Wry>, root: String) {
+    match compute_git_status(&app, &root) {
+        GitStatusComputation::NotRepository => {}
+        GitStatusComputation::Finished { changes, work_items } => {
+            if !work_items.is_empty() {
+                spawn_git_token_count_task(app.clone(), root.clone(), work_items);
+            }
+
+            let _ = app.emit(
+                "git-status-updated",
+                GitStatusEvent { root, changes },
+            );
+        }
+    }
 }

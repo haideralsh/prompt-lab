@@ -79,7 +79,7 @@ pub struct SavedPageMetadata {
     pub token_count: Option<usize>,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GitChange {
     pub path: String,
@@ -125,4 +125,11 @@ pub struct GitTokenCountResult {
 pub struct GitTokenCountsEvent {
     pub root: String,
     pub files: Vec<GitTokenCountResult>,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitStatusEvent {
+    pub root: String,
+    pub changes: Vec<GitChange>,
 }
