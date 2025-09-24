@@ -21,7 +21,7 @@ pub fn run() {
             commands::clipboard::copy_files_to_clipboard,
             commands::clipboard::copy_page_to_clipboard,
             commands::clipboard::copy_all_pages_to_clipboard,
-            commands::git::diff::git_status,
+            commands::git::command::git_status,
             commands::web::save_page_as_md,
             commands::web::delete_saved_page,
             commands::web::list_saved_pages,
