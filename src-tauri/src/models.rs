@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -77,4 +77,52 @@ pub struct SavedPageMetadata {
     pub url: String,
     pub title: String,
     pub token_count: Option<usize>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitChange {
+    pub path: String,
+    pub change_type: String,
+    pub lines_added: i32,
+    pub lines_deleted: i32,
+    pub token_count: Option<usize>,
+    pub diff_hash: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitTokenCacheEntry {
+    pub diff_hash: String,
+    pub token_count: usize,
+}
+
+#[derive(Clone)]
+pub struct GitDiffData {
+    pub lines_added: i32,
+    pub lines_deleted: i32,
+    pub diff_bytes: Arc<Vec<u8>>,
+    pub diff_hash: String,
+}
+
+#[derive(Clone)]
+pub struct GitDiffWorkItem {
+    pub path: String,
+    pub diff_bytes: Arc<Vec<u8>>,
+    pub diff_hash: String,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitTokenCountResult {
+    pub path: String,
+    pub token_count: usize,
+    pub diff_hash: String,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitTokenCountsEvent {
+    pub root: String,
+    pub files: Vec<GitTokenCountResult>,
 }

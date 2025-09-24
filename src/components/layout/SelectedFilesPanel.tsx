@@ -14,6 +14,7 @@ export function SelectedFilesPanel() {
     setSelectedFiles,
     setSelectedNodes,
     setIndeterminateNodes,
+    totalTokenCount,
   } = useSidebarContext()
 
   const sortedFiles = useMemo(() => {
@@ -43,6 +44,12 @@ export function SelectedFilesPanel() {
       count={sortedFiles.length}
       headingClassName="flex items-center gap-1 text-text-dark"
       iconClassName=""
+      isGroupSelected={false}
+      isGroupIndeterminate={false}
+      onSelectAll={() => {}}
+      onDeselectAll={() => {}}
+      tokenCount={totalTokenCount}
+      actions={null}
     >
       {sortedFiles.length > 0 ? (
         <ul className="text-sm text-text-dark">

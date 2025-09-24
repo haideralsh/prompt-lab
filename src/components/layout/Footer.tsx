@@ -40,15 +40,16 @@ export function Footer() {
   }
 
   useEffect(() => {
-    function inquireGitStatus() {
-      invoke<GitStatusResult>('git_status', {
-        root: directory?.path,
-      }).then((change) => {
-        setGitStatus(change)
-      })
+    if (!directory?.path) {
+      setGitStatus(null)
+      return
     }
 
-    inquireGitStatus()
+    invoke<GitStatusResult>('git_status', {
+      root: directory.path,
+    }).then((change) => {
+      setGitStatus(change)
+    })
   }, [directory?.path])
 
   useEffect(() => {

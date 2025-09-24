@@ -414,8 +414,9 @@ export function WebDisclosurePanel() {
           )}
         </>
       ) : (
-        <div className="text-xs text-text-dark">
-          Saved pages will appear here after scraping.
+        <div className="text-xs text-solid-light">
+          Web pages you add here will be formatted as markdown and included with
+          your prompt.
         </div>
       )}
     </PanelDisclosure>

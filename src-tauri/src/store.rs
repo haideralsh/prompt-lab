@@ -8,6 +8,7 @@
  *     data: {
  *           [<directory_root>]: {
  *              token_cache: { "<path>": CacheEntry, ... }
+ *              git_token_cache: { "<path>": GitTokenCacheEntry, ... }
  *           }
  *     }
  * }
@@ -19,6 +20,7 @@ pub struct StoreDataKey;
 
 impl StoreDataKey {
     pub const TOKEN_CACHE: &'static str = "token_cache";
+    pub const GIT_TOKEN_CACHE: &'static str = "git_token_cache";
     pub const SAVED_WEB_PAGES: &'static str = "saved_web_pages";
 }
 

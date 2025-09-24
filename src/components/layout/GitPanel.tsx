@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { Button, Checkbox } from 'react-aria-components'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
@@ -9,13 +10,73 @@ export function GitPanel() {
   const { directory } = useSidebarContext()
   const [gitStatus, setGitStatus] = useState<GitStatusResult>(null)
 
-  async function handleCopyToClipboard(path: string) {
+  async function handleCopyToClipboard(_path: string) {
     // TODO: implement
   }
+
   useEffect(() => {
+    if (!directory?.path) {
+      setGitStatus(null)
+      return
+    }
+
+    let isActive = true
+
     invoke<GitStatusResult>('git_status', {
-      root: directory?.path,
-    }).then((change) => setGitStatus(change))
+      root: directory.path,
+    }).then((change) => {
+      if (isActive) {
+        setGitStatus(change)
+      }
+    })
+
+    return () => {
+      isActive = false
+    }
+  }, [directory?.path])
+
+  useEffect(() => {
+    let unlisten: UnlistenFn | undefined
+
+    async function listenToGitTokenCounts() {
+      unlisten = await listen<GitTokenCountsEvent>(
+        'git-token-counts',
+        (event) => {
+          if (!event?.payload?.files?.length) return
+          if (!directory?.path || event.payload.root !== directory.path) return
+
+          setGitStatus((prev) => {
+            if (!prev?.length) return prev
+
+            const map = new Map(prev.map((change) => [change.path, change]))
+            let updated = false
+
+            for (const file of event.payload.files) {
+              const existing = map.get(file.path)
+              if (!existing) continue
+              if (existing.diffHash !== file.diffHash) continue
+              if (existing.tokenCount === file.tokenCount) continue
+
+              map.set(file.path, {
+                ...existing,
+                tokenCount: file.tokenCount,
+              })
+              updated = true
+            }
+
+            return updated ? Array.from(map.values()) : prev
+          })
+        },
+      )
+    }
+
+    void listenToGitTokenCounts()
+
+    return () => {
+      if (unlisten) {
+        unlisten()
+      }
+    }
   }, [directory?.path])
 
   return (
@@ -24,6 +85,19 @@ export function GitPanel() {
       label="Git"
       count={(gitStatus && gitStatus.length) ?? 0}
       panelClassName="p-2 flex flex-col gap-1"
+      isGroupSelected={false}
+      isGroupIndeterminate={false}
+      onSelectAll={() => {}}
+      onDeselectAll={() => {}}
+      tokenCount={
+        (gitStatus &&
+          gitStatus.reduce(
+            (acc, change) => acc + (change.tokenCount ?? 0),
+            0,
+          )) ??
+        0
+      }
+      actions={null}
     >
       {gitStatus && gitStatus.length > 0 ? (
         <ul className="text-sm text-text-dark">
