@@ -77,17 +77,19 @@ fn build_file_tree(rendered_tree: &str, root: &str) -> String {
     )
 }
 
-fn build_git_diff(root: &str, add_git_diff: bool) -> String {
-    if add_git_diff {
-        if let Some(diff) = git_diff_text(root, vec![]) {
-            return format!(
-                "{}\n{}\n{}",
-                GIT_DIFF_OPENING_TAG, diff, GIT_DIFF_CLOSING_TAG
-            );
-        }
+fn build_git_diff(root: &str, git_diff_paths: Vec<String>) -> String {
+    if git_diff_paths.is_empty() {
+        return String::new();
     }
 
-    "".to_string()
+    if let Some(diff) = git_diff_text(root, git_diff_paths) {
+        return format!(
+            "{}\n{}\n{}",
+            GIT_DIFF_OPENING_TAG, diff, GIT_DIFF_CLOSING_TAG
+        );
+    }
+
+    String::new()
 }
 
 fn build_web_pages_section(
@@ -121,13 +123,13 @@ fn build_web_pages_section(
 }
 
 fn build_clipboard_content(
-    add_git_diff: bool,
+    git_diff_paths: Vec<String>,
     selected_nodes: &HashSet<String>,
     rendered_tree: &str,
     root: &str,
 ) -> Result<String, ClipboardError> {
     let concatenated_files = concatenate_files(selected_nodes)?;
-    let git_diff = build_git_diff(root, add_git_diff);
+    let git_diff = build_git_diff(root, git_diff_paths);
     let file_tree = build_file_tree(rendered_tree, root);
 
     Ok(format!(
@@ -179,7 +181,7 @@ pub(crate) fn copy_files_to_clipboard(
     tree_mode: &str,
     full_tree: Vec<DirectoryNode>,
     selected_nodes: HashSet<String>,
-    add_git_diff: bool,
+    git_diff_paths: Vec<String>,
     root: String,
     urls: Option<Vec<String>>,
 ) -> Result<(), ClipboardError> {
@@ -190,7 +192,7 @@ pub(crate) fn copy_files_to_clipboard(
     };
 
     let base_payload =
-        build_clipboard_content(add_git_diff, &selected_nodes, &rendered_tree, &root)?;
+        build_clipboard_content(git_diff_paths, &selected_nodes, &rendered_tree, &root)?;
 
     let web_pages_section = build_web_pages_section(&app, &root, &urls)?;
     let payload = if web_pages_section.is_empty() {

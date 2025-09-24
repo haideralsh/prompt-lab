@@ -23,9 +23,9 @@ export function Footer() {
     totalTokenCount,
     setTotalTokenCount,
     selectedPagesIds,
+    selectedDiffIds,
   } = useSidebarContext()
   let [treeFormat] = useState(new Set<Key>(['full']))
-  let [gitDiff] = useState(false)
   let [, setGitStatus] = useState<GitStatusResult>(null)
 
   async function handleCopyToClipboard() {
@@ -33,8 +33,8 @@ export function Footer() {
       treeMode: getTreeMode(treeFormat),
       fullTree: tree,
       root: directory?.path ?? '',
-      selectedNodes: Array.from(selectedNodes).map(String),
-      addGitDiff: gitDiff,
+      selectedNodes: Array.from(selectedNodes),
+      gitDiffPaths: Array.from(selectedDiffIds),
       urls: Array.from(selectedPagesIds),
     })
   }
