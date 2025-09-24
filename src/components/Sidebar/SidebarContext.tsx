@@ -14,8 +14,10 @@ type SidebarContext = {
   setSelectedNodes: (nodes: Set<Key>) => void
   selectedFiles: FileNode[]
   setSelectedFiles: Dispatch<SetStateAction<FileNode[]>>
-  selectedPagesIds: string[]
-  setSelectedPagesIds: Dispatch<SetStateAction<string[]>>
+  selectedPagesIds: Set<string>
+  setSelectedPagesIds: Dispatch<SetStateAction<Set<string>>>
+  selectedDiffIds: Set<string>
+  setSelectedDiffIds: Dispatch<SetStateAction<Set<string>>>
   totalTokenCount: number
   setTotalTokenCount: Dispatch<SetStateAction<number>>
   indeterminateNodes: Set<Key>
@@ -42,11 +44,14 @@ export function useSidebarContext() {
 export function SidebarContextProvider(props: SidebarContextProps) {
   const [selectedNodes, setSelectedNodes] = useState<Set<Key>>(new Set())
   const [selectedFiles, setSelectedFiles] = useState<FileNode[]>([])
-  const [selectedPagesIds, setSelectedPagesIds] = useState<string[]>([])
-  const [totalTokenCount, setTotalTokenCount] = useState<number>(0)
-  const [indeterminateNodes, setIndeterminateNodes] = useState<Set<Key>>(
-    new Set()
+  const [selectedPagesIds, setSelectedPagesIds] = useState<Set<string>>(
+    () => new Set()
   )
+  const [selectedDiffIds, setSelectedDiffIds] = useState<Set<string>>(
+    () => new Set()
+  )
+  const [totalTokenCount, setTotalTokenCount] = useState<number>(0)
+  const [indeterminateNodes, setIndeterminateNodes] = useState<Set<Key>>(new Set())
   const [tree, setTree] = useState<Tree>([])
   const [filteredTree, setFilteredTree] = useState<Tree>([])
   const [directory, setDirectory] = useState<DirectoryInfo | null>(null)
@@ -60,6 +65,8 @@ export function SidebarContextProvider(props: SidebarContextProps) {
         setSelectedFiles,
         selectedPagesIds,
         setSelectedPagesIds,
+        selectedDiffIds,
+        setSelectedDiffIds,
         totalTokenCount,
         setTotalTokenCount,
         indeterminateNodes,
