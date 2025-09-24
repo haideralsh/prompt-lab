@@ -69,6 +69,14 @@
         'calt' 1;
 }
 
+html,
+body {
+    background-color: var(--color-background-dark);
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
 @supports (font-variation-settings: normal) {
     :root {
         font-family: InterVariable, sans-serif;
