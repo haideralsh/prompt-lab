@@ -141,6 +141,39 @@ fn build_clipboard_content(
 }
 
 #[tauri::command]
+pub(crate) fn copy_diff_to_clipboard(
+    directory_path: String,
+    paths: Vec<String>,
+) -> Result<(), ClipboardError> {
+    let diff = match git_diff_text(&directory_path, paths) {
+        Some(content) => content,
+        None => {
+            return Err(ClipboardError {
+                code: codes::FILE_READ_ERROR,
+                message: Some("This directory does not appear to be a Git repository.".to_string()),
+            })
+        }
+    };
+
+    if diff.trim().is_empty() {
+        return Err(ClipboardError {
+            code: codes::FILE_READ_ERROR,
+            message: Some("No diff available for the selected files.".to_string()),
+        });
+    }
+
+    let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
+        code: codes::CLIPBOARD_WRITE_ERROR,
+        message: Some("Failed to access system clipboard".to_string()),
+    })?;
+
+    clipboard.set_text(diff).map_err(|_| ClipboardError {
+        code: codes::CLIPBOARD_WRITE_ERROR,
+        message: Some("Failed to write to system clipboard".to_string()),
+    })
+}
+
+#[tauri::command]
 pub(crate) fn copy_files_to_clipboard(
     app: AppHandle<Wry>,
     tree_mode: &str,

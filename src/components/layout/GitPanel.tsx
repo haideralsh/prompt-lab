@@ -5,13 +5,38 @@ import { Button, Checkbox } from 'react-aria-components'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
+import { queue } from '../ToastQueue'
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string') return error
+  return 'Something went wrong.'
+}
 
 export function GitPanel() {
   const { directory } = useSidebarContext()
   const [gitStatus, setGitStatus] = useState<GitStatusResult>(null)
 
-  async function handleCopyToClipboard(_path: string) {
-    // TODO: implement
+  async function handleCopyToClipboard(path: string) {
+    if (!directory?.path) return
+
+    try {
+      await invoke<void>('copy_diff_to_clipboard', {
+        directoryPath: directory.path,
+        files: [path],
+      })
+
+      queue.add({
+        title: 'Diff copied to clipboard',
+      })
+    } catch (error) {
+      const message = getErrorMessage(error)
+
+      queue.add({
+        title: 'Failed to copy diff',
+        description: message,
+      })
+    }
   }
 
   useEffect(() => {

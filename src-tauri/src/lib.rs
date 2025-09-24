@@ -17,6 +17,7 @@ pub fn run() {
             commands::tree::search::search_tree,
             commands::tree::select::toggle_selection,
             commands::tree::select::clear_selection,
+            commands::clipboard::copy_diff_to_clipboard,
             commands::clipboard::copy_files_to_clipboard,
             commands::clipboard::copy_page_to_clipboard,
             commands::clipboard::copy_all_pages_to_clipboard,
