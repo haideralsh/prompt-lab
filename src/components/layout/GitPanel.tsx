@@ -247,7 +247,7 @@ export function GitPanel() {
           </ul>
         </CheckboxGroup>
       ) : (
-        <div className="text-xs text-text-dark pl-[calc(15px+var(--spacing)*2)]">
+        <div className="text-xs text-solid-light">
           {gitStatus === null
             ? 'This directory does not appear to be a Git repository'
             : 'Your Git changes will appear here.'}
