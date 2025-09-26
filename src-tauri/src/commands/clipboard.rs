@@ -8,7 +8,7 @@ use crate::commands::tree::render::{render_full_tree, render_selected_tree};
 use crate::commands::web::load_page_contents_from_store;
 use crate::errors::{codes, ClipboardError};
 use crate::models::DirectoryNode;
-use crate::store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME};
+use crate::store::STORE_FILE_NAME;
 use tauri::{AppHandle, Wry};
 use tauri_plugin_store::StoreExt;
 
@@ -32,6 +32,18 @@ fn page_not_found() -> String {
 }
 
 const PAGE_NOT_FOUND_ERROR: &str = "Saved page not found.";
+
+fn get_rendered_tree(
+    tree_mode: &str,
+    full_tree: &Vec<DirectoryNode>,
+    selected_nodes: &HashSet<String>,
+) -> String {
+    match tree_mode {
+        "selected" => render_selected_tree(full_tree, selected_nodes),
+        "full" => render_full_tree(full_tree, selected_nodes),
+        "none" | _ => String::new(),
+    }
+}
 
 fn concatenate_files(selected_files: &HashSet<String>) -> Result<String, ClipboardError> {
     let mut concatenated_files = String::new();
@@ -176,7 +188,7 @@ pub(crate) fn copy_diff_to_clipboard(
 }
 
 #[tauri::command]
-pub(crate) fn copy_files_to_clipboard(
+pub(crate) fn copy_all_to_clipboard(
     app: AppHandle<Wry>,
     tree_mode: &str,
     full_tree: Vec<DirectoryNode>,
@@ -185,11 +197,7 @@ pub(crate) fn copy_files_to_clipboard(
     root: String,
     urls: Option<Vec<String>>,
 ) -> Result<(), ClipboardError> {
-    let rendered_tree = match tree_mode {
-        "selected" => render_selected_tree(&full_tree, &selected_nodes),
-        "full" => render_full_tree(&full_tree, &selected_nodes),
-        "none" | _ => String::new(),
-    };
+    let rendered_tree = get_rendered_tree(tree_mode, &full_tree, &selected_nodes);
 
     let base_payload =
         build_clipboard_content(git_diff_paths, &selected_nodes, &rendered_tree, &root)?;
@@ -212,6 +220,29 @@ pub(crate) fn copy_files_to_clipboard(
     })?;
 
     Ok(())
+}
+
+#[tauri::command]
+pub(crate) fn copy_files_to_clipboard(
+    directory_path: String,
+    tree_mode: &str,
+    full_tree: Vec<DirectoryNode>,
+    selected_nodes: HashSet<String>,
+) -> Result<(), ClipboardError> {
+    let rendered_tree = get_rendered_tree(tree_mode, &full_tree, &selected_nodes);
+
+    let payload =
+        build_clipboard_content(Vec::new(), &selected_nodes, &rendered_tree, &directory_path)?;
+
+    let mut clipboard = Clipboard::new().map_err(|_| ClipboardError {
+        code: codes::CLIPBOARD_WRITE_ERROR,
+        message: Some("Failed to access system clipboard".to_string()),
+    })?;
+
+    clipboard.set_text(payload).map_err(|_| ClipboardError {
+        code: codes::CLIPBOARD_WRITE_ERROR,
+        message: Some("Failed to write to system clipboard".to_string()),
+    })
 }
 
 #[tauri::command]

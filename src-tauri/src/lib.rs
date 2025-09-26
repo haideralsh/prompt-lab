@@ -18,8 +18,9 @@ pub fn run() {
             commands::tree::select::toggle_selection,
             commands::tree::select::clear_selection,
             commands::clipboard::copy_diff_to_clipboard,
-            commands::clipboard::copy_files_to_clipboard,
+            commands::clipboard::copy_all_to_clipboard,
             commands::clipboard::copy_pages_to_clipboard,
+            commands::clipboard::copy_files_to_clipboard,
             commands::git::command::get_git_status,
             commands::git::command::watch_directory_for_git_changes,
             commands::web::save_page_as_md,
@@ -28,5 +29,5 @@ pub fn run() {
             commands::app::load_application_data,
         ])
         .run(tauri::generate_context!())
-        .expect("An error occurred while running the Contexter");
+        .expect("An error occurred while running the App");
 }

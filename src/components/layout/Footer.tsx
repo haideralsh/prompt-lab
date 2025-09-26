@@ -28,7 +28,7 @@ export function Footer() {
   let [treeFormat] = useState(new Set<Key>(['full']))
 
   async function handleCopyToClipboard() {
-    await invoke('copy_files_to_clipboard', {
+    await invoke('copy_all_to_clipboard', {
       treeMode: getTreeMode(treeFormat),
       fullTree: tree,
       root: directory?.path ?? '',

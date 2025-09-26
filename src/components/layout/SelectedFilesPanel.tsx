@@ -39,16 +39,12 @@ export function SelectedFilesPanel() {
     setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
   }
 
-  async function copyFile(path: Id) {
-    if (!directory?.path) return
-
+  async function copyFiles(paths: Id[]) {
     await invoke('copy_files_to_clipboard', {
+      directoryPath: directory.path,
       treeMode: 'selected',
       fullTree: tree,
-      selectedNodes: [path],
-      gitDiffPaths: [],
-      root: directory.path,
-      urls: [],
+      selectedNodes: paths,
     })
   }
 
@@ -65,7 +61,15 @@ export function SelectedFilesPanel() {
       onSelectAll={() => {}}
       onDeselectAll={() => {}}
       tokenCount={totalTokenCount}
-      actions={null}
+      actions={
+        sortedFiles.length ? (
+          <CopyButton
+            onCopy={() => copyFiles(sortedFiles.map((file) => file.path))}
+            className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
+            isDisabled={sortedFiles.length === 0}
+          />
+        ) : undefined
+      }
     >
       {sortedFiles.length > 0 ? (
         <ul className="text-sm text-text-dark">
@@ -101,7 +105,7 @@ export function SelectedFilesPanel() {
                       <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
                         <CopyButton
                           onCopy={async () => {
-                            await copyFile(file.path)
+                            await copyFiles([file.path])
                           }}
                           className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                         />
