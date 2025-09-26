@@ -228,12 +228,14 @@ export function GitPanel() {
                       </span>
                       <span>
                         <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                          <CopyButton
-                            onCopy={async () => {
-                              await copyToClipboard(change.path)
-                            }}
-                            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                          />
+                          {change.tokenCount && (
+                            <CopyButton
+                              onCopy={async () => {
+                                await copyToClipboard(change.path)
+                              }}
+                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                            />
+                          )}
                           <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
                             {change.tokenCount?.toLocaleString() ?? '-'}
                           </span>
