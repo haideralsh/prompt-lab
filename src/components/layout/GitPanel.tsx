@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
-import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
-import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
+import { Checkbox, CheckboxGroup } from 'react-aria-components'
+import { CheckIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
-import { queue } from '../ToastQueue'
+import { CopyButton } from '../common/CopyButton'
 import {
   GitStatusResult,
   GitStatusUpdatedEvent,
   GitTokenCountsEvent,
 } from '../../types/git'
-import { getErrorMessage } from '../../helpers/getErrorMessage'
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
@@ -46,26 +45,15 @@ export function GitPanel() {
   const { directory, selectedDiffIds, setSelectedDiffIds } = useSidebarContext()
   const [gitStatus, setGitStatus] = useState<GitStatusResult | null>(null)
 
-  async function copyToClipboard(paths: string | string[] | Set<string>) {
+  async function copyToClipboard(content: string | string[] | Set<string>) {
     if (!directory?.path) return
 
-    try {
-      await invoke<void>('copy_diff_to_clipboard', {
-        directoryPath: directory.path,
-        paths: Array.from(paths),
-      })
+    const paths = typeof content === 'string' ? [content] : Array.from(content)
 
-      queue.add({
-        title: 'Diff copied to clipboard',
-      })
-    } catch (error) {
-      const message = getErrorMessage(error)
-
-      queue.add({
-        title: 'Failed to copy diff',
-        description: message,
-      })
-    }
+    await invoke<void>('copy_diff_to_clipboard', {
+      directoryPath: directory.path,
+      paths,
+    })
   }
 
   useEffect(() => {
@@ -189,14 +177,12 @@ export function GitPanel() {
       }}
       tokenCount={selectedTokenCount}
       actions={
-        <Button
-          onPress={() => {
-            void copyToClipboard(selectedDiffIds)
+        <CopyButton
+          onCopy={async () => {
+            await copyToClipboard(selectedDiffIds)
           }}
           className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
-        >
-          <CopyIcon />
-        </Button>
+        />
       }
     >
       {gitChanges.length > 0 ? (
@@ -242,14 +228,12 @@ export function GitPanel() {
                       </span>
                       <span>
                         <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                          <Button
-                            onPress={() => {
-                              void copyToClipboard(change.path)
+                          <CopyButton
+                            onCopy={async () => {
+                              await copyToClipboard(change.path)
                             }}
                             className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                          >
-                            <CopyIcon />
-                          </Button>
+                          />
                           <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
                             {change.tokenCount?.toLocaleString() ?? '-'}
                           </span>

@@ -215,52 +215,7 @@ pub(crate) fn copy_files_to_clipboard(
 }
 
 #[tauri::command]
-pub fn copy_page_to_clipboard(
-    app: AppHandle<Wry>,
-    directory_path: String,
-    url: String,
-) -> Result<(), String> {
-    let store = app
-        .store(STORE_FILE_NAME)
-        .map_err(|e| format!("store open error: {e}"))?;
-
-    let data_value = store
-        .get(StoreCategoryKey::DATA)
-        .ok_or_else(page_not_found)?;
-
-    let data_object = data_value.as_object().ok_or_else(page_not_found)?;
-
-    let directory_value = data_object
-        .get(&directory_path)
-        .ok_or_else(page_not_found)?;
-
-    let directory_object = directory_value.as_object().ok_or_else(page_not_found)?;
-
-    let saved_pages_value = directory_object
-        .get(StoreDataKey::SAVED_WEB_PAGES)
-        .ok_or_else(page_not_found)?;
-
-    let saved_pages_object = saved_pages_value.as_object().ok_or_else(page_not_found)?;
-
-    let page_value = saved_pages_object.get(&url).ok_or_else(page_not_found)?;
-
-    let content_text = page_value
-        .get("content")
-        .and_then(|content_value| content_value.as_str())
-        .ok_or_else(page_not_found)?;
-
-    store.close_resource();
-
-    let mut clipboard =
-        Clipboard::new().map_err(|_| "Failed to access system clipboard.".to_string())?;
-
-    clipboard
-        .set_text(content_text)
-        .map_err(|_| "Failed to write to system clipboard.".to_string())
-}
-
-#[tauri::command]
-pub fn copy_all_pages_to_clipboard(
+pub fn copy_pages_to_clipboard(
     app: AppHandle<Wry>,
     directory_path: String,
     urls: Vec<String>,

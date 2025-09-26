@@ -1,5 +1,6 @@
-import { CopyIcon, PlusIcon } from '@radix-ui/react-icons'
+import { PlusIcon } from '@radix-ui/react-icons'
 import { Button } from 'react-aria-components'
+import { CopyButton } from '../common/CopyButton'
 
 type WebPanelActionsProps = {
   isAddingNewPage: boolean
@@ -23,12 +24,10 @@ export function WebPanelActions({
           <PlusIcon />
         </Button>
       )}
-      <Button
-        onPress={onCopyToClipboardPress}
+      <CopyButton
+        onCopy={onCopyToClipboardPress}
         className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
-      >
-        <CopyIcon />
-      </Button>
+      />
     </>
   )
 }

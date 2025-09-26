@@ -3,7 +3,6 @@ import { invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
   CheckIcon,
-  CopyIcon,
   Cross2Icon,
   ReloadIcon,
   TrashIcon,
@@ -14,6 +13,7 @@ import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { WebPanelActions } from './WebPanelActions'
+import { CopyButton } from '../common/CopyButton'
 
 interface SavedPageMetadata {
   title: string
@@ -200,45 +200,19 @@ export function WebDisclosurePanel() {
   async function handleCopyToClipboard(entry: SavedPageMetadata) {
     if (!directory?.path) return
 
-    try {
-      await invoke<void>('copy_page_to_clipboard', {
-        directoryPath: directory.path,
-        url: entry.url,
-      })
-
-      queue.add({
-        title: 'Page copied to clipboard',
-      })
-    } catch (error) {
-      const message = getErrorMessage(error)
-
-      queue.add({
-        title: 'Failed to copy page',
-        description: message,
-      })
-    }
+    await invoke<void>('copy_pages_to_clipboard', {
+      directoryPath: directory.path,
+      urls: [entry.url],
+    })
   }
 
   async function handleCopySelectedToClipboard() {
     if (!directory?.path) return
 
-    try {
-      await invoke<void>('copy_all_pages_to_clipboard', {
-        directoryPath: directory.path,
-        urls: Array.from(selectedPagesIds),
-      })
-
-      queue.add({
-        title: 'Page selected pages to clipboard',
-      })
-    } catch (error) {
-      const message = getErrorMessage(error)
-
-      queue.add({
-        title: 'Failed to copy page',
-        description: message,
-      })
-    }
+    await invoke<void>('copy_pages_to_clipboard', {
+      directoryPath: directory.path,
+      urls: Array.from(selectedPagesIds),
+    })
   }
 
   function selectAll() {
@@ -324,15 +298,11 @@ export function WebDisclosurePanel() {
                         </span>
                         <span>
                           <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                            <Button
-                              onPress={() => {
-                                void handleCopyToClipboard(entry)
-                              }}
+                            <CopyButton
+                              onCopy={() => handleCopyToClipboard(entry)}
                               className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                               isDisabled={isReloading}
-                            >
-                              <CopyIcon />
-                            </Button>
+                            />
                             <Button
                               onPress={() => {
                                 void handleReload(entry)
