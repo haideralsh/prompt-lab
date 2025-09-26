@@ -123,7 +123,7 @@ export function SelectedFilesPanel() {
           ))}
         </ul>
       ) : (
-        <div className="text-xs text-solid-light">
+        <div className="text-xs/loose text-solid-light ">
           Files selected in the tree will appear here.
         </div>
       )}

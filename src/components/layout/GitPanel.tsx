@@ -14,14 +14,14 @@ import {
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
-  previous: GitStatusResult,
+  previous: GitStatusResult
 ): GitStatusResult {
   if (previous.length === 0) return incoming
 
   const previousTokenCounts = new Map(
     previous
       .filter((change) => change.tokenCount != null)
-      .map((change) => [change.path, change.tokenCount as number]),
+      .map((change) => [change.path, change.tokenCount as number])
   )
 
   if (previousTokenCounts.size === 0) {
@@ -80,7 +80,7 @@ export function GitPanel() {
 
             return didUpdate ? next : prev
           })
-        },
+        }
       )
     }
 
@@ -136,7 +136,7 @@ export function GitPanel() {
             if (!prev || prev.length === 0) return payload.changes
             return mergeTokenCountsWithPrevious(payload.changes, prev)
           })
-        },
+        }
       )
     }
 
@@ -169,7 +169,7 @@ export function GitPanel() {
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={() => {
         setSelectedDiffIds(
-          () => new Set(gitChanges.map((change) => change.path)),
+          () => new Set(gitChanges.map((change) => change.path))
         )
       }}
       onDeselectAll={() => {
@@ -249,7 +249,7 @@ export function GitPanel() {
           </ul>
         </CheckboxGroup>
       ) : (
-        <div className="text-xs text-solid-light">
+        <div className="text-xs/loose text-solid-light">
           {gitStatus === null
             ? 'This directory does not appear to be a Git repository'
             : 'Your Git changes will appear here.'}

@@ -17,7 +17,7 @@ import { CopyButton } from '../common/CopyButton'
 
 const preserveSelectedPages = (
   allPages: SavedPages,
-  selectedUrls: Set<string>,
+  selectedUrls: Set<string>
 ) => {
   const allUrls = new Set(allPages.map((page) => page.url))
   const next = new Set<string>()
@@ -45,7 +45,7 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -116,7 +116,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelectedPages(pages, selectedUrls),
+        preserveSelectedPages(pages, selectedUrls)
       )
 
       setWebUrl('')
@@ -347,7 +347,7 @@ export function WebDisclosurePanel() {
           </ul>
         </CheckboxGroup>
       ) : !isAddingNewPage ? (
-        <div className="text-xs text-solid-light">
+        <div className="text-xs/loose text-solid-light">
           Web pages you add here will be formatted as markdown and included with
           your prompt.
         </div>
