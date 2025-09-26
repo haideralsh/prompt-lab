@@ -87,7 +87,6 @@ pub struct GitChange {
     pub lines_added: i32,
     pub lines_deleted: i32,
     pub token_count: Option<usize>,
-    pub diff_hash: String,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -114,17 +113,9 @@ pub struct GitDiffWorkItem {
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GitTokenCountResult {
-    pub path: String,
-    pub token_count: usize,
-    pub diff_hash: String,
-}
-
-#[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct GitTokenCountsEvent {
     pub root: String,
-    pub files: Vec<GitTokenCountResult>,
+    pub files: HashMap<String, usize>,
 }
 
 #[derive(Clone, Serialize)]

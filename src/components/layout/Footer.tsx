@@ -26,7 +26,6 @@ export function Footer() {
     selectedDiffIds,
   } = useSidebarContext()
   let [treeFormat] = useState(new Set<Key>(['full']))
-  let [, setGitStatus] = useState<GitStatusResult>(null)
 
   async function handleCopyToClipboard() {
     await invoke('copy_files_to_clipboard', {
@@ -38,19 +37,6 @@ export function Footer() {
       urls: Array.from(selectedPagesIds),
     })
   }
-
-  useEffect(() => {
-    if (!directory?.path) {
-      setGitStatus(null)
-      return
-    }
-
-    invoke<GitStatusResult>('git_status', {
-      root: directory.path,
-    }).then((change) => {
-      setGitStatus(change)
-    })
-  }, [directory?.path])
 
   useEffect(() => {
     let unlisten: UnlistenFn

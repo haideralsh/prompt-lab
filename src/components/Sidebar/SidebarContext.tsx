@@ -4,7 +4,7 @@ import { DirectoryInfo } from '../../types/DirectoryInfo'
 import { Key } from 'react-aria-components'
 
 type SidebarContext = {
-  directory: DirectoryInfo | null
+  directory: DirectoryInfo
   setDirectory: (root: DirectoryInfo) => void
   tree: Tree
   setTree: (tree: Tree) => void
@@ -35,7 +35,7 @@ export function useSidebarContext() {
   const context = React.useContext(SidebarContext)
   if (!context) {
     throw new Error(
-      'useSidebarContext must be used within a SidebarContextProvider'
+      'useSidebarContext must be used within a SidebarContextProvider',
     )
   }
   return context
@@ -45,16 +45,18 @@ export function SidebarContextProvider(props: SidebarContextProps) {
   const [selectedNodes, setSelectedNodes] = useState<Set<Key>>(new Set())
   const [selectedFiles, setSelectedFiles] = useState<FileNode[]>([])
   const [selectedPagesIds, setSelectedPagesIds] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
   const [selectedDiffIds, setSelectedDiffIds] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
   const [totalTokenCount, setTotalTokenCount] = useState<number>(0)
-  const [indeterminateNodes, setIndeterminateNodes] = useState<Set<Key>>(new Set())
+  const [indeterminateNodes, setIndeterminateNodes] = useState<Set<Key>>(
+    new Set(),
+  )
   const [tree, setTree] = useState<Tree>([])
   const [filteredTree, setFilteredTree] = useState<Tree>([])
-  const [directory, setDirectory] = useState<DirectoryInfo | null>(null)
+  const [directory, setDirectory] = useState<DirectoryInfo>()
 
   return (
     <SidebarContext.Provider
@@ -73,6 +75,7 @@ export function SidebarContextProvider(props: SidebarContextProps) {
         setIndeterminateNodes,
         filteredTree,
         setFilteredTree,
+        // @ts-expect-error: There is no directory initially, and I don't want to mark it as nullable because it screws with the rest of the codebase...
         directory,
         setDirectory,
         tree,

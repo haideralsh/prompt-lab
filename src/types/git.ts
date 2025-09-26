@@ -3,19 +3,17 @@ interface GitChange {
   changeType: string
   linesAdded: number
   linesDeleted: number
-  tokenCount: number | null
-  diffHash: string
+  tokenCount?: number | null
 }
 
-type GitStatusResult = GitChange[] | null
+export type GitStatusResult = GitChange[]
 
-interface GitTokenCountUpdate {
-  path: string
-  tokenCount: number
-  diffHash: string
-}
-
-interface GitTokenCountsEvent {
+export interface GitTokenCountsEvent {
   root: string
-  files: GitTokenCountUpdate[]
+  files: Record<string, number>
+}
+
+export type GitStatusUpdatedEvent = {
+  root: string
+  changes: GitChange[]
 }

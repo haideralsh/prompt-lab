@@ -6,24 +6,53 @@ import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { queue } from '../ToastQueue'
+import {
+  GitStatusResult,
+  GitStatusUpdatedEvent,
+  GitTokenCountsEvent,
+} from '../../types/git'
+import { getErrorMessage } from '../../helpers/getErrorMessage'
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message
-  if (typeof error === 'string') return error
-  return 'Something went wrong.'
+function mergeTokenCountsWithPrevious(
+  incoming: GitStatusResult,
+  previous: GitStatusResult
+): GitStatusResult {
+  if (previous.length === 0) return incoming
+
+  const previousTokenCounts = new Map(
+    previous
+      .filter((change) => change.tokenCount != null)
+      .map((change) => [change.path, change.tokenCount as number])
+  )
+
+  if (previousTokenCounts.size === 0) {
+    return incoming
+  }
+
+  let didUpdate = false
+
+  const merged = incoming.map((change) => {
+    if (change.tokenCount != null) return change
+    const previousTokenCount = previousTokenCounts.get(change.path)
+    if (previousTokenCount == null) return change
+    didUpdate = true
+    return { ...change, tokenCount: previousTokenCount }
+  })
+
+  return didUpdate ? merged : incoming
 }
 
 export function GitPanel() {
   const { directory, selectedDiffIds, setSelectedDiffIds } = useSidebarContext()
-  const [gitStatus, setGitStatus] = useState<GitStatusResult>(null)
+  const [gitStatus, setGitStatus] = useState<GitStatusResult | null>(null)
 
-  async function handleCopyToClipboard(path: string) {
+  async function copyToClipboard(paths: string | string[] | Set<string>) {
     if (!directory?.path) return
 
     try {
       await invoke<void>('copy_diff_to_clipboard', {
         directoryPath: directory.path,
-        paths: [path],
+        paths: Array.from(paths),
       })
 
       queue.add({
@@ -39,45 +68,6 @@ export function GitPanel() {
     }
   }
 
-  async function handleCopySelectedDiffsToClipboard() {
-    if (!directory?.path) return
-
-    try {
-      await invoke<void>('copy_diff_to_clipboard', {
-        directoryPath: directory.path,
-        paths: Array.from(selectedDiffIds),
-      })
-
-      queue.add({
-        title: 'Selected diffs copied to clipboard',
-      })
-    } catch (error) {
-      const message = getErrorMessage(error)
-
-      queue.add({
-        title: 'Failed to copy diff',
-        description: message,
-      })
-    }
-  }
-
-  useEffect(() => {
-    if (!directory?.path) {
-      setGitStatus(null)
-      setSelectedDiffIds(() => new Set())
-      return
-    }
-
-    invoke<GitStatusResult>('git_status', {
-      root: directory.path,
-    }).then((change) => {
-      setGitStatus(change)
-      setSelectedDiffIds(() =>
-        new Set(change?.map((diff) => diff.path) ?? []),
-      )
-    })
-  }, [directory?.path])
-
   useEffect(() => {
     let unlisten: UnlistenFn | undefined
 
@@ -85,42 +75,89 @@ export function GitPanel() {
       unlisten = await listen<GitTokenCountsEvent>(
         'git-token-counts',
         (event) => {
-          if (!event?.payload?.files?.length) return
-          if (!directory?.path || event.payload.root !== directory.path) return
+          if (event.payload.root !== directory.path) return
 
           setGitStatus((prev) => {
-            if (!prev?.length) return prev
+            if (!prev || prev.length === 0) return prev
 
-            const map = new Map(prev.map((change) => [change.path, change]))
-            let updated = false
+            let didUpdate = false
 
-            for (const file of event.payload.files) {
-              const existing = map.get(file.path)
-              if (!existing) continue
-              if (existing.diffHash !== file.diffHash) continue
-              if (existing.tokenCount === file.tokenCount) continue
+            const next = prev.map((change) => {
+              const tokenCount = event.payload.files[change.path]
+              if (tokenCount == null) return change
+              if (change.tokenCount === tokenCount) return change
+              didUpdate = true
+              return { ...change, tokenCount }
+            })
 
-              map.set(file.path, {
-                ...existing,
-                tokenCount: file.tokenCount,
-              })
-              updated = true
-            }
-
-            return updated ? Array.from(map.values()) : prev
+            return didUpdate ? next : prev
           })
-        },
+        }
       )
     }
 
     void listenToGitTokenCounts()
 
     return () => {
-      if (unlisten) {
-        unlisten()
+      if (unlisten) unlisten()
+    }
+  }, [directory.path])
+
+  useEffect(() => {
+    async function inquireGitStatus() {
+      if (!directory?.path) return
+
+      try {
+        const changes = await invoke<GitStatusResult | null>('get_git_status', {
+          directoryPath: directory.path,
+        })
+
+        if (changes === null) {
+          setGitStatus(null)
+        } else {
+          setGitStatus((prev) => {
+            if (!prev || prev.length === 0) return changes
+            return mergeTokenCountsWithPrevious(changes, prev)
+          })
+        }
+      } catch (error) {
+        setGitStatus(null)
       }
     }
-  }, [directory?.path])
+
+    void inquireGitStatus()
+  }, [directory.path])
+
+  useEffect(() => {
+    let unlisten: UnlistenFn | undefined
+
+    async function listenToGitStatus() {
+      if (!directory?.path) return
+
+      await invoke<void>('watch_directory_for_git_changes', {
+        directoryPath: directory.path,
+      })
+
+      unlisten = await listen<GitStatusUpdatedEvent>(
+        'git-status-updated',
+        (event) => {
+          const payload = event.payload
+          if (payload.root !== directory.path) return
+
+          setGitStatus((prev) => {
+            if (!prev || prev.length === 0) return payload.changes
+            return mergeTokenCountsWithPrevious(payload.changes, prev)
+          })
+        }
+      )
+    }
+
+    void listenToGitStatus()
+
+    return () => {
+      if (unlisten) unlisten()
+    }
+  }, [directory.path])
 
   const gitChanges = gitStatus ?? []
   const selectedDiffCount = selectedDiffIds.size
@@ -130,7 +167,8 @@ export function GitPanel() {
     selectedDiffCount > 0 && selectedDiffCount < gitChanges.length
   const selectedTokenCount = gitChanges.reduce((acc, change) => {
     if (!selectedDiffIds.has(change.path)) return acc
-    return acc + (change.tokenCount ?? 0)
+    const tokenCount = change.tokenCount ?? 0
+    return acc + tokenCount
   }, 0)
 
   return (
@@ -142,8 +180,8 @@ export function GitPanel() {
       isGroupSelected={isGroupSelected}
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={() => {
-        setSelectedDiffIds(() =>
-          new Set(gitChanges.map((change) => change.path)),
+        setSelectedDiffIds(
+          () => new Set(gitChanges.map((change) => change.path))
         )
       }}
       onDeselectAll={() => {
@@ -153,7 +191,7 @@ export function GitPanel() {
       actions={
         <Button
           onPress={() => {
-            void handleCopySelectedDiffsToClipboard()
+            void copyToClipboard(selectedDiffIds)
           }}
           className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
         >
@@ -206,14 +244,14 @@ export function GitPanel() {
                         <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
                           <Button
                             onPress={() => {
-                              void handleCopyToClipboard(change.path)
+                              void copyToClipboard(change.path)
                             }}
                             className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                           >
                             <CopyIcon />
                           </Button>
                           <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
-                            {change.tokenCount?.toLocaleString() ?? '–'}
+                            {change.tokenCount?.toLocaleString() ?? '-'}
                           </span>
                         </span>
                       </span>
@@ -226,9 +264,9 @@ export function GitPanel() {
         </CheckboxGroup>
       ) : (
         <div className="text-xs text-text-dark pl-[calc(15px+var(--spacing)*2)]">
-          {gitStatus && gitStatus.length === 0
-            ? 'Your Git changes will appear here.'
-            : 'This directory does not appear to be a Git repository'}
+          {gitStatus === null
+            ? 'This directory does not appear to be a Git repository'
+            : 'Your Git changes will appear here.'}
         </div>
       )}
     </PanelDisclosure>

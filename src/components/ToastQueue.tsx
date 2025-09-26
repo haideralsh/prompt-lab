@@ -32,6 +32,7 @@ export function Toaster() {
         <Toast
           toast={toast}
           className="
+            rounded-sm
             flex items-center gap-2.5
             bg-interactive-light
             py-2 px-3

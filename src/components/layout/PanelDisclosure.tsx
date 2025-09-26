@@ -36,7 +36,7 @@ const TRIGGER_BUTTON_CLASS =
 const HEADER_CHECKBOX_CLASS =
   'flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark'
 const TITLE_CLASS =
-  'flex items-baseline gap-1.5 uppercase font-medium tracking-wide text-xs'
+  'flex items-baseline gap-2 uppercase font-medium tracking-wide text-xs'
 const PANEL_CONTENT_CLASS = 'pl-[calc(15px+var(--spacing)*2)] pb-4'
 
 export function PanelDisclosure({
@@ -86,9 +86,7 @@ export function PanelDisclosure({
                 )}
                 <span className={TITLE_CLASS}>
                   <span>{label}</span>
-                  <span className="bg-interactive-light px-1.5 rounded-sm text-xs font-normal">
-                    {count}
-                  </span>
+                  <span className="text-solid-dark">{count}</span>
                 </span>
               </div>
               <div className="flex items-center gap-3">

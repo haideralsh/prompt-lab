@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::commands::git::diff::git_diff_text;
+use crate::commands::git::status::git_diff_text;
 use crate::commands::tree::render::{render_full_tree, render_selected_tree};
 use crate::commands::web::load_page_contents_from_store;
 use crate::errors::{codes, ClipboardError};

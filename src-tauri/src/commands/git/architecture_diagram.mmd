@@ -1,0 +1,21 @@
+flowchart LR
+    UI[UI]
+
+    W[Watch directory for git changes]
+    E[Emit git status change]
+    GS[git status]
+    CG[compute_git_status]
+    SP[Spawn git diff token count task]
+    ET[emit git token count]
+
+    %% Core flows
+    UI --> GS
+    GS <--> CG
+    GS --> SP --> ET --> UI
+
+    %% File watching + status updates
+    UI --> W
+    W --> E --> UI
+
+    %% Watcher ↔ compute
+    W <--> CG

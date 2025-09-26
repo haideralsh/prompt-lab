@@ -5,7 +5,6 @@ import {
   CheckIcon,
   CopyIcon,
   Cross2Icon,
-  PlusIcon,
   ReloadIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
@@ -13,6 +12,8 @@ import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { flushSync } from 'react-dom'
+import { getErrorMessage } from '../../helpers/getErrorMessage'
+import { WebPanelActions } from './WebPanelActions'
 
 interface SavedPageMetadata {
   title: string
@@ -22,12 +23,6 @@ interface SavedPageMetadata {
 
 type SavedPages = SavedPageMetadata[]
 
-export function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message
-  if (typeof error === 'string') return error
-  return 'Something went wrong.'
-}
-
 export function WebDisclosurePanel() {
   const { directory, selectedPagesIds, setSelectedPagesIds } =
     useSidebarContext()
@@ -36,7 +31,7 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -273,25 +268,11 @@ export function WebDisclosurePanel() {
         .filter((page) => selectedPagesIds.has(page.url))
         .reduce((acc, page) => acc + page.tokenCount, 0)}
       actions={
-        <>
-          {!isAddingNewPage && (
-            <Button
-              type="button"
-              onPress={showAddNewPageForm}
-              className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
-            >
-              <PlusIcon />
-            </Button>
-          )}
-          <Button
-            onPress={() => {
-              void handleCopySelectedToClipboard()
-            }}
-            className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
-          >
-            <CopyIcon />
-          </Button>
-        </>
+        <WebPanelActions
+          isAddingNewPage={isAddingNewPage}
+          onShowAddNewPress={showAddNewPageForm}
+          onCopyToClipboardPress={handleCopySelectedToClipboard}
+        />
       }
     >
       {savedPages.length > 0 ? (
@@ -307,12 +288,16 @@ export function WebDisclosurePanel() {
               return (
                 <li
                   key={`${entry.url}`}
-                  className={`${isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'}`}
+                  className={`${
+                    isReloading
+                      ? 'opacity-75 pointer-events-none'
+                      : 'opacity-100'
+                  }`}
                 >
                   <Checkbox
                     value={entry.url}
                     isDisabled={isReloading}
-                    className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
                             hover:bg-accent-interactive-dark
                             data-[hovered]:bg-accent-interactive-dark
                             data-[disabled]:opacity-75
@@ -366,10 +351,11 @@ export function WebDisclosurePanel() {
                             >
                               <TrashIcon />
                             </Button>
+
+                            <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
+                              {entry.tokenCount?.toLocaleString() ?? '-'}
+                            </span>
                           </span>
-                        </span>
-                        <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
-                          {entry.tokenCount?.toLocaleString() ?? '–'}
                         </span>
                       </>
                     )}
