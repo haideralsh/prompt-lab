@@ -15,6 +15,20 @@ import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { WebPanelActions } from './WebPanelActions'
 import { CopyButton } from '../common/CopyButton'
 
+const preserveSelectedPages = (
+  allPages: SavedPages,
+  selectedUrls: Set<string>,
+) => {
+  const allUrls = new Set(allPages.map((page) => page.url))
+  const next = new Set<string>()
+
+  for (const url of selectedUrls) {
+    if (allUrls.has(url)) next.add(url)
+  }
+
+  return next
+}
+
 interface SavedPageMetadata {
   title: string
   url: string
@@ -31,7 +45,7 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -42,7 +56,7 @@ export function WebDisclosurePanel() {
           directoryPath: selectedDirectoryPath,
         })
         setSavedPages(pages)
-        setSelectedPagesIds(() => new Set(pages.map((e) => e.url)))
+        setSelectedPagesIds(() => new Set())
       } catch (error) {
         const message = getErrorMessage(error)
 
@@ -53,14 +67,8 @@ export function WebDisclosurePanel() {
       }
     }
 
-    if (!directory?.path) {
-      setSavedPages([])
-      setSelectedPagesIds(() => new Set())
-      return
-    }
-
     void loadSavedPages(directory.path)
-  }, [directory?.path])
+  }, [directory.path])
 
   function showAddNewPageForm() {
     flushSync(() => {
@@ -107,7 +115,10 @@ export function WebDisclosurePanel() {
       })
 
       setSavedPages(pages)
-      setSelectedPagesIds(() => new Set(pages.map((e) => e.url)))
+      setSelectedPagesIds((selectedUrls) =>
+        preserveSelectedPages(pages, selectedUrls),
+      )
+
       setWebUrl('')
       setIsAddingWeb(false)
     } catch (error) {
