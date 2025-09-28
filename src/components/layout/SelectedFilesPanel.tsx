@@ -91,7 +91,11 @@ export function SelectedFilesPanel() {
                 key={file.path}
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
+                exit={{
+                  opacity: 0,
+                  height: 0,
+                  transition: { duration: 0.15 },
+                }}
                 className="overflow-hidden"
                 layout
               >
@@ -145,7 +149,8 @@ export function SelectedFilesPanel() {
         </ul>
       ) : (
         <div className="text-xs/loose text-solid-light ">
-          Files selected in the tree will appear here.
+          Files selected in the tree will appear here and their content will be
+          included in the prompt.
         </div>
       )}
     </PanelDisclosure>
