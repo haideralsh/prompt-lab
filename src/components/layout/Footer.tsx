@@ -4,6 +4,7 @@ import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
 import TokenChart from '../TokenChart'
+import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
 import { TreeMode } from '../../types/FileTree'
 
 function getTreeMode(treeFormat: Set<Key>): TreeMode {
@@ -72,14 +73,8 @@ export function Footer() {
     return cleanup
   }, [])
 
-  // TODO: this is duplicated from Main.tsx - refactor into a hook
   const sortedFiles = useMemo(() => {
-    return selectedFiles.sort((a, b) => {
-      if (a.tokenCount == null) return 1
-      if (b.tokenCount == null) return -1
-
-      return b.tokenCount - a.tokenCount
-    })
+    return sortFilesByTokenCount(selectedFiles)
   }, [selectedFiles])
 
   return (

@@ -5,6 +5,7 @@ import { CheckIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'motion/react'
 import { PanelDisclosure } from './PanelDisclosure'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
+import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
 import { Id, SelectionResult } from '../../types/FileTree'
 import { CopyButton } from '../common/CopyButton'
 
@@ -21,12 +22,7 @@ export function SelectedFilesPanel() {
   } = useSidebarContext()
 
   const sortedFiles = useMemo(() => {
-    return selectedFiles.sort((a, b) => {
-      if (a.tokenCount == null) return 1
-      if (b.tokenCount == null) return -1
-
-      return b.tokenCount - a.tokenCount
-    })
+    return sortFilesByTokenCount(selectedFiles)
   }, [selectedFiles])
 
   async function deselect(path: Id) {
