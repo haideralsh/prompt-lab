@@ -39,6 +39,15 @@ export function SelectedFilesPanel() {
     setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
   }
 
+  async function deselectAll() {
+    const selection = await invoke<SelectionResult>('clear_selection', {
+      directoryPath: directory?.path,
+    })
+    setSelectedNodes(new Set(selection.selectedNodesPaths))
+    setSelectedFiles(selection.selectedFiles)
+    setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
+  }
+
   async function copyFiles(paths: Id[]) {
     await invoke('copy_files_to_clipboard', {
       directoryPath: directory.path,
@@ -56,10 +65,12 @@ export function SelectedFilesPanel() {
       headingClassName="flex items-center gap-1 text-text-dark"
       panelClassName="p-2 flex flex-col gap-1"
       iconClassName=""
-      isGroupSelected={false}
+      isGroupSelected={sortedFiles.length > 0}
       isGroupIndeterminate={false}
       onSelectAll={() => {}}
-      onDeselectAll={() => {}}
+      onDeselectAll={() => {
+        void deselectAll()
+      }}
       tokenCount={totalTokenCount}
       actions={
         sortedFiles.length ? (
