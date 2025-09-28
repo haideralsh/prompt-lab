@@ -9,7 +9,7 @@ pub struct ScrapedPage {
     pub markdown: String,
 }
 
-const MAX_RETRIES: u32 = 3;
+const MAX_RETRIES: u32 = 1;
 
 /// Fetch a single page and convert it to Markdown without writing to disk.
 pub async fn page_to_md(url: &str) -> Result<ScrapedPage> {
