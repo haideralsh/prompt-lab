@@ -16,18 +16,18 @@ import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { WebPanelActions } from './WebPanelActions'
 import { CopyButton } from '../common/CopyButton'
 
-const preserveSelectedPages = (
+function preserveSelectedPages(
   allPages: SavedPages,
   selectedUrls: Set<string>,
-) => {
+) {
   const allUrls = new Set(allPages.map((page) => page.url))
-  const next = new Set<string>()
+  const updatedAllPages = new Set<string>()
 
   for (const url of selectedUrls) {
-    if (allUrls.has(url)) next.add(url)
+    if (allUrls.has(url)) updatedAllPages.add(url)
   }
 
-  return next
+  return updatedAllPages
 }
 
 interface SavedPageMetadata {
