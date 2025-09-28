@@ -8,17 +8,9 @@ interface LayoutProps {
   sidebar: React.ReactNode
   main: React.ReactNode
   footer: React.ReactNode
-  subfooter: React.ReactNode
-  tabs: React.ReactNode
 }
 
-export function Layout({
-  sidebar,
-  main,
-  footer,
-  subfooter,
-  tabs,
-}: LayoutProps) {
+export function Layout({ sidebar, main, footer }: LayoutProps) {
   const [sidebarWidth, setSidebarWidth] = useState(250)
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -56,7 +48,6 @@ export function Layout({
       ref={containerRef}
       className="h-screen overflow-hidden flex flex-col bg-background-dark"
     >
-      <div className="flex-none">{tabs}</div>
       <div className="flex flex-1 min-h-0">
         <div
           className="border-r border-interactive-mid relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light bg-background-light"
@@ -78,10 +69,6 @@ export function Layout({
 
       <div className="flex-none border-t border-interactive-mid bg-background-light">
         <div className="p-3">{footer}</div>
-      </div>
-
-      <div className="flex-none bg-interactive-dark text-text-dark text-xs">
-        <div className="py-1 px-2">{subfooter}</div>
       </div>
     </div>
   )
