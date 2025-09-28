@@ -74,7 +74,7 @@ body {
     background-color: var(--color-background-dark);
     margin: 0;
     height: 100%;
-    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 @supports (font-variation-settings: normal) {

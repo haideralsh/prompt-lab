@@ -31,7 +31,7 @@ interface PanelDisclosureProps {
 
 const PANEL_CLASS_NAME = 'border-b border-interactive-mid -mx-2'
 const TRIGGER_BUTTON_CLASS =
-  'flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-2 bg-background-light'
+  'flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-1.5 bg-background-light'
 
 const HEADER_CHECKBOX_CLASS =
   'flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark'
