@@ -4,6 +4,7 @@ import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
   CheckIcon,
   Cross2Icon,
+  GlobeIcon,
   ReloadIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
@@ -17,7 +18,7 @@ import { CopyButton } from '../common/CopyButton'
 
 const preserveSelectedPages = (
   allPages: SavedPages,
-  selectedUrls: Set<string>
+  selectedUrls: Set<string>,
 ) => {
   const allUrls = new Set(allPages.map((page) => page.url))
   const next = new Set<string>()
@@ -45,7 +46,7 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -116,7 +117,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelectedPages(pages, selectedUrls)
+        preserveSelectedPages(pages, selectedUrls),
       )
 
       setWebUrl('')
@@ -359,36 +360,44 @@ export function WebDisclosurePanel() {
             void handleAddNewPage(event)
           }}
         >
-          <div className="group flex ml-8.5 mr-2 mt-1 mb-2">
-            <input
-              id="web-url"
-              type="url"
-              placeholder="Enter a full URL"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              ref={webUrlInputRef}
-              value={webUrl}
-              onChange={(event) => setWebUrl(event.target.value)}
-              disabled={isSavingWeb}
-              className="block w-full -mr-px rounded-l-sm bg-background-dark py-0.75 px-2 text-text-dark outline-1 -outline-offset-1 outline-interactive-light placeholder:text-solid-light focus:outline-1 focus:-outline-offset-1 focus:outline-accent-interactive-light text-sm"
-            />
-            <div className="rounded-r-sm flex outline-1 -outline-offset-1  outline-interactive-light group-has-focus:outline-accent-interactive-light">
-              <Button
-                type="submit"
-                isDisabled={isSavingWeb || !webUrl.trim()}
-                className="px-3 bg-accent-interactive-mid hover:bg-accent-interactive-light text-accent-text-light data-[disabled]:bg-interactive-mid data-[disabled]:text-text-dark"
-              >
-                <CheckIcon aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                onPress={handleCancelWeb}
-                isDisabled={isSavingWeb}
-                className="px-3 text-text-dark hover:bg-accent-background-light"
-              >
-                <Cross2Icon aria-hidden="true" />
-              </Button>
+          <div className="ml-8.5 mr-2 mt-1 mb-2">
+            <div className="px-1.5 rounded-sm group bg-transparent border border-interactive-light has-focus:border-border-mid ">
+              <label className="sr-only" htmlFor="web-url">
+                add a web page URL
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  id="web-url"
+                  type="url"
+                  placeholder="Enter a full URL"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  ref={webUrlInputRef}
+                  value={webUrl}
+                  onChange={(event) => setWebUrl(event.target.value)}
+                  disabled={isSavingWeb}
+                  className="placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1 pl-1 pr-26 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
+                />
+
+                <div className="absolute inset-y-0 right-0.5 flex items-center gap-1.5">
+                  <Button
+                    type="submit"
+                    isDisabled={isSavingWeb || !webUrl.trim()}
+                    className="text-xs  tracking-wide p-1 flex items-center justify-center rounded-sm  text-text-dark data-[disabled]:text-text-dark/60  hover:text-text-light"
+                  >
+                    Add
+                  </Button>
+                  <Button
+                    type="button"
+                    onPress={handleCancelWeb}
+                    isDisabled={isSavingWeb}
+                    className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark hover:text-text-light"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </form>
