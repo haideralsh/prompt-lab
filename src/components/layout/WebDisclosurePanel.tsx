@@ -1,13 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
-import {
-  CheckIcon,
-  Cross2Icon,
-  GlobeIcon,
-  ReloadIcon,
-  TrashIcon,
-} from '@radix-ui/react-icons'
+import { CheckIcon, ReloadIcon, TrashIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
