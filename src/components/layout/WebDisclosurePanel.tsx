@@ -1,7 +1,12 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
-import { CheckIcon, ReloadIcon, TrashIcon } from '@radix-ui/react-icons'
+import {
+  CheckIcon,
+  Pencil1Icon,
+  ReloadIcon,
+  TrashIcon,
+} from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
@@ -9,6 +14,7 @@ import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { WebPanelActions } from './WebPanelActions'
 import { CopyButton } from '../common/CopyButton'
+import { EditSavedPage } from './EditSavedPage'
 
 function preserveSelectedPages(
   allPages: SavedPages,
@@ -24,13 +30,13 @@ function preserveSelectedPages(
   return updatedAllPages
 }
 
-interface SavedPageMetadata {
+export interface SavedPageMetadata {
   title: string
   url: string
   tokenCount: number
 }
 
-type SavedPages = SavedPageMetadata[]
+export type SavedPages = SavedPageMetadata[]
 
 export function WebDisclosurePanel() {
   const { directory, selectedPagesIds, setSelectedPagesIds } =
@@ -43,6 +49,7 @@ export function WebDisclosurePanel() {
     () => new Set(),
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
+  const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
@@ -212,6 +219,8 @@ export function WebDisclosurePanel() {
     })
   }
 
+  // title save logic moved into <EditSavedPage />
+
   async function handleCopySelectedToClipboard() {
     if (!directory?.path) return
 
@@ -264,6 +273,7 @@ export function WebDisclosurePanel() {
           <ul className="text-sm ">
             {savedPages.map((entry) => {
               const isReloading = reloadingUrls.has(entry.url)
+              const isEditing = editingPageUrl === entry.url
 
               return (
                 <li
@@ -274,68 +284,90 @@ export function WebDisclosurePanel() {
                       : 'opacity-100'
                   }`}
                 >
-                  <Checkbox
-                    value={entry.url}
-                    isDisabled={isReloading}
-                    className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
-                            hover:bg-accent-interactive-dark
-                            data-[hovered]:bg-accent-interactive-dark
-                            data-[disabled]:opacity-75
-                            data-[disabled]:hover:bg-transparent"
-                    slot="selection"
-                  >
-                    {({ isSelected }) => (
-                      <>
-                        <span
-                          className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
-                                  border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
-                                  bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
-                                  flex-shrink-0"
-                        >
-                          {isSelected && <CheckIcon />}
-                        </span>
-                        <span className="flex items-center gap-1.5 w-full">
-                          <span className="font-normal shrink-0 text-text-dark break-all">
-                            {entry.title}
+                  {isEditing ? (
+                    <EditSavedPage
+                      page={entry}
+                      onSave={(savedPages) => {
+                        setSavedPages(savedPages)
+                        setEditingPageUrl(null)
+                      }}
+                      onCancel={() => setEditingPageUrl(null)}
+                    />
+                  ) : (
+                    <Checkbox
+                      value={entry.url}
+                      isDisabled={isReloading || Boolean(editingPageUrl)}
+                      className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
+                              hover:bg-accent-interactive-dark
+                              data-[hovered]:bg-accent-interactive-dark
+                              data-[disabled]:opacity-75
+                              data-[disabled]:hover:bg-transparent"
+                      slot="selection"
+                    >
+                      {({ isSelected }) => (
+                        <>
+                          <span
+                            className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
+                                    border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
+                                    bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
+                                    flex-shrink-0"
+                          >
+                            {isSelected && <CheckIcon />}
                           </span>
-                          <span className="hidden group-hover:inline text-solid-light truncate">
-                            {entry.url}
-                          </span>
-                        </span>
-                        <span>
-                          <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                            <CopyButton
-                              onCopy={() => handleCopyToClipboard(entry)}
-                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                              isDisabled={isReloading}
-                            />
-                            <Button
-                              onPress={() => {
-                                void handleReload(entry)
-                              }}
-                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                              isDisabled={isReloading}
-                            >
-                              <ReloadIcon />
-                            </Button>
-                            <Button
-                              onPress={() => {
-                                void handleDelete(entry)
-                              }}
-                              className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
-                              isDisabled={isReloading}
-                            >
-                              <TrashIcon />
-                            </Button>
-
-                            <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
-                              {entry.tokenCount?.toLocaleString() ?? '-'}
+                          <span className="flex items-center gap-1.5 w-full">
+                            <span className="font-normal shrink-0 text-text-dark break-all">
+                              {entry.title}
+                            </span>
+                            <span className="hidden group-hover:inline text-solid-light truncate">
+                              {entry.url}
                             </span>
                           </span>
-                        </span>
-                      </>
-                    )}
-                  </Checkbox>
+                          <span>
+                            <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
+                              <Button
+                                onPress={() => {
+                                  setEditingPageUrl(entry.url)
+                                }}
+                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                                isDisabled={
+                                  isReloading || Boolean(editingPageUrl)
+                                }
+                              >
+                                <Pencil1Icon />
+                              </Button>
+                              <CopyButton
+                                onCopy={() => handleCopyToClipboard(entry)}
+                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                                isDisabled={isReloading}
+                              />
+                              <Button
+                                onPress={() => {
+                                  void handleReload(entry)
+                                }}
+                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                                isDisabled={isReloading}
+                              >
+                                <ReloadIcon />
+                              </Button>
+                              <Button
+                                onPress={() => {
+                                  void handleDelete(entry)
+                                }}
+                                className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
+                                isDisabled={isReloading}
+                              >
+                                <TrashIcon />
+                              </Button>
+
+                              <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
+                                {entry.tokenCount?.toLocaleString() ?? '-'}
+                              </span>
+                            </span>
+                          </span>
+                        </>
+                      )}
+                    </Checkbox>
+                  )}
                 </li>
               )
             })}

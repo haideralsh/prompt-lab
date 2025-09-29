@@ -26,6 +26,7 @@ pub fn run() {
             commands::web::save_page_as_md,
             commands::web::delete_saved_page,
             commands::web::list_saved_pages,
+            commands::web::edit_saved_page,
             commands::app::load_application_data,
         ])
         .run(tauri::generate_context!())

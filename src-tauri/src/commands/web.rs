@@ -76,8 +76,12 @@ pub(crate) fn load_page_contents_from_store(
         .filter_map(|url| {
             let page_value = saved_pages_object.get(url.as_str())?;
             let content = page_value.get("content")?.as_str()?;
+            let url = page_value.get("url")?.as_str()?;
 
-            Some(content.to_string())
+            Some(format!(
+                "The following content was fetched from: {}\n{}",
+                url, content
+            ))
         })
         .collect()
 }
@@ -151,6 +155,67 @@ pub async fn save_page_as_md(
     store.close_resource();
 
     Ok(metadata)
+}
+
+#[tauri::command]
+pub fn edit_saved_page(
+    app: AppHandle<Wry>,
+    directory_path: String,
+    url: String,
+    new_title: String,
+) -> Result<(), String> {
+    let store = app
+        .store(STORE_FILE_NAME)
+        .map_err(|e| format!("store open error: {e}"))?;
+
+    let mut data = match store
+        .get(StoreCategoryKey::DATA)
+        .and_then(|value| value.as_object().cloned())
+    {
+        Some(data) => data,
+        None => {
+            store.close_resource();
+            return Ok(());
+        }
+    };
+
+    let Some(directory_value) = data.get_mut(&directory_path) else {
+        store.close_resource();
+        return Ok(());
+    };
+
+    let Some(directory_object) = directory_value.as_object_mut() else {
+        store.close_resource();
+        return Ok(());
+    };
+
+    let Some(saved_pages_value) = directory_object.get_mut(StoreDataKey::SAVED_WEB_PAGES) else {
+        store.close_resource();
+        return Ok(());
+    };
+
+    let Some(saved_pages_object) = saved_pages_value.as_object_mut() else {
+        store.close_resource();
+        return Ok(());
+    };
+
+    let mut did_update = false;
+
+    if let Some(page_value) = saved_pages_object.get_mut(&url) {
+        if let Some(page_object) = page_value.as_object_mut() {
+            page_object.insert("title".to_string(), Value::String(new_title));
+            did_update = true;
+        }
+    }
+
+    if did_update {
+        store.set(StoreCategoryKey::DATA, Value::Object(data));
+        store.save().map_err(|e| format!("store save error: {e}"))?;
+    }
+
+    store.close_resource();
+
+    Ok(())
 }
 
 #[tauri::command]

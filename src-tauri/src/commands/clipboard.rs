@@ -246,12 +246,12 @@ pub(crate) fn copy_files_to_clipboard(
 }
 
 #[tauri::command]
-pub fn copy_pages_to_clipboard(
+pub(crate) fn copy_pages_to_clipboard(
     app: AppHandle<Wry>,
     directory_path: String,
     urls: Vec<String>,
 ) -> Result<(), String> {
-    const PAGE_SEPARATOR: &str = "\n* * *\n";
+    const PAGE_SEPARATOR: &str = "\n\nEnd of web page.\n###\n\n";
 
     let store = app
         .store(STORE_FILE_NAME)
