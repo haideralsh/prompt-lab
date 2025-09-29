@@ -18,7 +18,7 @@ import { EditSavedPage } from './EditSavedPage'
 
 function preserveSelectedPages(
   allPages: SavedPages,
-  selectedUrls: Set<string>,
+  selectedUrls: Set<string>
 ) {
   const allUrls = new Set(allPages.map((page) => page.url))
   const updatedAllPages = new Set<string>()
@@ -46,7 +46,7 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
   const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
@@ -99,14 +99,6 @@ export function WebDisclosurePanel() {
     setIsSavingWeb(true)
 
     try {
-      if (!directory?.path) {
-        queue.add({
-          title: 'No directory selected',
-          description: 'Select a directory before saving pages.',
-        })
-        return
-      }
-
       await invoke<SavedPageMetadata>('save_page_as_md', {
         directoryPath: directory.path,
         url: trimmedUrl,
@@ -118,7 +110,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelectedPages(pages, selectedUrls),
+        preserveSelectedPages(pages, selectedUrls)
       )
 
       setWebUrl('')
@@ -127,7 +119,7 @@ export function WebDisclosurePanel() {
       const message = getErrorMessage(error)
 
       queue.add({
-        title: 'Failed to add URL',
+        title: 'Failed to save page',
         description: message,
       })
     } finally {
@@ -270,7 +262,7 @@ export function WebDisclosurePanel() {
           value={Array.from(selectedPagesIds)}
           onChange={(values) => setSelectedPagesIds(new Set(values))}
         >
-          <ul className="text-sm ">
+          <ul className="text-sm">
             {savedPages.map((entry) => {
               const isReloading = reloadingUrls.has(entry.url)
               const isEditing = editingPageUrl === entry.url
