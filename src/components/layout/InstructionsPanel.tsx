@@ -1,14 +1,32 @@
 import { FormEvent, useState } from 'react'
-import { Checkbox } from 'react-aria-components'
-import { CheckIcon } from '@radix-ui/react-icons'
+import { Button, Checkbox } from 'react-aria-components'
+import { BookmarkIcon, CheckIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
+import { useSidebarContext } from '../Sidebar/SidebarContext'
+import { invoke } from '@tauri-apps/api/core'
+import { getErrorMessage } from '../../helpers/getErrorMessage'
+import { queue } from '../ToastQueue'
+import { CopyButton } from '../common/CopyButton'
+
+interface SavedInstructionMetadata {
+  id: string
+  name: string
+  content: string
+  token_count: number
+}
+
+type SavedInstructions = SavedInstructionMetadata[]
 
 export function InstructionsPanel() {
+  const { directory } = useSidebarContext()
+  const [instructions, setInstructions] = useState<SavedInstructions>([])
   const [instruction, setInstruction] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isInstructionSelected, setIsInstructionSelected] = useState(true)
+  const [isBookmarking, setIsBookmarking] = useState(false)
+  const [bookmarkTitle, setBookmarkTitle] = useState('')
 
-  async function handleAddNewPage(event?: FormEvent<HTMLFormElement>) {
+  async function handleAddNewInstruction(event?: FormEvent<HTMLFormElement>) {
     if (event) {
       event.preventDefault()
     }
@@ -18,103 +36,35 @@ export function InstructionsPanel() {
 
     setIsSaving(true)
 
-    // try {
-    //   if (!directory?.path) {
-    //     queue.add({
-    //       title: 'No directory selected',
-    //       description: 'Select a directory before saving pages.',
-    //     })
-    //     return
-    //   }
+    try {
+      await invoke<{ instructionId: string }>('save_instruction', {
+        directoryPath: directory.path,
+        name: trimmedInstruction,
+        content: trimmedInstruction,
+      })
 
-    //   await invoke<SavedPageMetadata>('save_page_as_md', {
-    //     directoryPath: directory.path,
-    //     url: trimmedUrl,
-    //   })
+      const instructions = await invoke<SavedInstructions>(
+        'list_instructions',
+        {
+          directoryPath: directory.path,
+        }
+      )
 
-    //   const pages = await invoke<SavedPages>('list_saved_pages', {
-    //     directoryPath: directory.path,
-    //   })
+      setInstructions(instructions)
 
-    //   setSavedPages(pages)
-    //   setSelectedPagesIds((selectedUrls) =>
-    //     preserveSelectedPages(pages, selectedUrls),
-    //   )
+      setInstruction('')
+      setIsSaving(false)
+    } catch (error) {
+      const message = getErrorMessage(error)
 
-    //   setWebUrl('')
-    //   setIsAddingWeb(false)
-    // } catch (error) {
-    //   const message = getErrorMessage(error)
-
-    //   queue.add({
-    //     title: 'Failed to add URL',
-    //     description: message,
-    //   })
-    // } finally {
-    //   setIsSavingWeb(false)
-    // }
+      queue.add({
+        title: 'Failed to save instruction',
+        description: message,
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
-
-  // async function handleDelete(entry: SavedPageMetadata) {
-  //   // TODO: Show a confirmation dialog before deleting
-  //   if (!directory) return
-
-  //   try {
-  //     await invoke<void>('delete_saved_page', {
-  //       directoryPath: directory.path,
-  //       url: entry.url,
-  //     })
-
-  //     const pages = await invoke<SavedPages>('list_saved_pages', {
-  //       directoryPath: directory.path,
-  //     })
-
-  //     setSavedPages(pages)
-  //     setSelectedPagesIds((prev) => {
-  //       const next = new Set(prev)
-  //       next.delete(entry.url)
-  //       return next
-  //     })
-  //   } catch (error) {
-  //     const message = getErrorMessage(error)
-
-  //     queue.add({
-  //       title: 'Failed to delete page',
-  //       description: message,
-  //     })
-  //   }
-  // }
-
-  // async function handleCopyToClipboard(entry: SavedPageMetadata) {
-  //   if (!directory?.path) return
-
-  //   await invoke<void>('copy_pages_to_clipboard', {
-  //     directoryPath: directory.path,
-  //     urls: [entry.url],
-  //   })
-  // }
-
-  // async function handleCopySelectedToClipboard() {
-  //   if (!directory?.path) return
-
-  //   await invoke<void>('copy_pages_to_clipboard', {
-  //     directoryPath: directory.path,
-  //     urls: Array.from(selectedPagesIds),
-  //   })
-  // }
-
-  // function selectAll() {
-  //   setSelectedPagesIds(() => new Set(savedPages.map((e) => e.url)))
-  // }
-
-  // function deselectAll() {
-  //   setSelectedPagesIds(() => new Set())
-  // }
-
-  // const isGroupSelected =
-  //   savedPages.length > 0 && selectedPagesIds.size === savedPages.length
-  // const isGroupIndeterminate =
-  //   selectedPagesIds.size > 0 && selectedPagesIds.size < savedPages.length
 
   return (
     <PanelDisclosure
@@ -132,20 +82,15 @@ export function InstructionsPanel() {
       }}
       tokenCount={0}
       actions={null}
-      // tokenCount={savedPages
-      //   .filter((page) => selectedPagesIds.has(page.url))
-      //   .reduce((acc, page) => acc + page.tokenCount, 0)}
-      // actions={
-      //   <WebPanelActions
-      //     isAddingNewPage={isAddingNewPage}
-      //     onShowAddNewPress={showAddNewPageForm}
-      //     onCopyToClipboardPress={handleCopySelectedToClipboard}
-      //   />
-      // }
     >
       <form
         onSubmit={(event) => {
-          void handleAddNewPage(event)
+          if (isBookmarking) {
+            event.preventDefault()
+            return
+          }
+
+          void handleAddNewInstruction(event)
         }}
       >
         <div className="mr-2 mt-1 mb-2">
@@ -157,7 +102,7 @@ export function InstructionsPanel() {
               onChange={(selected) => {
                 setIsInstructionSelected(selected)
               }}
-              className="group mt-1 flex-shrink-0"
+              className="group mt-1 flex-shrink-0 px-2"
             >
               {({ isSelected }) => (
                 <span className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light">
@@ -165,40 +110,94 @@ export function InstructionsPanel() {
                 </span>
               )}
             </Checkbox>
-            <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid ">
-              <label className="sr-only" htmlFor="user-instruction">
-                Enter your instructions here...
-              </label>
-              <div className="relative flex items-center">
-                <textarea
-                  id="user-instruction"
-                  placeholder="Enter your instructions here..."
-                  value={instruction}
-                  onChange={(event) => setInstruction(event.target.value)}
-                  disabled={isSaving}
-                  rows={6}
-                  className="placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1.5 px-2 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
-                />
+            {isBookmarking ? (
+              <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid px-1.5 py-1">
+                <div className="flex flex-col gap-2">
+                  <div>
+                    <label className="sr-only" htmlFor="bookmark-title">
+                      Bookmark title
+                    </label>
+                    <input
+                      id="bookmark-title"
+                      type="text"
+                      placeholder="Add a title"
+                      value={bookmarkTitle}
+                      onChange={(event) => setBookmarkTitle(event.target.value)}
+                      disabled={isSaving}
+                      className="placeholder:text-sm placeholder:text-solid-light w-full text-text-dark px-1 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
+                    />
+                  </div>
 
-                {/*<div className="absolute inset-y-0 right-0.5 flex items-center gap-1.5">
-                <Button
-                  type="submit"
-                  isDisabled={isSavingWeb || !webUrl.trim()}
-                  className="text-xs  tracking-wide p-1 flex items-center justify-center rounded-sm  text-text-dark data-[disabled]:text-text-dark/60  hover:text-text-light"
-                >
-                  Add
-                </Button>
-                <Button
-                  type="button"
-                  onPress={handleCancelWeb}
-                  isDisabled={isSavingWeb}
-                  className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark hover:text-text-light"
-                >
-                  Cancel
-                </Button>
-              </div>*/}
+                  <hr className="border-interactive-light" />
+
+                  <div className="flex-1">
+                    <label className="sr-only" htmlFor="bookmark-instruction">
+                      Bookmark instruction
+                    </label>
+                    <textarea
+                      id="bookmark-instruction"
+                      placeholder="Enter your instructions here..."
+                      value={instruction}
+                      onChange={(event) => setInstruction(event.target.value)}
+                      disabled={isSaving}
+                      rows={6}
+                      className="resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark px-1 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-1.5 pt-1">
+                    <Button
+                      type="submit"
+                      isDisabled={isSaving}
+                      className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark data-[disabled]:text-text-dark/60 hover:text-text-light"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      type="button"
+                      onPress={() => {
+                        setIsBookmarking(false)
+                        setBookmarkTitle('')
+                      }}
+                      className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark hover:text-text-light"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid">
+                <label className="sr-only" htmlFor="user-instruction">
+                  Enter your instructions here...
+                </label>
+                <div className="group relative flex items-center pb-6">
+                  <textarea
+                    id="user-instruction"
+                    placeholder="Enter your instructions here..."
+                    value={instruction}
+                    onChange={(event) => setInstruction(event.target.value)}
+                    disabled={isSaving}
+                    rows={8}
+                    className="resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1.5 px-2 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60 "
+                  />
+
+                  <div className="absolute bottom-1.5 right-1.5 hidden group-hover:flex group-hover:items-center group-hover:gap-1.5 group-has-focus:flex group-has-focus:items-center group-has-focus:gap-1.5">
+                    <CopyButton className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75" />
+                    <Button
+                      type="button"
+                      onPress={() => {
+                        setBookmarkTitle((prev) => prev || instruction.trim())
+                        setIsBookmarking(true)
+                      }}
+                      className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                    >
+                      <BookmarkIcon />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </form>

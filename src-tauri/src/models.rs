@@ -79,6 +79,15 @@ pub struct SavedPageMetadata {
     pub token_count: Option<usize>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedInstruction {
+    pub id: String,
+    pub name: String,
+    pub content: String,
+    pub token_count: Option<usize>,
+}
+
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GitChange {

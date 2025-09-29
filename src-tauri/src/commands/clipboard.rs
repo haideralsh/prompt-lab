@@ -8,7 +8,7 @@ use crate::commands::tree::render::{render_full_tree, render_selected_tree};
 use crate::commands::web::load_page_contents_from_store;
 use crate::errors::{codes, ClipboardError};
 use crate::models::DirectoryNode;
-use crate::store::STORE_FILE_NAME;
+use crate::store::open_store;
 use tauri::{AppHandle, Wry};
 use tauri_plugin_store::StoreExt;
 
@@ -114,7 +114,7 @@ fn build_web_pages_section(
         _ => return Ok(String::new()),
     };
 
-    let store = app.store(STORE_FILE_NAME).map_err(|_| ClipboardError {
+    let store = open_store(app).map_err(|_| ClipboardError {
         code: codes::STORE_READ_ERROR,
         message: Some("Failed to open store".to_string()),
     })?;
@@ -155,7 +155,7 @@ fn build_clipboard_content(
 }
 
 #[tauri::command]
-pub(crate) fn copy_diff_to_clipboard(
+pub(crate) fn copy_diffs_to_clipboard(
     directory_path: String,
     paths: Vec<String>,
 ) -> Result<(), ClipboardError> {
@@ -253,9 +253,7 @@ pub(crate) fn copy_pages_to_clipboard(
 ) -> Result<(), String> {
     const PAGE_SEPARATOR: &str = "\n\nEnd of web page.\n###\n\n";
 
-    let store = app
-        .store(STORE_FILE_NAME)
-        .map_err(|e| format!("store open error: {e}"))?;
+    let store = open_store(&app)?;
 
     let parts = load_page_contents_from_store(&store, &directory_path, &urls);
 

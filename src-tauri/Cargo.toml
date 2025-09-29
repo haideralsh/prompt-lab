@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["devtools"] }
+tauri = { version = "2", features = ["devtools", "test"] }
 tauri-plugin-opener = "2"
 arboard = "3"
 serde = { version = "1", features = ["derive"] }
@@ -32,3 +32,4 @@ twars-url2md = "1.4.2"
 tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
 notify = "6"
+uuid = { version = "1", features = ["v4"] }

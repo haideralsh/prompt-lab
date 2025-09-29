@@ -816,6 +816,7 @@ dependencies = [
  "tiktoken-rs",
  "tokio",
  "twars-url2md",
+ "uuid",
 ]
 
 [[package]]
