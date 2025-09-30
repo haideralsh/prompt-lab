@@ -1,4 +1,5 @@
 use serde_json::{json, Map, Value};
+use std::collections::{HashMap, HashSet};
 use tauri::{AppHandle, Wry};
 use uuid::Uuid;
 
@@ -8,18 +9,26 @@ use crate::{
     store::{open_store, StoreCategoryKey, StoreDataKey},
 };
 
-fn extract_saved_instructions_from_directory(value: &Value) -> Vec<SavedInstruction> {
-    let Some(directory_object) = value.as_object() else {
-        return Vec::new();
+pub enum ContentDisplay {
+    Full,
+    Truncated,
+}
+
+pub fn extract_saved_instructions(
+    directory_object: &Value,
+    display_mode: ContentDisplay,
+) -> HashMap<String, SavedInstruction> {
+    let Some(directory_object) = directory_object.as_object() else {
+        return HashMap::new();
     };
 
     let Some(saved_instructions_value) = directory_object.get(StoreDataKey::SAVED_INSTRUCTIONS)
     else {
-        return Vec::new();
+        return HashMap::new();
     };
 
     let Some(saved_instructions_object) = saved_instructions_value.as_object() else {
-        return Vec::new();
+        return HashMap::new();
     };
 
     saved_instructions_object
@@ -27,18 +36,25 @@ fn extract_saved_instructions_from_directory(value: &Value) -> Vec<SavedInstruct
         .filter_map(|(id, entry)| {
             let obj = entry.as_object()?;
             let name = obj.get("name")?.as_str()?.to_string();
-            let content = obj.get("content")?.as_str()?.to_string();
+            let content_value = obj.get("content")?.as_str()?.to_string();
+            let content = match display_mode {
+                ContentDisplay::Full => content_value,
+                ContentDisplay::Truncated => content_value.chars().take(256).collect(),
+            };
             let token_count = obj
                 .get("tokenCount")
                 .and_then(|v| v.as_u64())
                 .map(|v| v as usize);
 
-            Some(SavedInstruction {
-                id: id.to_string(),
-                name,
-                content,
-                token_count,
-            })
+            Some((
+                id.to_string(),
+                SavedInstruction {
+                    id: id.to_string(),
+                    name,
+                    content,
+                    token_count,
+                },
+            ))
         })
         .collect()
 }
@@ -108,8 +124,11 @@ pub fn list_instructions(
 
     let instructions = if let Some(data) = store.get(StoreCategoryKey::DATA) {
         if let Some(data_map) = data.as_object() {
-            if let Some(dir_value) = data_map.get(&directory_path) {
-                extract_saved_instructions_from_directory(dir_value)
+            if let Some(dir) = data_map.get(&directory_path) {
+                // Convert HashMap to Vec for backward compatibility
+                extract_saved_instructions(dir, ContentDisplay::Truncated)
+                    .into_values()
+                    .collect()
             } else {
                 Vec::new()
             }
