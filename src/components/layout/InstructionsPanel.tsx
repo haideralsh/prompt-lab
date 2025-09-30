@@ -1,12 +1,13 @@
 import { FormEvent, useState } from 'react'
 import { Button, Checkbox } from 'react-aria-components'
-import { BookmarkIcon, CheckIcon } from '@radix-ui/react-icons'
+import { BookmarkIcon, CheckIcon, DrawingPinIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { invoke } from '@tauri-apps/api/core'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { queue } from '../ToastQueue'
 import { CopyButton } from '../common/CopyButton'
+import { PinIcon } from 'lucide-react'
 
 interface SavedInstructionMetadata {
   id: string
@@ -17,14 +18,34 @@ interface SavedInstructionMetadata {
 
 type SavedInstructions = SavedInstructionMetadata[]
 
+async function listInstructions(directoryPath: string) {
+  return invoke<SavedInstructions>('list_instructions', {
+    directoryPath,
+  })
+}
+
+async function saveInstruction(
+  directoryPath: string,
+  name: string,
+  content: string
+) {
+  await invoke<string>('save_instruction', {
+    directoryPath,
+    name,
+    content,
+  })
+
+  return listInstructions(directoryPath)
+}
+
 export function InstructionsPanel() {
   const { directory } = useSidebarContext()
   const [instructions, setInstructions] = useState<SavedInstructions>([])
   const [instruction, setInstruction] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [isInstructionSelected, setIsInstructionSelected] = useState(true)
-  const [isBookmarking, setIsBookmarking] = useState(false)
-  const [bookmarkTitle, setBookmarkTitle] = useState('')
+  const [mode, setMode] = useState<'saving' | 'idle'>('idle')
+  const [instructionTitle, setInstructionTitle] = useState('')
 
   async function handleAddNewInstruction(event?: FormEvent<HTMLFormElement>) {
     if (event) {
@@ -32,28 +53,21 @@ export function InstructionsPanel() {
     }
 
     const trimmedInstruction = instruction.trim()
-    if (!trimmedInstruction || isSaving) return
+    if (!trimmedInstruction || isLoading) return
 
-    setIsSaving(true)
+    setIsLoading(true)
 
     try {
-      await invoke<{ instructionId: string }>('save_instruction', {
-        directoryPath: directory.path,
-        name: trimmedInstruction,
-        content: trimmedInstruction,
-      })
-
-      const instructions = await invoke<SavedInstructions>(
-        'list_instructions',
-        {
-          directoryPath: directory.path,
-        }
+      const allInstructions = await saveInstruction(
+        directory.path,
+        trimmedInstruction,
+        trimmedInstruction
       )
 
-      setInstructions(instructions)
-
+      setInstructions(allInstructions)
       setInstruction('')
-      setIsSaving(false)
+      setInstructionTitle('')
+      setMode('idle')
     } catch (error) {
       const message = getErrorMessage(error)
 
@@ -62,7 +76,7 @@ export function InstructionsPanel() {
         description: message,
       })
     } finally {
-      setIsSaving(false)
+      setIsLoading(false)
     }
   }
 
@@ -85,11 +99,6 @@ export function InstructionsPanel() {
     >
       <form
         onSubmit={(event) => {
-          if (isBookmarking) {
-            event.preventDefault()
-            return
-          }
-
           void handleAddNewInstruction(event)
         }}
       >
@@ -110,37 +119,44 @@ export function InstructionsPanel() {
                 </span>
               )}
             </Checkbox>
-            {isBookmarking ? (
+            {mode === 'saving' ? (
               <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid px-1.5 py-1">
                 <div className="flex flex-col gap-2">
                   <div>
                     <label className="sr-only" htmlFor="bookmark-title">
-                      Bookmark title
+                      Instruction title
                     </label>
                     <input
                       id="bookmark-title"
                       type="text"
                       placeholder="Add a title"
-                      value={bookmarkTitle}
-                      onChange={(event) => setBookmarkTitle(event.target.value)}
-                      disabled={isSaving}
+                      value={instructionTitle}
+                      onChange={(event) =>
+                        setInstructionTitle(event.target.value)
+                      }
+                      disabled={isLoading}
+                      required
                       className="placeholder:text-sm placeholder:text-solid-light w-full text-text-dark px-1 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
                     />
                   </div>
 
-                  <hr className="border-interactive-light" />
+                  <div
+                    role="presentation"
+                    className="h-px bg-interactive-light"
+                  />
 
                   <div className="flex-1">
                     <label className="sr-only" htmlFor="bookmark-instruction">
-                      Bookmark instruction
+                      Instruction
                     </label>
                     <textarea
                       id="bookmark-instruction"
                       placeholder="Enter your instructions here..."
                       value={instruction}
                       onChange={(event) => setInstruction(event.target.value)}
-                      disabled={isSaving}
+                      disabled={isLoading}
                       rows={6}
+                      required
                       className="resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark px-1 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
                     />
                   </div>
@@ -148,7 +164,11 @@ export function InstructionsPanel() {
                   <div className="flex items-center justify-end gap-1.5 pt-1">
                     <Button
                       type="submit"
-                      isDisabled={isSaving}
+                      isDisabled={
+                        isLoading ||
+                        !instruction.trim() ||
+                        !instructionTitle.trim()
+                      }
                       className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark data-[disabled]:text-text-dark/60 hover:text-text-light"
                     >
                       Save
@@ -156,8 +176,8 @@ export function InstructionsPanel() {
                     <Button
                       type="button"
                       onPress={() => {
-                        setIsBookmarking(false)
-                        setBookmarkTitle('')
+                        setMode('idle')
+                        setInstructionTitle('')
                       }}
                       className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark hover:text-text-light"
                     >
@@ -177,23 +197,22 @@ export function InstructionsPanel() {
                     placeholder="Enter your instructions here..."
                     value={instruction}
                     onChange={(event) => setInstruction(event.target.value)}
-                    disabled={isSaving}
+                    disabled={isLoading}
                     rows={8}
                     className="resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1.5 px-2 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60 "
                   />
 
                   <div className="absolute bottom-1.5 right-1.5 hidden group-hover:flex group-hover:items-center group-hover:gap-1.5 group-has-focus:flex group-has-focus:items-center group-has-focus:gap-1.5">
-                    <CopyButton className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75" />
                     <Button
                       type="button"
                       onPress={() => {
-                        setBookmarkTitle((prev) => prev || instruction.trim())
-                        setIsBookmarking(true)
+                        setMode('saving')
                       }}
                       className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                     >
-                      <BookmarkIcon />
+                      <DrawingPinIcon />
                     </Button>
+                    <CopyButton className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75" />
                   </div>
                 </div>
               </div>
