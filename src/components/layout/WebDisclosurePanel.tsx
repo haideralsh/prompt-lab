@@ -16,19 +16,7 @@ import { WebPanelActions } from './WebPanelActions'
 import { CopyButton } from '../common/CopyButton'
 import { EditSavedPage } from './EditSavedPage'
 
-function preserveSelectedPages(
-  allPages: SavedPages,
-  selectedUrls: Set<string>
-) {
-  const allUrls = new Set(allPages.map((page) => page.url))
-  const updatedAllPages = new Set<string>()
-
-  for (const url of selectedUrls) {
-    if (allUrls.has(url)) updatedAllPages.add(url)
-  }
-
-  return updatedAllPages
-}
+import { preserveSelected } from '../../helpers/preserveSelected'
 
 export interface SavedPageMetadata {
   title: string
@@ -110,7 +98,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelectedPages(pages, selectedUrls)
+        preserveSelected(pages, selectedUrls, (page) => page.url)
       )
 
       setWebUrl('')
