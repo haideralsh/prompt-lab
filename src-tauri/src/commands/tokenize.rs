@@ -1,4 +1,4 @@
-use crate::store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME};
+use crate::store::{save_store, StoreCategoryKey, StoreDataKey, STORE_FILE_NAME};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::collections::hash_map::DefaultHasher;
@@ -177,8 +177,8 @@ fn save_cache_batch_to_store(app: &AppHandle<Wry>, root: &str, batch: &[(String,
         }
 
         store.set(StoreCategoryKey::DATA, Value::Object(data));
+        let _ = save_store(&store);
 
-        let _ = store.save();
         store.close_resource();
     }
 }

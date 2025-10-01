@@ -2,53 +2,53 @@ use ignore::WalkBuilder;
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
-use crate::errors::{codes, DirectoryError};
+use crate::errors::{codes, ApplicationError};
 use crate::models::DirectoryNode;
 
 #[tauri::command]
-pub(crate) fn list_directory(path: &str) -> Result<Vec<DirectoryNode>, DirectoryError> {
+pub(crate) fn list_directory(path: &str) -> Result<Vec<DirectoryNode>, ApplicationError> {
     let dir = PathBuf::from(&path);
 
-    // Build a recursive walker that honors .gitignore files in this tree.
     let walker = WalkBuilder::new(&dir)
-        .hidden(false) // include dotfiles unless .gitignore excludes them
-        .git_ignore(true) // respect .gitignore files
-        .git_exclude(true) // respect .git/info/exclude if present
-        .git_global(false) // do NOT use user's global ~/.gitignore
-        .parents(true) // pick up .gitignore from parent dirs (typical repo behavior)
+        .hidden(false)
+        .git_ignore(true)
+        .git_exclude(true)
+        .git_global(false)
+        .parents(true)
         .follow_links(false)
         .build();
 
     let mut children_map: BTreeMap<PathBuf, Vec<PathBuf>> = BTreeMap::new();
     let mut is_dir_map: HashMap<PathBuf, bool> = HashMap::new();
 
-    for dent in walker {
-        let dent = dent.map_err(|_| DirectoryError {
+    for directory_entry in walker {
+        let directory_entry = directory_entry.map_err(|_| ApplicationError {
             code: codes::DIRECTORY_READ_ERROR,
-            directory_name: Some(path.to_string()),
+            message: Some(path.to_string()),
         })?;
 
-        // Skip the root itself; we only want its children.
-        if dent.depth() == 0 {
+        if directory_entry.depth() == 0 {
             continue;
         }
 
-        // Skip .git directory and its contents
-        if dent.path().components().any(|c| c.as_os_str() == ".git") {
+        if directory_entry
+            .path()
+            .components()
+            .any(|c| c.as_os_str() == ".git")
+        {
             continue;
         }
 
-        let is_dir = dent
+        let is_dir = directory_entry
             .file_type()
             .map(|t| t.is_dir())
-            .unwrap_or_else(|| dent.path().is_dir());
+            .unwrap_or_else(|| directory_entry.path().is_dir());
 
-        let rel = match dent.path().strip_prefix(&dir) {
+        let rel = match directory_entry.path().strip_prefix(&dir) {
             Ok(r) => r.to_path_buf(),
             Err(_) => continue, // Skip anything we can't relativize (shouldn't happen under root)
         };
 
-        // Record type and add to parent's children list
         is_dir_map.insert(rel.clone(), is_dir);
 
         let parent_rel = rel
@@ -58,7 +58,6 @@ pub(crate) fn list_directory(path: &str) -> Result<Vec<DirectoryNode>, Directory
         children_map.entry(parent_rel).or_default().push(rel);
     }
 
-    // Deterministic ordering: directories first, then files; each group alphabetically.
     fn build_node(
         rel: &Path,
         children_map: &BTreeMap<PathBuf, Vec<PathBuf>>,

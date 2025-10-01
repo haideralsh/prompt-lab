@@ -1,7 +1,6 @@
-use anyhow::{anyhow, Result};
+use crate::errors::{codes, ApplicationError};
 use twars_url2md::url::process_url_with_content;
 
-/// Result of scraping a page into Markdown.
 #[derive(Debug, Clone)]
 pub struct ScrapedPage {
     pub title: String,
@@ -11,18 +10,26 @@ pub struct ScrapedPage {
 
 const MAX_RETRIES: u32 = 1;
 
-/// Fetch a single page and convert it to Markdown without writing to disk.
-pub async fn page_to_md(url: &str) -> Result<ScrapedPage> {
+pub async fn page_to_md(url: &str) -> Result<ScrapedPage, ApplicationError> {
     let markdown = match process_url_with_content(url, None, false, MAX_RETRIES).await {
         Ok(Some(content)) if content.trim().is_empty() => {
-            return Err(anyhow!("No markdown content generated for {url}"));
+            return Err(ApplicationError {
+                code: codes::MARKDOWN_CONVERT_ERROR,
+                message: Some(format!("No markdown content generated for {}", url)),
+            });
         }
         Ok(Some(content)) => content,
         Ok(None) => {
-            return Err(anyhow!("No markdown content generated for {url}"));
+            return Err(ApplicationError {
+                code: codes::MARKDOWN_CONVERT_ERROR,
+                message: Some(format!("No markdown content generated for {}", url)),
+            });
         }
         Err((failed_url, error)) => {
-            return Err(error.context(format!("Failed to process {failed_url}")));
+            return Err(ApplicationError {
+                code: codes::WEB_FETCH_ERROR,
+                message: Some(format!("Failed to process {}: {}", failed_url, error)),
+            });
         }
     };
 
@@ -41,7 +48,6 @@ fn extract_title(markdown: &str) -> Option<String> {
         if trimmed.is_empty() {
             continue;
         }
-
         if trimmed.starts_with('#') {
             let heading = trimmed.trim_start_matches('#').trim();
             if !heading.is_empty() {
@@ -51,6 +57,5 @@ fn extract_title(markdown: &str) -> Option<String> {
             return Some(trimmed.to_string());
         }
     }
-
     None
 }

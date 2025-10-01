@@ -1,21 +1,17 @@
 use serde_json::json;
 use tauri::{AppHandle, Wry};
-use tauri_plugin_store::StoreExt;
 
-use crate::errors::{codes, StoreError};
+use crate::errors::{codes, ApplicationError};
 use crate::models::PickedDirectory;
-use crate::store::{StoreCategoryKey, StoreStateKey, STORE_FILE_NAME};
+use crate::store::{open_store, save_store, StoreCategoryKey, StoreStateKey};
 
 const MAX_RECENT: usize = 5;
 
 #[tauri::command]
 pub(crate) fn get_recent_directories(
     app: AppHandle<Wry>,
-) -> Result<Vec<PickedDirectory>, StoreError> {
-    let store = app.store(STORE_FILE_NAME).map_err(|_| StoreError {
-        code: codes::STORE_READ_ERROR,
-        message: Some("Failed to open store".to_string()),
-    })?;
+) -> Result<Vec<PickedDirectory>, ApplicationError> {
+    let store = open_store(&app)?;
 
     let list = match store.get(StoreCategoryKey::STATE) {
         Some(value) => {
@@ -43,11 +39,8 @@ pub(crate) fn get_recent_directories(
 pub(crate) fn add_recent_directory(
     app: AppHandle<Wry>,
     directory: PickedDirectory,
-) -> Result<(), StoreError> {
-    let store = app.store(STORE_FILE_NAME).map_err(|_| StoreError {
-        code: codes::STORE_READ_ERROR,
-        message: Some("Failed to open store".to_string()),
-    })?;
+) -> Result<(), ApplicationError> {
+    let store = open_store(&app)?;
 
     let mut list = match store.get(StoreCategoryKey::STATE) {
         Some(value) => {
@@ -80,10 +73,7 @@ pub(crate) fn add_recent_directory(
         StoreStateKey::RECENTLY_OPENED_DIRECTORIES: list
     });
     store.set(StoreCategoryKey::STATE, state);
-    store.save().map_err(|_| StoreError {
-        code: codes::STORE_WRITE_ERROR,
-        message: Some("Failed to save store".to_string()),
-    })?;
+    save_store(&store)?;
 
     store.close_resource();
 

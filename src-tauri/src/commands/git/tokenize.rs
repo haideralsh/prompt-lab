@@ -2,7 +2,7 @@ use super::event;
 use crate::{
     commands::tokenize::count_tokens_for_text,
     models::{GitDiffWorkItem, GitTokenCacheEntry, GitTokenCountsEvent},
-    store::{StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
+    store::{save_store, StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
 };
 use serde_json::{Map, Value};
 use std::{
@@ -107,8 +107,8 @@ fn save_git_cache_batch_to_store(
         }
 
         store.set(StoreCategoryKey::DATA, Value::Object(data));
+        let _ = save_store(&store);
 
-        let _ = store.save();
         store.close_resource();
     }
 }

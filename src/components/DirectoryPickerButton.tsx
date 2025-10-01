@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { ERROR_CODES } from '../constants'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
-import { DirectoryError } from '../types/FileTree'
+import { ApplicationError } from '../types/FileTree'
 import { queue } from './ToastQueue'
 import { PlusIcon } from '@radix-ui/react-icons'
 
@@ -15,7 +15,7 @@ export function DirectoryPickerButton({ onPick }: DirectoryPickerProps) {
       const picked = await invoke<DirectoryInfo>('open_directory')
       onPick(picked)
     } catch (err) {
-      const { code } = (err as DirectoryError) ?? {}
+      const { code } = (err as ApplicationError) ?? {}
       if (code !== ERROR_CODES.DIALOG_CANCELLED) {
         queue.add({
           title: 'Failed to open directory dialog',

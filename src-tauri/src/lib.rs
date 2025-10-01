@@ -9,11 +9,10 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            commands::directory::open::open_directory,
-            commands::directory::list::list_directory,
-            commands::directory::recent::get_recent_directories,
-            commands::directory::recent::add_recent_directory,
-            commands::directory::display::pretty_directory_path,
+            commands::directory::command::open::open_directory,
+            commands::directory::command::list::list_directory,
+            commands::directory::command::recent::get_recent_directories,
+            commands::directory::command::recent::add_recent_directory,
             commands::tree::search::search_tree,
             commands::tree::select::toggle_selection,
             commands::tree::select::clear_selection,
@@ -28,8 +27,8 @@ pub fn run() {
             commands::web::delete_saved_page,
             commands::web::list_saved_pages,
             commands::web::edit_saved_page,
-            commands::instructions::save_instruction,
-            commands::instructions::list_instructions,
+            commands::instruction::command::save_instruction,
+            commands::instruction::command::list_instructions,
         ])
         .run(tauri::generate_context!())
         .expect("An error occurred while running the App");

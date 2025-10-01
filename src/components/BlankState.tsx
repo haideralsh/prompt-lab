@@ -3,7 +3,7 @@ import { DirectoryPickerButton } from './DirectoryPickerButton'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { invoke } from '@tauri-apps/api/core'
 import { ERROR_CODES } from '../constants'
-import type { SearchResult, DirectoryError } from '../types/FileTree'
+import type { SearchResult, ApplicationError } from '../types/FileTree'
 import { useSidebarContext } from './Sidebar/SidebarContext'
 import { queue } from './ToastQueue'
 
@@ -20,7 +20,7 @@ export function LaunchScreen() {
 
         setRecentOpened(directories)
       } catch (err) {
-        const { code } = err as DirectoryError
+        const { code } = err as ApplicationError
         if (code === ERROR_CODES.STORE_READ_ERROR) {
           queue.add({
             title: 'Failed to load recent directories.',
@@ -44,10 +44,10 @@ export function LaunchScreen() {
       setFilteredTree(resp.results)
       invoke('add_recent_directory', { directory })
     } catch (err) {
-      const e = err as DirectoryError
+      const e = err as ApplicationError
       if (e && e.code === ERROR_CODES.DIRECTORY_READ_ERROR) {
         queue.add({
-          title: `Error reading directory ${e.directory_name ?? ''}`,
+          title: `Error reading directory ${e.message ?? ''}`,
         })
       }
     }

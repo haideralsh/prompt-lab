@@ -4,7 +4,7 @@ use crate::commands::tree::{
     cache::cache,
     lib::{add_ancestors, add_descendants},
 };
-use crate::errors::DirectoryError;
+use crate::errors::ApplicationError;
 use crate::models::SearchMatch;
 use std::collections::HashSet;
 
@@ -12,7 +12,7 @@ use std::collections::HashSet;
 pub(crate) fn search_tree(
     path: String,
     term: Option<String>,
-) -> Result<SearchMatch, DirectoryError> {
+) -> Result<SearchMatch, ApplicationError> {
     ensure_index(&path)?;
 
     let guard = cache().read().expect("cache read poisoned");

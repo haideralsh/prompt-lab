@@ -1,3 +1,4 @@
+use tauri::{AppHandle, Wry};
 use crate::{
     commands::git::{
         status::{compute_git_status, GitStatusComputation},
@@ -6,7 +7,6 @@ use crate::{
     },
     models::GitChange,
 };
-use tauri::{AppHandle, Wry};
 
 #[tauri::command]
 pub(crate) fn get_git_status(

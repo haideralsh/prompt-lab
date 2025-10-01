@@ -1,16 +1,16 @@
+use arboard::Clipboard;
 use std::{collections::HashSet, fs, path::PathBuf};
-
 use tauri::{AppHandle, Wry};
 
 use crate::{
     commands::{
         git::status::git_diff_text,
+        instruction::lib::SavedInstruction,
         tree::render::{render_full_tree, render_selected_tree},
         web::load_page_contents_from_store,
     },
-    errors::{codes, ClipboardError},
-    models::{DirectoryNode, SavedInstruction},
-    store::open_store,
+    errors::{codes, ApplicationError},
+    models::DirectoryNode,
 };
 
 const FILE_CONTENTS_OPENING_TAG: &str = "<file_contents>";
@@ -28,12 +28,6 @@ const WEB_PAGES_OPENING_TAG: &str = "<web_pages>";
 const WEB_PAGES_CLOSING_TAG: &str = "</web_pages>";
 const WEB_PAGES_SEPARATOR: &str = "\n\n* * *\n\n";
 
-pub fn page_not_found() -> String {
-    PAGE_NOT_FOUND_ERROR.to_string()
-}
-
-const PAGE_NOT_FOUND_ERROR: &str = "Saved page not found.";
-
 pub fn get_rendered_tree(
     tree_mode: &str,
     full_tree: &Vec<DirectoryNode>,
@@ -46,7 +40,7 @@ pub fn get_rendered_tree(
     }
 }
 
-pub fn concatenate_files(selected_files: &HashSet<String>) -> Result<String, ClipboardError> {
+pub fn concatenate_files(selected_files: &HashSet<String>) -> Result<String, ApplicationError> {
     let mut concatenated_files = String::new();
 
     let mut file_strs: Vec<&String> = selected_files.iter().collect();
@@ -59,7 +53,7 @@ pub fn concatenate_files(selected_files: &HashSet<String>) -> Result<String, Cli
             continue;
         }
 
-        let bytes = fs::read(&file).map_err(|_| ClipboardError {
+        let bytes = fs::read(&file).map_err(|_| ApplicationError {
             code: codes::FILE_READ_ERROR,
             message: Some(format!("Failed to read file: {}", file.display())),
         })?;
@@ -109,20 +103,13 @@ pub fn build_web_pages_section(
     app: &AppHandle<Wry>,
     directory_path: &str,
     urls_opt: &Option<Vec<String>>,
-) -> Result<String, ClipboardError> {
+) -> Result<String, ApplicationError> {
     let urls = match urls_opt {
         Some(u) if !u.is_empty() => u,
         _ => return Ok(String::new()),
     };
 
-    let store = open_store(app).map_err(|_| ClipboardError {
-        code: codes::STORE_READ_ERROR,
-        message: Some("Failed to open store".to_string()),
-    })?;
-
-    let parts = load_page_contents_from_store(&store, directory_path, urls);
-
-    store.close_resource();
+    let parts = load_page_contents_from_store(app, directory_path, urls)?;
 
     if parts.is_empty() {
         return Ok(String::new());
@@ -140,7 +127,7 @@ pub fn build_clipboard_content(
     selected_nodes: &HashSet<String>,
     rendered_tree: &str,
     root: &str,
-) -> Result<String, ClipboardError> {
+) -> Result<String, ApplicationError> {
     let concatenated_files = concatenate_files(selected_nodes)?;
     let git_diff = build_git_diff(root, git_diff_paths);
     let file_tree = build_file_tree(rendered_tree, root);
@@ -161,4 +148,19 @@ pub fn format_instruction_entries(entries: &[SavedInstruction]) -> String {
         .map(|entry| format!("{}\n{}", entry.name, entry.content))
         .collect::<Vec<_>>()
         .join("\n\n")
+}
+
+fn get_clipboard() -> Result<Clipboard, ApplicationError> {
+    Clipboard::new().map_err(|err| ApplicationError {
+        code: codes::CLIPBOARD_OPEN_ERROR,
+        message: Some(err.to_string()),
+    })
+}
+
+pub fn write_to_clipboard(payload: String) -> Result<(), ApplicationError> {
+    let mut clipboard = get_clipboard()?;
+    clipboard.set_text(payload).map_err(|err| ApplicationError {
+        code: codes::CLIPBOARD_WRITE_ERROR,
+        message: Some(err.to_string()),
+    })
 }

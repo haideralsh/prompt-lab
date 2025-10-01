@@ -1,7 +1,6 @@
 /*
  * The Tauri Store used in this application follows this structure:
  * {
- *     config: { },
  *     state: {
  *           recently_opened_directories: [PickedDirectory, ...]
  *     },
@@ -16,8 +15,8 @@
  * }
  */
 
+use crate::errors::{codes, ApplicationError};
 use std::sync::Arc;
-
 use tauri::{AppHandle, Wry};
 use tauri_plugin_store::{Store, StoreExt};
 
@@ -44,7 +43,16 @@ impl StoreStateKey {
 
 pub const STORE_FILE_NAME: &'static str = "store.json";
 
-pub fn open_store(app: &AppHandle<Wry>) -> Result<Arc<Store<Wry>>, String> {
-    app.store(STORE_FILE_NAME)
-        .map_err(|e| format!("store open error: {e}"))
+pub fn open_store(app: &AppHandle<Wry>) -> Result<Arc<Store<Wry>>, ApplicationError> {
+    app.store(STORE_FILE_NAME).map_err(|_| ApplicationError {
+        code: codes::STORE_READ_ERROR,
+        message: Some("Failed to open store".to_string()),
+    })
+}
+
+pub fn save_store(store: &Arc<Store<Wry>>) -> Result<(), ApplicationError> {
+    store.save().map_err(|_| ApplicationError {
+        code: codes::STORE_WRITE_ERROR,
+        message: Some("Failed to save store".to_string()),
+    })
 }

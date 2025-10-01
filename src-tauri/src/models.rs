@@ -71,23 +71,8 @@ pub struct SelectionResult {
     pub selected_files: Vec<FileNode>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct SavedPageMetadata {
-    pub url: String,
-    pub title: String,
-    pub token_count: Option<usize>,
-}
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct SavedInstruction {
-    pub id: String,
-    pub name: String,
-    pub content: String,
-    pub token_count: Option<usize>,
-}
-
+// TODO: Move all the Git related models to the related module in the src/commands/git folder
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GitChange {

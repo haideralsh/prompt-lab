@@ -1,10 +1,10 @@
-use crate::commands::directory::display::pretty_directory_path;
+use crate::commands::directory::lib::pretty_directory_path;
 use crate::commands::tokenize::{
     ensure_cache_loaded_for_dir, get_cached_count, spawn_token_count_task,
 };
 use crate::commands::tree::cache::cache;
 use crate::commands::tree::index::ensure_index;
-use crate::errors::DirectoryError;
+use crate::errors::ApplicationError;
 use crate::models::{FileNode, SelectionResult, TreeIndex};
 use std::collections::HashSet;
 use tauri::{AppHandle, Wry};
@@ -104,7 +104,7 @@ pub(crate) fn toggle_selection(
     directory_path: String,
     current: Vec<String>,
     node_path: String,
-) -> Result<SelectionResult, DirectoryError> {
+) -> Result<SelectionResult, ApplicationError> {
     ensure_index(&directory_path)?;
     let guard = cache().read().expect("cache read poisoned");
     let tree_index = guard
@@ -172,7 +172,7 @@ pub(crate) fn toggle_selection(
 pub(crate) fn clear_selection(
     app: AppHandle<Wry>,
     directory_path: String,
-) -> Result<SelectionResult, DirectoryError> {
+) -> Result<SelectionResult, ApplicationError> {
     ensure_index(&directory_path)?;
     let cache = cache().read().expect("cache read poisoned");
     let tree_index = cache

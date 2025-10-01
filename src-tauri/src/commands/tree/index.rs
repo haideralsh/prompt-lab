@@ -1,6 +1,6 @@
-use crate::commands::directory::list::list_directory;
+use crate::commands::directory::command::list::list_directory;
 use crate::commands::tree::cache::cache;
-use crate::errors::DirectoryError;
+use crate::errors::ApplicationError;
 use crate::models::{DirectoryNode, NodeInfo, TreeIndex};
 use std::collections::HashMap;
 
@@ -49,7 +49,7 @@ fn build_index(full_tree: Vec<DirectoryNode>) -> TreeIndex {
     tree_index
 }
 
-pub fn ensure_index(path: &str) -> Result<(), DirectoryError> {
+pub fn ensure_index(path: &str) -> Result<(), ApplicationError> {
     {
         if cache()
             .read()

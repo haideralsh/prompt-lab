@@ -1,63 +1,15 @@
 use serde_json::{json, Map, Value};
-use std::collections::{HashMap, HashSet};
 use tauri::{AppHandle, Wry};
 use uuid::Uuid;
 
 use crate::{
-    commands::tokenize::count_tokens_for_text,
-    models::SavedInstruction,
-    store::{open_store, StoreCategoryKey, StoreDataKey},
+    commands::{
+        instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
+        tokenize::count_tokens_for_text,
+    },
+    errors::{codes, ApplicationError},
+    store::{open_store, save_store, StoreCategoryKey, StoreDataKey},
 };
-
-pub enum ContentDisplay {
-    Full,
-    Truncated,
-}
-
-pub fn extract_saved_instructions(
-    directory_object: &Value,
-    display_mode: ContentDisplay,
-) -> HashMap<String, SavedInstruction> {
-    let Some(directory_object) = directory_object.as_object() else {
-        return HashMap::new();
-    };
-
-    let Some(saved_instructions_value) = directory_object.get(StoreDataKey::SAVED_INSTRUCTIONS)
-    else {
-        return HashMap::new();
-    };
-
-    let Some(saved_instructions_object) = saved_instructions_value.as_object() else {
-        return HashMap::new();
-    };
-
-    saved_instructions_object
-        .iter()
-        .filter_map(|(id, entry)| {
-            let obj = entry.as_object()?;
-            let name = obj.get("name")?.as_str()?.to_string();
-            let content_value = obj.get("content")?.as_str()?.to_string();
-            let content = match display_mode {
-                ContentDisplay::Full => content_value,
-                ContentDisplay::Truncated => content_value.chars().take(256).collect(),
-            };
-            let token_count = obj
-                .get("tokenCount")
-                .and_then(|v| v.as_u64())
-                .map(|v| v as usize);
-
-            Some((
-                id.to_string(),
-                SavedInstruction {
-                    id: id.to_string(),
-                    name,
-                    content,
-                    token_count,
-                },
-            ))
-        })
-        .collect()
-}
 
 #[tauri::command]
 pub fn save_instruction(
@@ -65,7 +17,7 @@ pub fn save_instruction(
     directory_path: String,
     name: String,
     content: String,
-) -> Result<String, String> {
+) -> Result<String, ApplicationError> {
     let store = open_store(&app)?;
 
     let instruction_id = Uuid::new_v4().to_string();
@@ -109,7 +61,7 @@ pub fn save_instruction(
     }
 
     store.set(StoreCategoryKey::DATA, Value::Object(data));
-    store.save().map_err(|e| format!("store save error: {e}"))?;
+    save_store(&store)?;
     store.close_resource();
 
     Ok(instruction_id)
@@ -119,16 +71,13 @@ pub fn save_instruction(
 pub fn list_instructions(
     app: AppHandle<Wry>,
     directory_path: String,
-) -> Result<Vec<SavedInstruction>, String> {
+) -> Result<Vec<SavedInstruction>, ApplicationError> {
     let store = open_store(&app)?;
 
     let instructions = if let Some(data) = store.get(StoreCategoryKey::DATA) {
         if let Some(data_map) = data.as_object() {
             if let Some(dir) = data_map.get(&directory_path) {
-                // Convert HashMap to Vec for backward compatibility
-                extract_saved_instructions(dir, ContentDisplay::Truncated)
-                    .into_values()
-                    .collect()
+                get_saved_instructions(dir, ContentLengthMode::Truncated)
             } else {
                 Vec::new()
             }
