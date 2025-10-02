@@ -8,7 +8,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            api::directory::command::open::open_directory,
+            api::directory::command::pick::pick_folder,
             api::directory::command::list::list_directory,
             api::directory::command::recent::get_recent_directories,
             api::directory::command::recent::add_recent_directory,
