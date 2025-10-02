@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Checkbox } from 'react-aria-components'
-import { CheckIcon } from '@radix-ui/react-icons'
+import { Button, Checkbox } from 'react-aria-components'
+import { CheckIcon, ReaderIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'motion/react'
 import { PanelDisclosure } from './PanelDisclosure'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
-import { Id, SelectionResult } from '../../types/FileTree'
+import { FileNode, Id, SelectionResult } from '../../types/FileTree'
 import { CopyButton } from '../common/CopyButton'
 
 export function SelectedFilesPanel() {
@@ -51,6 +51,12 @@ export function SelectedFilesPanel() {
       treeMode: 'selected',
       fullTree: tree,
       selectedNodes: paths,
+    })
+  }
+
+  async function handleOpenFile(file: FileNode) {
+    await invoke('open_file', {
+      path: file.path,
     })
   }
 
@@ -123,6 +129,14 @@ export function SelectedFilesPanel() {
                       </span>
                       <span>
                         <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
+                          <Button
+                            onPress={() => {
+                              void handleOpenFile(file)
+                            }}
+                            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                          >
+                            <ReaderIcon />
+                          </Button>
                           <CopyButton
                             onCopy={async () => {
                               await copyFiles([file.path])

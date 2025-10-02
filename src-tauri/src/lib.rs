@@ -12,6 +12,7 @@ pub fn run() {
             api::directory::command::list::list_directory,
             api::directory::command::recent::get_recent_directories,
             api::directory::command::recent::add_recent_directory,
+            api::directory::command::open::open_file,
             api::tree::search::search_tree,
             api::tree::select::toggle_selection,
             api::tree::select::clear_selection,

@@ -31,4 +31,7 @@ pub mod codes {
     pub const WEB_FETCH_ERROR: u8 = 8;
     /// Failed to convert HTML into Markdown.
     pub const MARKDOWN_CONVERT_ERROR: u8 = 9;
+
+    /// Failed to open a file with the system default handler.
+    pub const FILE_OPEN_ERROR: u8 = 10;
 }
