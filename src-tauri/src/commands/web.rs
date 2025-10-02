@@ -3,7 +3,7 @@ use crate::{
         scrape::{page_to_md, ScrapedPage},
         tokenize::count_tokens_for_text,
     },
-    errors::{codes, ApplicationError},
+    errors::ApplicationError,
     store::{open_store, save_store, StoreCategoryKey, StoreDataKey},
 };
 use serde::{Deserialize, Serialize};

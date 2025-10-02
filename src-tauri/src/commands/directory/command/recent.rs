@@ -1,7 +1,7 @@
 use serde_json::json;
 use tauri::{AppHandle, Wry};
 
-use crate::errors::{codes, ApplicationError};
+use crate::errors::ApplicationError;
 use crate::models::PickedDirectory;
 use crate::store::{open_store, save_store, StoreCategoryKey, StoreStateKey};
 

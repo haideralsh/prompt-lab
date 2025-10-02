@@ -7,7 +7,7 @@ use crate::{
         instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
         tokenize::count_tokens_for_text,
     },
-    errors::{codes, ApplicationError},
+    errors::ApplicationError,
     store::{open_store, save_store, StoreCategoryKey, StoreDataKey},
 };
 
