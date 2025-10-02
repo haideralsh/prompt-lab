@@ -1,9 +1,10 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
+  BookmarkFilledIcon,
+  BookmarkIcon,
   CheckIcon,
   CopyIcon,
-  DrawingPinIcon,
   Pencil1Icon,
   TrashIcon,
 } from '@radix-ui/react-icons'
@@ -302,7 +303,7 @@ export function InstructionsPanel() {
                 <label className="sr-only" htmlFor="user-instruction">
                   Enter your instructions here...
                 </label>
-                <div className="group relative flex items-center pb-6">
+                <div className="group/textarea relative flex items-center pb-6">
                   <textarea
                     id="user-instruction"
                     placeholder="Enter your instructions here..."
@@ -313,15 +314,16 @@ export function InstructionsPanel() {
                     className="resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1.5 px-2 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60 "
                   />
 
-                  <div className="absolute bottom-1.5 right-1.5 hidden group-hover:flex group-hover:items-center group-hover:gap-1.5 group-has-focus:flex group-has-focus:items-center group-has-focus:gap-1.5">
+                  <div className="absolute bottom-1.5 right-1.5 hidden group-hover/textarea:flex group-hover/textarea:items-center group-hover/textarea:gap-1.5 group-has-focus/textarea:flex group-has-focus/textarea:items-center group-has-focus/textarea:gap-1.5">
                     <Button
                       type="button"
                       onPress={() => {
                         setMode('saving')
                       }}
-                      className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                      className="group/button text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                     >
-                      <DrawingPinIcon />
+                      <BookmarkIcon className="group-hover/button:hidden" />
+                      <BookmarkFilledIcon className="hidden group-hover/button:block text-accent-solid-dark" />
                     </Button>
                     {/* @ts-expect-error */}
                     <CopyButton className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75" />
