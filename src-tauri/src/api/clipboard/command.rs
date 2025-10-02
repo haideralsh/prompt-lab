@@ -1,16 +1,14 @@
 use std::collections::HashSet;
 use tauri::{AppHandle, Wry};
 
-use crate::commands::clipboard::lib::{
+use crate::api::clipboard::lib::{
     build_clipboard_content, build_web_pages_section, format_instruction_entries,
     get_rendered_tree, write_to_clipboard,
 };
-use crate::commands::git::status::git_diff_text;
-use crate::commands::instruction::lib::{
-    get_saved_instructions, ContentLengthMode, SavedInstruction,
-};
-use crate::commands::tree::index::DirectoryNode;
-use crate::commands::web::load_page_contents_from_store;
+use crate::api::git::status::git_diff_text;
+use crate::api::instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction};
+use crate::api::tree::index::DirectoryNode;
+use crate::api::web::load_page_contents_from_store;
 use crate::errors::ApplicationError;
 use crate::store::{open_store, StoreCategoryKey};
 

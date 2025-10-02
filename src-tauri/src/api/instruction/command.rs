@@ -3,7 +3,7 @@ use tauri::{AppHandle, Wry};
 use uuid::Uuid;
 
 use crate::{
-    commands::{
+    api::{
         instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
         tokenize::count_tokens_for_text,
     },

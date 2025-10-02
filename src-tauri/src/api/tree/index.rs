@@ -1,5 +1,5 @@
-use crate::commands::directory::command::list::list_directory;
-use crate::commands::tree::cache::cache;
+use crate::api::directory::command::list::list_directory;
+use crate::api::tree::cache::cache;
 use crate::errors::ApplicationError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

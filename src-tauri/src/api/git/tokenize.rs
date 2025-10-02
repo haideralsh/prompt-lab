@@ -1,7 +1,7 @@
 use super::event::{self, GitTokenCountsEvent};
 use crate::{
-    commands::git::status::GitDiffWorkItem,
-    commands::tokenize::count_tokens_for_text,
+    api::git::status::GitDiffWorkItem,
+    api::tokenize::count_tokens_for_text,
     store::{save_store, StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
 };
 use serde::{Deserialize, Serialize};

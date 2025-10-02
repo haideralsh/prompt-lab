@@ -1,4 +1,4 @@
-use crate::commands::git::tokenize::{ensure_git_cache_loaded_for_dir, get_git_cached_entry};
+use crate::api::git::tokenize::{ensure_git_cache_loaded_for_dir, get_git_cached_entry};
 use git2::{
     DiffFindOptions, DiffFormat, DiffOptions, ErrorCode, Patch, Repository, Status, StatusOptions,
     StatusShow,

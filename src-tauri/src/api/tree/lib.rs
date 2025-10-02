@@ -1,4 +1,4 @@
-use crate::commands::tree::index::{DirectoryNode, TreeIndex};
+use crate::api::tree::index::{DirectoryNode, TreeIndex};
 use std::collections::HashSet;
 
 pub(crate) struct NodeTree {

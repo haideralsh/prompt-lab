@@ -1,6 +1,6 @@
 use rfd::FileDialog;
 
-use crate::commands::directory::lib::{pretty_directory_path, PickedDirectory};
+use crate::api::directory::lib::{pretty_directory_path, PickedDirectory};
 use crate::errors::{codes, ApplicationError};
 
 #[tauri::command]

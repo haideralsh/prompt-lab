@@ -2,7 +2,7 @@ use ignore::WalkBuilder;
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
-use crate::commands::tree::index::DirectoryNode;
+use crate::api::tree::index::DirectoryNode;
 use crate::errors::{codes, ApplicationError};
 
 #[tauri::command]

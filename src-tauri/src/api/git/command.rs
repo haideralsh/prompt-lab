@@ -1,4 +1,4 @@
-use crate::commands::git::{
+use crate::api::git::{
     status::{compute_git_status, GitChange, GitStatusComputation},
     tokenize::spawn_git_token_count_task,
     watch::ensure_git_watcher_started,

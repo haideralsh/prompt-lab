@@ -1,9 +1,7 @@
-use crate::commands::directory::lib::pretty_directory_path;
-use crate::commands::tokenize::{
-    ensure_cache_loaded_for_dir, get_cached_count, spawn_token_count_task,
-};
-use crate::commands::tree::cache::cache;
-use crate::commands::tree::index::{ensure_index, TreeIndex};
+use crate::api::directory::lib::pretty_directory_path;
+use crate::api::tokenize::{ensure_cache_loaded_for_dir, get_cached_count, spawn_token_count_task};
+use crate::api::tree::cache::cache;
+use crate::api::tree::index::{ensure_index, TreeIndex};
 use crate::errors::ApplicationError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;

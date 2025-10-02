@@ -3,7 +3,7 @@ use std::{collections::HashSet, fs, path::PathBuf};
 use tauri::{AppHandle, Wry};
 
 use crate::{
-    commands::{
+    api::{
         git::status::git_diff_text,
         instruction::lib::SavedInstruction,
         tree::{

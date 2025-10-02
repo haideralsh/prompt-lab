@@ -1,5 +1,5 @@
 use crate::{
-    commands::{
+    api::{
         scrape::{page_to_md, ScrapedPage},
         tokenize::count_tokens_for_text,
     },

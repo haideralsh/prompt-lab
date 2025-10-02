@@ -41,8 +41,7 @@ pub(crate) fn ensure_git_watcher_started(app: AppHandle<Wry>, root: String) {
         let root = watch_root.clone();
 
         tauri::async_runtime::spawn(async move {
-            // Emit event on changes
-            crate::commands::git::event::emit_git_status_event(app.clone(), root.clone());
+            crate::api::git::event::emit_git_status_event(app.clone(), root.clone());
         });
     }) {
         Ok(watcher) => watcher,

@@ -1,4 +1,4 @@
-use crate::commands::tree::index::DirectoryNode;
+use crate::api::tree::index::DirectoryNode;
 use std::collections::HashSet;
 
 pub fn render_selected_tree(nodes: &[DirectoryNode], selected: &HashSet<String>) -> String {

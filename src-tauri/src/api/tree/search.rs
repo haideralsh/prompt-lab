@@ -1,6 +1,6 @@
-use crate::commands::tree::index::{ensure_index, DirectoryNode};
-use crate::commands::tree::lib::{build_full_tree, build_pruned_tree, count_matched_nodes};
-use crate::commands::tree::{
+use crate::api::tree::index::{ensure_index, DirectoryNode};
+use crate::api::tree::lib::{build_full_tree, build_pruned_tree, count_matched_nodes};
+use crate::api::tree::{
     cache::cache,
     lib::{add_ancestors, add_descendants},
 };
