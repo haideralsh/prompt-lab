@@ -1,12 +1,9 @@
-use tauri::{AppHandle, Wry};
-use crate::{
-    commands::git::{
-        status::{compute_git_status, GitStatusComputation},
-        tokenize::spawn_git_token_count_task,
-        watch::ensure_git_watcher_started,
-    },
-    models::GitChange,
+use crate::commands::git::{
+    status::{compute_git_status, GitChange, GitStatusComputation},
+    tokenize::spawn_git_token_count_task,
+    watch::ensure_git_watcher_started,
 };
+use tauri::{AppHandle, Wry};
 
 #[tauri::command]
 pub(crate) fn get_git_status(

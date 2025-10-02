@@ -1,9 +1,9 @@
 use crate::commands::git::tokenize::{ensure_git_cache_loaded_for_dir, get_git_cached_entry};
-use crate::models::{GitChange, GitDiffData, GitDiffWorkItem};
 use git2::{
     DiffFindOptions, DiffFormat, DiffOptions, ErrorCode, Patch, Repository, Status, StatusOptions,
     StatusShow,
 };
+use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::{
@@ -11,6 +11,31 @@ use std::{
     hash::{Hash, Hasher},
 };
 use tauri::{AppHandle, Wry};
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GitChange {
+    pub(crate) path: String,
+    pub(crate) change_type: String,
+    pub(crate) lines_added: i32,
+    pub(crate) lines_deleted: i32,
+    pub(crate) token_count: Option<usize>,
+}
+
+#[derive(Clone)]
+pub(crate) struct GitDiffData {
+    pub(crate) lines_added: i32,
+    pub(crate) lines_deleted: i32,
+    pub(crate) diff_bytes: Arc<Vec<u8>>,
+    pub(crate) diff_hash: String,
+}
+
+#[derive(Clone)]
+pub(crate) struct GitDiffWorkItem {
+    pub(crate) path: String,
+    pub(crate) diff_bytes: Arc<Vec<u8>>,
+    pub(crate) diff_hash: String,
+}
 
 pub fn diff_hash(bytes: &[u8]) -> String {
     let mut hasher = DefaultHasher::new();

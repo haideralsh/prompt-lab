@@ -1,22 +1,19 @@
-use crate::models::{DirectoryNode, NodeTree, TreeIndex};
+use crate::commands::tree::index::{DirectoryNode, TreeIndex};
 use std::collections::HashSet;
+
+pub(crate) struct NodeTree {
+    pub(crate) nodes: Vec<DirectoryNode>,
+    pub(crate) total_nodes: usize,
+}
 
 pub fn build_full_tree(idx: &TreeIndex) -> NodeTree {
     fn build_all(id: &str, idx: &TreeIndex, counter: &mut usize) -> DirectoryNode {
         *counter += 1;
 
         let info = idx.nodes.get(id).expect("node id must exist");
-        if info.node_type == "file" {
-            return DirectoryNode {
-                id: info.id.clone(),
-                title: info.title.clone(),
-                node_type: info.node_type.clone(),
-                children: Vec::new(),
-            };
-        }
 
         let mut children = Vec::new();
-        for cid in &info.children {
+        for cid in &info.child_ids {
             children.push(build_all(cid, idx, counter));
         }
 
@@ -25,6 +22,8 @@ pub fn build_full_tree(idx: &TreeIndex) -> NodeTree {
             title: info.title.clone(),
             node_type: info.node_type.clone(),
             children,
+            parent: info.parent.clone(),
+            child_ids: info.child_ids.clone(),
         }
     }
 
@@ -54,6 +53,8 @@ pub fn build_pruned_tree(
                 title: info.title.clone(),
                 node_type: info.node_type.clone(),
                 children: Vec::new(),
+                parent: info.parent.clone(),
+                child_ids: info.child_ids.clone(),
             });
         } else {
             return None;
@@ -61,7 +62,7 @@ pub fn build_pruned_tree(
     }
 
     let mut pruned_children = Vec::new();
-    for cid in &info.children {
+    for cid in &info.child_ids {
         if let Some(child) = build_pruned_tree(cid, idx, keep) {
             pruned_children.push(child);
         }
@@ -73,6 +74,8 @@ pub fn build_pruned_tree(
             title: info.title.clone(),
             node_type: info.node_type.clone(),
             children: pruned_children,
+            parent: info.parent.clone(),
+            child_ids: info.child_ids.clone(),
         });
     }
 
@@ -96,7 +99,7 @@ pub fn add_ancestors(id: &str, idx: &TreeIndex, acc: &mut HashSet<String>) {
 
 pub fn add_descendants(id: &str, tree_index: &TreeIndex, acc: &mut HashSet<String>) {
     if let Some(node) = tree_index.nodes.get(id) {
-        for child_id in &node.children {
+        for child_id in &node.child_ids {
             if acc.insert(child_id.clone()) {
                 add_descendants(child_id, tree_index, acc);
             }

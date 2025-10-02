@@ -3,11 +3,28 @@ use crate::commands::tokenize::{
     ensure_cache_loaded_for_dir, get_cached_count, spawn_token_count_task,
 };
 use crate::commands::tree::cache::cache;
-use crate::commands::tree::index::ensure_index;
+use crate::commands::tree::index::{ensure_index, TreeIndex};
 use crate::errors::ApplicationError;
-use crate::models::{FileNode, SelectionResult, TreeIndex};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use tauri::{AppHandle, Wry};
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FileNode {
+    pub(crate) path: String,
+    pub(crate) title: String,
+    pub(crate) token_count: Option<usize>,
+    pub(crate) pretty_path: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SelectionResult {
+    pub(crate) selected_nodes_paths: Vec<String>,
+    pub(crate) indeterminate_nodes_paths: Vec<String>,
+    pub(crate) selected_files: Vec<FileNode>,
+}
 
 fn all_descendants_selected(id: &str, tree_index: &TreeIndex, selected: &HashSet<String>) -> bool {
     let Some(node) = tree_index.nodes.get(id) else {
@@ -18,7 +35,7 @@ fn all_descendants_selected(id: &str, tree_index: &TreeIndex, selected: &HashSet
         return selected.contains(id);
     }
 
-    for child in &node.children {
+    for child in &node.child_ids {
         if !all_descendants_selected(child, tree_index, selected) {
             return false;
         }
@@ -36,7 +53,7 @@ fn any_descendant_selected(id: &str, tree_index: &TreeIndex, selected: &HashSet<
         return selected.contains(id);
     }
 
-    for child in &node.children {
+    for child in &node.child_ids {
         if any_descendant_selected(child, tree_index, selected) {
             return true;
         }
@@ -134,11 +151,11 @@ pub(crate) fn toggle_selection(
 
     let mut targets = vec![node_path.clone()];
     if node.node_type != "file" {
-        let mut stack = node.children.clone();
+        let mut stack = node.child_ids.clone();
         while let Some(cur) = stack.pop() {
             targets.push(cur.clone());
             if let Some(n) = tree_index.nodes.get(&cur) {
-                stack.extend(n.children.iter().cloned());
+                stack.extend(n.child_ids.iter().cloned());
             }
         }
     }

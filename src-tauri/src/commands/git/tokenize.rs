@@ -1,9 +1,10 @@
-use super::event;
+use super::event::{self, GitTokenCountsEvent};
 use crate::{
+    commands::git::status::GitDiffWorkItem,
     commands::tokenize::count_tokens_for_text,
-    models::{GitDiffWorkItem, GitTokenCacheEntry, GitTokenCountsEvent},
     store::{save_store, StoreCategoryKey, StoreDataKey, STORE_FILE_NAME},
 };
+use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::{
     collections::{HashMap, HashSet},
@@ -17,6 +18,13 @@ const GIT_TOKEN_BATCH_SIZE: usize = 25;
 static GIT_TOKEN_CACHE: OnceLock<RwLock<HashMap<String, HashMap<String, GitTokenCacheEntry>>>> =
     OnceLock::new();
 static GIT_LOADED_DIRS: OnceLock<RwLock<HashSet<String>>> = OnceLock::new();
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GitTokenCacheEntry {
+    pub(crate) diff_hash: String,
+    pub(crate) token_count: usize,
+}
 
 fn git_cache() -> &'static RwLock<HashMap<String, HashMap<String, GitTokenCacheEntry>>> {
     GIT_TOKEN_CACHE.get_or_init(|| RwLock::new(HashMap::new()))

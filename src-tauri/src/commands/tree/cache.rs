@@ -1,4 +1,4 @@
-use crate::models::TreeIndex;
+use crate::commands::tree::index::TreeIndex;
 use std::collections::HashMap;
 use std::sync::{OnceLock, RwLock};
 

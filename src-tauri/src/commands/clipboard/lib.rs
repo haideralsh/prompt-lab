@@ -6,11 +6,13 @@ use crate::{
     commands::{
         git::status::git_diff_text,
         instruction::lib::SavedInstruction,
-        tree::render::{render_full_tree, render_selected_tree},
+        tree::{
+            index::DirectoryNode,
+            render::{render_full_tree, render_selected_tree},
+        },
         web::load_page_contents_from_store,
     },
     errors::{codes, ApplicationError},
-    models::DirectoryNode,
 };
 
 const FILE_CONTENTS_OPENING_TAG: &str = "<file_contents>";

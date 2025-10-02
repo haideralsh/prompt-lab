@@ -1,8 +1,8 @@
 use serde_json::json;
 use tauri::{AppHandle, Wry};
 
+use crate::commands::directory::lib::PickedDirectory;
 use crate::errors::ApplicationError;
-use crate::models::PickedDirectory;
 use crate::store::{open_store, save_store, StoreCategoryKey, StoreStateKey};
 
 const MAX_RECENT: usize = 5;

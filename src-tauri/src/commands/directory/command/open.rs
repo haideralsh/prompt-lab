@@ -1,8 +1,7 @@
 use rfd::FileDialog;
 
-use crate::commands::directory::lib::pretty_directory_path;
+use crate::commands::directory::lib::{pretty_directory_path, PickedDirectory};
 use crate::errors::{codes, ApplicationError};
-use crate::models::PickedDirectory;
 
 #[tauri::command]
 pub(crate) fn open_directory() -> Result<PickedDirectory, ApplicationError> {

@@ -2,8 +2,8 @@ use ignore::WalkBuilder;
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
+use crate::commands::tree::index::DirectoryNode;
 use crate::errors::{codes, ApplicationError};
-use crate::models::DirectoryNode;
 
 #[tauri::command]
 pub(crate) fn list_directory(path: &str) -> Result<Vec<DirectoryNode>, ApplicationError> {
@@ -104,11 +104,18 @@ pub(crate) fn list_directory(path: &str) -> Result<Vec<DirectoryNode>, Applicati
 
         let id_str = dir.join(rel).to_string_lossy().into_owned();
 
+        let child_ids = children_nodes
+            .iter()
+            .map(|child| child.id.clone())
+            .collect();
+
         DirectoryNode {
             id: id_str,
             title,
             node_type,
             children: children_nodes,
+            parent: None,
+            child_ids,
         }
     }
 

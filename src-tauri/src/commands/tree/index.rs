@@ -1,36 +1,51 @@
 use crate::commands::directory::command::list::list_directory;
 use crate::commands::tree::cache::cache;
 use crate::errors::ApplicationError;
-use crate::models::{DirectoryNode, NodeInfo, TreeIndex};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-fn index_node(node: &DirectoryNode, parent: Option<&str>, tree_index: &mut TreeIndex) {
-    let id = node.id.clone();
-    let title = node.title.clone();
-    let node_type = node.node_type.clone();
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct DirectoryNode {
+    pub(crate) id: String,
+    pub(crate) title: String,
+    #[serde(rename = "type")]
+    pub(crate) node_type: String,
+    #[serde(default)]
+    pub(crate) children: Vec<DirectoryNode>,
+    #[serde(skip)]
+    pub(crate) parent: Option<String>,
+    #[serde(skip)]
+    pub(crate) child_ids: Vec<String>,
+}
 
-    let mut child_ids = Vec::new();
-    for child in &node.children {
-        child_ids.push(child.id.clone());
-    }
+pub(crate) struct TreeIndex {
+    pub(crate) top_level: Vec<String>,
+    pub(crate) nodes: HashMap<String, DirectoryNode>,
+    pub(crate) titles: Vec<(String, String)>,
+}
+
+fn index_node(node: &DirectoryNode, parent: Option<&str>, tree_index: &mut TreeIndex) {
+    let child_ids: Vec<String> = node.children.iter().map(|child| child.id.clone()).collect();
 
     tree_index.nodes.insert(
-        id.clone(),
-        NodeInfo {
-            id: id.clone(),
-            title: title.clone(),
-            node_type: node_type.clone(),
-            children: child_ids,
+        node.id.clone(),
+        DirectoryNode {
+            id: node.id.clone(),
+            title: node.title.clone(),
+            node_type: node.node_type.clone(),
+            children: Vec::new(),
             parent: parent.map(|p| p.to_string()),
+            child_ids: child_ids.clone(),
         },
     );
 
     tree_index
         .titles
-        .push((id.clone(), title.trim().to_lowercase()));
+        .push((node.id.clone(), node.title.trim().to_lowercase()));
 
     for child in &node.children {
-        index_node(child, Some(&id), tree_index);
+        index_node(child, Some(&node.id), tree_index);
     }
 }
 

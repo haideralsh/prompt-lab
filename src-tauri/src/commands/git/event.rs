@@ -1,9 +1,24 @@
 use crate::commands::git::{
-    status::{compute_git_status, GitStatusComputation},
+    status::{compute_git_status, GitChange, GitStatusComputation},
     tokenize::spawn_git_token_count_task,
 };
-use crate::models::{GitStatusEvent, GitTokenCountsEvent};
+use serde::Serialize;
+use std::collections::HashMap;
 use tauri::{AppHandle, Emitter, Wry};
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GitTokenCountsEvent {
+    pub(crate) root: String,
+    pub(crate) files: HashMap<String, usize>,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GitStatusEvent {
+    pub(crate) root: String,
+    pub(crate) changes: Vec<GitChange>,
+}
 
 pub(crate) fn emit_git_status_event(app: AppHandle<Wry>, directory_path: String) {
     match compute_git_status(&app, &directory_path) {

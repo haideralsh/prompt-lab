@@ -9,9 +9,9 @@ use crate::commands::git::status::git_diff_text;
 use crate::commands::instruction::lib::{
     get_saved_instructions, ContentLengthMode, SavedInstruction,
 };
+use crate::commands::tree::index::DirectoryNode;
 use crate::commands::web::load_page_contents_from_store;
 use crate::errors::ApplicationError;
-use crate::models::DirectoryNode;
 use crate::store::{open_store, StoreCategoryKey};
 
 #[tauri::command]

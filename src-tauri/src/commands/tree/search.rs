@@ -1,12 +1,19 @@
-use crate::commands::tree::index::ensure_index;
+use crate::commands::tree::index::{ensure_index, DirectoryNode};
 use crate::commands::tree::lib::{build_full_tree, build_pruned_tree, count_matched_nodes};
 use crate::commands::tree::{
     cache::cache,
     lib::{add_ancestors, add_descendants},
 };
 use crate::errors::ApplicationError;
-use crate::models::SearchMatch;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SearchMatch {
+    pub(crate) matched_ids_count: usize,
+    pub(crate) results: Vec<DirectoryNode>,
+}
 
 #[tauri::command]
 pub(crate) fn search_tree(
