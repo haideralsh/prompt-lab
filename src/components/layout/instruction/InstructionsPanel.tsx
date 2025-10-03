@@ -187,7 +187,7 @@ export function InstructionsPanel() {
       id="instructions"
       label="Instructions"
       count={instructions.length}
-      panelClassName="p-2 flex flex-col"
+      panelClassName="p-2 flex flex-col gap-1"
       isGroupSelected={isAllSelected}
       isGroupIndeterminate={isIndeterminate}
       onSelectAll={handleSelectAll}

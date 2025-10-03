@@ -295,7 +295,7 @@ export function WebDisclosurePanel() {
                             {isSelected && <CheckIcon />}
                           </span>
                           <span className="flex items-center gap-1.5 w-full">
-                            <span className="font-normal shrink-0 text-text-dark break-all">
+                            <span className="font-normal shrink-0 text-text-dark">
                               {entry.title}
                             </span>
                             <span className="hidden group-hover:inline text-solid-light truncate">
