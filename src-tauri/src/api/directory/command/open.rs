@@ -6,7 +6,7 @@ use tauri_plugin_opener::OpenerExt;
 use crate::errors::{codes, ApplicationError};
 use crate::store::{open_store, StoreCategoryKey, StoreConfigKey};
 
-fn resolve_editor(app: &AppHandle<Wry>) -> Result<String, ApplicationError> {
+fn resolve_editor(app: &AppHandle<Wry>) -> Result<Option<String>, ApplicationError> {
     let store = open_store(app)?;
 
     let editor_from_store = store
@@ -27,17 +27,7 @@ fn resolve_editor(app: &AppHandle<Wry>) -> Result<String, ApplicationError> {
 
     store.close_resource();
 
-    if let Some(editor) = editor_from_store {
-        return Ok(editor);
-    }
-
-    Err(ApplicationError {
-        code: codes::FILE_OPEN_ERROR,
-        message: Some(
-            "No editor is configured and no default editor was found. Set one in the application settings."
-                .to_string(),
-        ),
-    })
+    Ok(editor_from_store)
 }
 
 #[tauri::command]
@@ -55,7 +45,7 @@ pub(crate) fn open_file(app: AppHandle<Wry>, path: &str) -> Result<(), Applicati
     let path_string = path_buf.to_string_lossy().into_owned();
 
     app.opener()
-        .open_path(path_string, Some(editor))
+        .open_path(path_string, editor)
         .map_err(|err| ApplicationError {
             code: codes::FILE_OPEN_ERROR,
             message: Some(format!(
