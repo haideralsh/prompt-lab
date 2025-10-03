@@ -24,7 +24,7 @@ export function InlineEditForm({
     const trimmedContent = content.trim()
     const trimmedTitle = title.trim()
     if (!trimmedContent || !trimmedTitle || isLoading) return
-    onSave({ title: trimmedTitle, content: trimmedContent })
+    onSave({ name: trimmedTitle, content: trimmedContent })
   }
 
   return (
