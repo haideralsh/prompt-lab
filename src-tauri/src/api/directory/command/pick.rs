@@ -4,7 +4,7 @@ use crate::api::directory::lib::{pretty_directory_path, PickedDirectory};
 use crate::errors::{codes, ApplicationError};
 
 #[tauri::command]
-pub(crate) fn pick_folder() -> Result<PickedDirectory, ApplicationError> {
+pub(crate) fn pick_directory() -> Result<PickedDirectory, ApplicationError> {
     let picked = FileDialog::new()
         .set_title("Choose a directory")
         .pick_folder();

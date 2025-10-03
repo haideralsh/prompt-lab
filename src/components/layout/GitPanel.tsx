@@ -50,7 +50,7 @@ export function GitPanel() {
 
     const paths = typeof content === 'string' ? [content] : Array.from(content)
 
-    await invoke<void>('copy_diff_to_clipboard', {
+    await invoke<void>('copy_diffs_to_clipboard', {
       directoryPath: directory.path,
       paths,
     })

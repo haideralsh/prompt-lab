@@ -3,9 +3,10 @@ import { DirectoryPickerButton } from './DirectoryPickerButton'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { invoke } from '@tauri-apps/api/core'
 import { ERROR_CODES } from '../constants'
-import type { SearchResult, ApplicationError } from '../types/FileTree'
+import type { SearchResult } from '../types/FileTree'
 import { useSidebarContext } from './Sidebar/SidebarContext'
 import { queue } from './ToastQueue'
+import { ApplicationError } from '../helpers/getErrorMessage'
 
 export function LaunchScreen() {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([])
@@ -15,7 +16,7 @@ export function LaunchScreen() {
     async function loadRecentOpened() {
       try {
         const directories = await invoke<DirectoryInfo[]>(
-          'get_recent_directories',
+          'get_recent_directories'
         )
 
         setRecentOpened(directories)

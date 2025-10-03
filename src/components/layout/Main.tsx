@@ -2,7 +2,7 @@ import { DisclosureGroup } from 'react-aria-components'
 import { SelectedFilesPanel } from './SelectedFilesPanel'
 import { GitPanel } from './GitPanel'
 import { WebDisclosurePanel } from './WebDisclosurePanel'
-import { InstructionsPanel } from './InstructionsPanel'
+import { InstructionsPanel } from './instruction/InstructionsPanel'
 
 export function Main() {
   return (

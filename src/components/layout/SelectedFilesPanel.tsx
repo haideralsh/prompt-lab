@@ -8,6 +8,8 @@ import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
 import { FileNode, Id, SelectionResult } from '../../types/FileTree'
 import { CopyButton } from '../common/CopyButton'
+import { queue } from '../ToastQueue'
+import { ApplicationError } from '../../helpers/getErrorMessage'
 
 export function SelectedFilesPanel() {
   const {
@@ -55,9 +57,16 @@ export function SelectedFilesPanel() {
   }
 
   async function handleOpenFile(file: FileNode) {
-    await invoke('open_file', {
-      path: file.path,
-    })
+    try {
+      await invoke('open_file', {
+        path: file.path,
+      })
+    } catch (error) {
+      queue.add({
+        title: 'Failed to open file',
+        description: (error as ApplicationError).message,
+      })
+    }
   }
 
   return (

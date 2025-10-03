@@ -6,9 +6,10 @@ pub mod store;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            api::directory::command::pick::pick_folder,
+            api::directory::command::pick::pick_directory,
             api::directory::command::list::list_directory,
             api::directory::command::recent::get_recent_directories,
             api::directory::command::recent::add_recent_directory,
@@ -27,7 +28,8 @@ pub fn run() {
             api::web::delete_saved_page,
             api::web::list_saved_pages,
             api::web::edit_saved_page,
-            api::instruction::command::save_instruction,
+            api::instruction::command::upsert_instruction,
+            api::instruction::command::delete_instructions,
             api::instruction::command::list_instructions,
         ])
         .run(tauri::generate_context!())

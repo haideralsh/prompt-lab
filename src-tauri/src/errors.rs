@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 /// Serializable error returned from Tauri commands for store operations.
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct ApplicationError {
     pub code: u8,
     pub message: Option<String>,

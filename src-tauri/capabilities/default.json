@@ -3,5 +3,19 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": ["main"],
-  "permissions": ["core:default", "opener:default", "store:default"]
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "store:default",
+    {
+			"identifier": "opener:allow-open-path",
+			"allow": [
+				{
+					"path": "**"
+				}
+			]
+		},
+    "clipboard-manager:default",
+    "clipboard-manager:allow-write-text"
+  ]
 }

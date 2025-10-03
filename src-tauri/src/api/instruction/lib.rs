@@ -2,6 +2,28 @@ use crate::store::StoreDataKey;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub trait InstructionEntry {
+    fn name(&self) -> &str;
+    fn content(&self) -> &str;
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Instruction {
+    pub name: String,
+    pub content: String,
+}
+
+impl InstructionEntry for Instruction {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn content(&self) -> &str {
+        &self.content
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SavedInstruction {
@@ -9,6 +31,18 @@ pub struct SavedInstruction {
     pub name: String,
     pub content: String,
     pub token_count: Option<usize>,
+    pub added_at: Option<u64>,
+    pub updated_at: Option<u64>,
+}
+
+impl InstructionEntry for SavedInstruction {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn content(&self) -> &str {
+        &self.content
+    }
 }
 
 pub enum ContentLengthMode {
@@ -47,12 +81,16 @@ pub fn get_saved_instructions(
                 .get("tokenCount")
                 .and_then(|v| v.as_u64())
                 .map(|v| v as usize);
+            let added_at = obj.get("addedAt").and_then(|v| v.as_u64());
+            let updated_at = obj.get("updatedAt").and_then(|v| v.as_u64());
 
             Some(SavedInstruction {
                 id: id.to_string(),
                 name,
                 content,
                 token_count,
+                added_at,
+                updated_at,
             })
         })
         .collect()

@@ -1,11 +1,11 @@
-use arboard::Clipboard;
 use std::{collections::HashSet, fs, path::PathBuf};
 use tauri::{AppHandle, Wry};
+use tauri_plugin_clipboard_manager::ClipboardExt;
 
 use crate::{
     api::{
         git::status::git_diff_text,
-        instruction::lib::SavedInstruction,
+        instruction::lib::InstructionEntry,
         tree::{
             index::DirectoryNode,
             render::{render_full_tree, render_selected_tree},
@@ -144,25 +144,26 @@ pub fn build_clipboard_content(
     ))
 }
 
-pub fn format_instruction_entries(entries: &[SavedInstruction]) -> String {
+pub fn format_instruction_entries<T>(entries: &[T]) -> String
+where
+    T: InstructionEntry,
+{
     entries
         .iter()
-        .map(|entry| format!("{}\n{}", entry.name, entry.content))
+        .map(|entry| {
+            format!("{}\n{}", entry.name(), entry.content())
+                .trim()
+                .to_string()
+        })
         .collect::<Vec<_>>()
         .join("\n\n")
 }
 
-fn get_clipboard() -> Result<Clipboard, ApplicationError> {
-    Clipboard::new().map_err(|err| ApplicationError {
-        code: codes::CLIPBOARD_OPEN_ERROR,
-        message: Some(err.to_string()),
-    })
-}
-
-pub fn write_to_clipboard(payload: String) -> Result<(), ApplicationError> {
-    let mut clipboard = get_clipboard()?;
-    clipboard.set_text(payload).map_err(|err| ApplicationError {
-        code: codes::CLIPBOARD_WRITE_ERROR,
-        message: Some(err.to_string()),
-    })
+pub fn write_to_clipboard(app: &AppHandle<Wry>, payload: String) -> Result<(), ApplicationError> {
+    app.clipboard()
+        .write_text(payload)
+        .map_err(|err| ApplicationError {
+            code: codes::CLIPBOARD_WRITE_ERROR,
+            message: Some(err.to_string()),
+        })
 }

@@ -28,9 +28,4 @@ export interface SelectionResult {
   selectedFiles: FileNode[]
 }
 
-export interface ApplicationError {
-  code: number
-  message?: string
-}
-
 export type TreeMode = 'selected' | 'full' | 'none' | undefined

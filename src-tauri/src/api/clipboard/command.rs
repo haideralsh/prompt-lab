@@ -6,7 +6,7 @@ use crate::api::clipboard::lib::{
     get_rendered_tree, write_to_clipboard,
 };
 use crate::api::git::status::git_diff_text;
-use crate::api::instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction};
+use crate::api::instruction::lib::{get_saved_instructions, ContentLengthMode, Instruction};
 use crate::api::tree::index::DirectoryNode;
 use crate::api::web::load_page_contents_from_store;
 use crate::errors::ApplicationError;
@@ -17,7 +17,7 @@ pub(crate) fn copy_instructions_to_clipboard(
     app: AppHandle<Wry>,
     directory_path: String,
     instruction_ids: Vec<String>,
-    instructions: Vec<SavedInstruction>,
+    instructions: Vec<Instruction>,
 ) -> Result<(), ApplicationError> {
     let store = open_store(&app)?;
 
@@ -57,11 +57,12 @@ pub(crate) fn copy_instructions_to_clipboard(
 
     let payload = sections.join("\n\n");
 
-    write_to_clipboard(payload)
+    write_to_clipboard(&app, payload)
 }
 
 #[tauri::command]
 pub(crate) fn copy_diffs_to_clipboard(
+    app: AppHandle<Wry>,
     directory_path: String,
     paths: Vec<String>,
 ) -> Result<(), ApplicationError> {
@@ -70,7 +71,7 @@ pub(crate) fn copy_diffs_to_clipboard(
         None => return Ok(()),
     };
 
-    write_to_clipboard(diff)
+    write_to_clipboard(&app, diff)
 }
 
 #[tauri::command]
@@ -95,11 +96,12 @@ pub(crate) fn copy_all_to_clipboard(
         format!("{}{}", base_payload, web_pages_section)
     };
 
-    write_to_clipboard(payload)
+    write_to_clipboard(&app, payload)
 }
 
 #[tauri::command]
 pub(crate) fn copy_files_to_clipboard(
+    app: AppHandle<Wry>,
     directory_path: String,
     tree_mode: String,
     full_tree: Vec<DirectoryNode>,
@@ -110,7 +112,7 @@ pub(crate) fn copy_files_to_clipboard(
     let payload =
         build_clipboard_content(Vec::new(), &selected_nodes, &rendered_tree, &directory_path)?;
 
-    write_to_clipboard(payload)
+    write_to_clipboard(&app, payload)
 }
 
 #[tauri::command]
@@ -125,5 +127,5 @@ pub(crate) fn copy_pages_to_clipboard(
 
     let payload = parts.join(PAGE_SEPARATOR);
 
-    write_to_clipboard(payload)
+    write_to_clipboard(&app, payload)
 }
