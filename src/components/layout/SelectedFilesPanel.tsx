@@ -10,6 +10,7 @@ import { FileNode, Id, SelectionResult } from '../../types/FileTree'
 import { CopyButton } from '../common/CopyButton'
 import { queue } from '../ToastQueue'
 import { ApplicationError } from '../../helpers/getErrorMessage'
+import { TokenCount } from '../common/TokenCount'
 
 export function SelectedFilesPanel() {
   const {
@@ -152,11 +153,7 @@ export function SelectedFilesPanel() {
                             }}
                             className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                           />
-                          <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm group-hover:text-text-dark group-hover:border-border-light">
-                            {file.tokenCount == null
-                              ? 'counting...'
-                              : file.tokenCount.toLocaleString()}
-                          </span>
+                          <TokenCount count={file.tokenCount} />
                         </span>
                       </span>
                     </>

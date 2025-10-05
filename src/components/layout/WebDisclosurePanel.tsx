@@ -17,6 +17,7 @@ import { CopyButton } from '../common/CopyButton'
 import { EditSavedPage } from './EditSavedPage'
 
 import { preserveSelected } from '../../helpers/preserveSelected'
+import { TokenCount } from '../common/TokenCount'
 
 export interface SavedPageMetadata {
   title: string
@@ -339,9 +340,7 @@ export function WebDisclosurePanel() {
                                 <TrashIcon />
                               </Button>
 
-                              <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
-                                {entry.tokenCount?.toLocaleString() ?? '-'}
-                              </span>
+                              <TokenCount count={entry.tokenCount} />
                             </span>
                           </span>
                         </>

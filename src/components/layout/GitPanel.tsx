@@ -11,6 +11,7 @@ import {
   GitStatusUpdatedEvent,
   GitTokenCountsEvent,
 } from '../../types/git'
+import { TokenCount } from '../common/TokenCount'
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
@@ -236,9 +237,7 @@ export function GitPanel() {
                               className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                             />
                           )}
-                          <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase group-hover:text-text-dark group-hover:border-border-light">
-                            {change.tokenCount?.toLocaleString() ?? '-'}
-                          </span>
+                          <TokenCount count={change.tokenCount} />
                         </span>
                       </span>
                     </>

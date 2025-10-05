@@ -12,6 +12,7 @@ import {
   TriangleDownIcon,
   TriangleRightIcon,
 } from '@radix-ui/react-icons'
+import { TokenCount } from '../common/TokenCount'
 
 interface PanelDisclosureProps {
   id: string
@@ -98,9 +99,7 @@ export function PanelDisclosure({
                 <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
                   {actions}
                 </span>
-                <span className="text-solid-light text-xs border border-border-dark px-1 rounded-sm uppercase mr-2">
-                  {tokenCount && tokenCount.toLocaleString()}
-                </span>
+                <TokenCount count={tokenCount} />
               </div>
             </Heading>
           </Button>
