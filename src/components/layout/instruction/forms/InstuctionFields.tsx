@@ -7,12 +7,12 @@ export interface InstructionFieldsProps {
   title: string
   content: string
   isLoading?: boolean
-  onTitleChange: (value: string) => void
-  onContentChange: (value: string) => void
-  onCancel: () => void
   submitLabel?: string
   rows?: number
   className?: string
+  onTitleChange: (value: string) => void
+  onContentChange: (value: string) => void
+  onCancel: () => void
 }
 
 export function InstructionFields({
