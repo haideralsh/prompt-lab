@@ -1,7 +1,9 @@
 import { Button } from 'react-aria-components'
-import { Instruction } from '../types'
 import { BookmarkIcon, BookmarkFilledIcon } from '@radix-ui/react-icons'
 import { CopyButton } from '../../../common/CopyButton'
+import { TokenCount } from '../../../common/TokenCount'
+import { Instruction } from '../types'
+import { useInstructionTokenCount } from './useInstructionTokenCount'
 
 interface NewInstructionTextareaProps {
   content: string
@@ -18,6 +20,8 @@ export function NewInstructionTextarea({
   onCopy,
   onBookmarkClick,
 }: NewInstructionTextareaProps) {
+  const { tokenCount } = useInstructionTokenCount(content)
+
   return (
     <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid">
       <label className="sr-only" htmlFor="user-instruction">
@@ -46,6 +50,7 @@ export function NewInstructionTextarea({
             onCopy={() => onCopy({ name: '', content })}
             className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
           />
+          <TokenCount count={tokenCount} />
         </div>
       </div>
     </div>

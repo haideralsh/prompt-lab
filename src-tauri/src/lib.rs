@@ -31,6 +31,7 @@ pub fn run() {
             api::instruction::command::upsert_instruction,
             api::instruction::command::delete_instructions,
             api::instruction::command::list_instructions,
+            api::instruction::command::count_instruction_tokens,
         ])
         .run(tauri::generate_context!())
         .expect("An error occurred while running the App");

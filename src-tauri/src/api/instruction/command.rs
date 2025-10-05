@@ -8,7 +8,10 @@ use uuid::Uuid;
 
 use crate::{
     api::{
-        instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
+        instruction::{
+            self,
+            lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
+        },
         tokenize::count_tokens_for_text,
     },
     errors::ApplicationError,
@@ -220,4 +223,17 @@ pub fn list_instructions(
     store.close_resource();
 
     Ok(instructions)
+}
+
+#[tauri::command]
+pub fn count_instruction_tokens(
+    title: Option<String>,
+    content: String,
+) -> Result<usize, ApplicationError> {
+    let instruction = match title {
+        Some(t) => format!("{}\n{}", t, content),
+        None => content,
+    };
+
+    Ok(count_tokens_for_text(&instruction))
 }
