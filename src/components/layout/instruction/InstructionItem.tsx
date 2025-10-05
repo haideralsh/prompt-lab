@@ -1,8 +1,8 @@
 import { Button, Checkbox } from 'react-aria-components'
 import { CheckIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons'
 import { SavedInstructionMetadata, Instruction } from './types'
-import { InlineEditForm } from './InlineEditForm'
 import { CopyButton } from '../../common/CopyButton'
+import { EditInstructionForm } from './forms/EditInstructionForm'
 
 interface InstructionItemProps {
   instruction: SavedInstructionMetadata
@@ -46,7 +46,7 @@ export function InstructionItem({
   if (isEditing) {
     return (
       <li>
-        <InlineEditForm
+        <EditInstructionForm
           instruction={instruction}
           isLoading={isLoading}
           onSave={handleSave}

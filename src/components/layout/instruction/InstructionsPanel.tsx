@@ -6,7 +6,7 @@ import { useSidebarContext } from '../../Sidebar/SidebarContext'
 import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import { queue } from '../../ToastQueue'
 import { preserveSelected } from '../../../helpers/preserveSelected'
-import { InstructionForm } from './InstructionForm'
+import { InstructionForm } from './forms/InstructionForm'
 import type {
   SavedInstructionMetadata,
   Instruction,
@@ -193,7 +193,7 @@ export function InstructionsPanel() {
       id="instructions"
       label="Instructions"
       count={instructions.length}
-      panelClassName="p-2 flex flex-col gap-1"
+      panelClassName="p-2 flex flex-col"
       isGroupSelected={isAllSelected}
       isGroupIndeterminate={isIndeterminate}
       onSelectAll={handleSelectAll}
