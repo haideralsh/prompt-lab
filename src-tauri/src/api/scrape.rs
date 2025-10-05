@@ -2,16 +2,15 @@ use crate::errors::{codes, ApplicationError};
 use twars_url2md::url::process_url_with_content;
 
 #[derive(Debug, Clone)]
-pub struct ScrapedPage {
+pub struct SavedWebPage {
     pub title: String,
     pub url: String,
     pub markdown: String,
+    pub favicon: Option<String>,
 }
 
-const MAX_RETRIES: u32 = 1;
-
-pub async fn page_to_md(url: &str) -> Result<ScrapedPage, ApplicationError> {
-    let markdown = match process_url_with_content(url, None, false, MAX_RETRIES).await {
+pub async fn page_to_md(url: &str) -> Result<SavedWebPage, ApplicationError> {
+    let markdown = match process_url_with_content(url, None, false, 3).await {
         Ok(Some(content)) if content.trim().is_empty() => {
             return Err(ApplicationError {
                 code: codes::MARKDOWN_CONVERT_ERROR,
@@ -35,10 +34,11 @@ pub async fn page_to_md(url: &str) -> Result<ScrapedPage, ApplicationError> {
 
     let title = extract_title(&markdown).unwrap_or_else(|| url.to_string());
 
-    Ok(ScrapedPage {
+    Ok(SavedWebPage {
         title,
         url: url.to_string(),
         markdown,
+        favicon: None,
     })
 }
 
