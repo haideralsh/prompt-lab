@@ -30,6 +30,7 @@ export function InstructionsPanel() {
     string | null
   >(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
+  const [isFormIncluded, setIsFormIncluded] = useState(true)
 
   const selectedTokenCount = instructions.reduce((accumulator, entry) => {
     if (selectedInstructionIds.has(entry.id)) {
@@ -38,12 +39,15 @@ export function InstructionsPanel() {
     return accumulator
   }, 0)
 
+  const hasFormCheckbox = editingInstructionId === null
+  const totalSelectableCount = instructions.length + Number(hasFormCheckbox)
+  const selectedCount =
+    selectedInstructionIds.size + Number(hasFormCheckbox && isFormIncluded)
+
   const isAllSelected =
-    instructions.length > 0 &&
-    selectedInstructionIds.size === instructions.length
+    totalSelectableCount > 0 && selectedCount === totalSelectableCount
   const isIndeterminate =
-    selectedInstructionIds.size > 0 &&
-    selectedInstructionIds.size < instructions.length
+    selectedCount > 0 && selectedCount < totalSelectableCount
 
   useEffect(() => {
     loadInstructions()
@@ -66,10 +70,12 @@ export function InstructionsPanel() {
     setSelectedInstructionIds(
       new Set(instructions.map((instruction) => instruction.id))
     )
+    setIsFormIncluded(true)
   }
 
   function handleDeselectAll() {
     setSelectedInstructionIds(new Set())
+    setIsFormIncluded(false)
   }
 
   function handleSelectionChange(values: string[]) {
@@ -230,6 +236,8 @@ export function InstructionsPanel() {
           onCancel={handleCancelNew}
           onStartAdd={handleStartAddNew}
           onCopy={handleCopyInstruction}
+          isIncluded={isFormIncluded}
+          onIncludeChange={(selected) => setIsFormIncluded(selected)}
         />
       )}
     </PanelDisclosure>

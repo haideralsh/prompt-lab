@@ -16,6 +16,8 @@ interface InstructionFormProps {
   onCancel: () => void
   onStartAdd: () => void
   onCopy: (instruction: Instruction) => Promise<void>
+  isIncluded: boolean
+  onIncludeChange: (selected: boolean) => void
 }
 
 export function InstructionForm({
@@ -25,10 +27,11 @@ export function InstructionForm({
   onCancel,
   onStartAdd,
   onCopy,
+  isIncluded,
+  onIncludeChange,
 }: InstructionFormProps) {
   const [name, setName] = useState('')
   const [content, setContent] = useState('')
-  const [isIncluded, setIsIncluded] = useState(true)
 
   function reset() {
     setName('')
@@ -54,10 +57,6 @@ export function InstructionForm({
     onStartAdd()
   }
 
-  function handleIncludeChange(selected: boolean) {
-    setIsIncluded(selected)
-  }
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="mr-2 mt-0.5 mb-2">
@@ -66,7 +65,7 @@ export function InstructionForm({
             slot="selection"
             aria-label="Include instructions"
             isSelected={isIncluded}
-            onChange={handleIncludeChange}
+            onChange={onIncludeChange}
             className="group mt-1 flex-shrink-0 px-2"
           >
             {({ isSelected }) => (

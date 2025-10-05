@@ -1,5 +1,4 @@
 import { Button, Checkbox } from 'react-aria-components'
-import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react'
 import { CheckIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons'
 import { SavedInstructionMetadata, Instruction } from './types'
 import { InlineEditForm } from './InlineEditForm'
