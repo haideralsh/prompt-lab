@@ -3,7 +3,6 @@ import { BookmarkIcon, BookmarkFilledIcon } from '@radix-ui/react-icons'
 import { CopyButton } from '../../../common/CopyButton'
 import { TokenCount } from '../../../common/TokenCount'
 import { Instruction } from '../types'
-import { useInstructionTokenCount } from './useInstructionTokenCount'
 
 interface NewInstructionTextareaProps {
   content: string
@@ -11,6 +10,7 @@ interface NewInstructionTextareaProps {
   onContentChange: (value: string) => void
   onCopy: (instruction: Instruction) => Promise<void>
   onBookmarkClick: () => void
+  tokenCount: number
 }
 
 export function NewInstructionTextarea({
@@ -19,9 +19,8 @@ export function NewInstructionTextarea({
   onContentChange,
   onCopy,
   onBookmarkClick,
+  tokenCount,
 }: NewInstructionTextareaProps) {
-  const { tokenCount } = useInstructionTokenCount(content)
-
   return (
     <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid mt-0.75">
       <label className="sr-only" htmlFor="user-instruction">

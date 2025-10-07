@@ -19,6 +19,7 @@ import {
   listInstructions,
   upsertInstruction,
 } from './handlers'
+import { useInstructionTokenCount } from './forms/useInstructionTokenCount'
 
 export function InstructionsPanel() {
   const { directory } = useSidebarContext()
@@ -35,6 +36,9 @@ export function InstructionsPanel() {
   const [hasUnsavedInstruction, setHasUnsavedInstruction] = useState(false)
   const [unsavedInstruction, setUnsavedInstruction] =
     useState<Instruction | null>(null)
+  const { tokenCount: unsavedTokenCount } = useInstructionTokenCount(
+    unsavedInstruction?.content ?? ''
+  )
 
   const selectedTokenCount = instructions.reduce((accumulator, entry) => {
     if (selectedInstructionIds.has(entry.id)) {
@@ -44,6 +48,12 @@ export function InstructionsPanel() {
   }, 0)
 
   const hasFormCheckbox = editingInstructionId === null
+  const draftTokenCount =
+    hasFormCheckbox && isFormIncluded && hasUnsavedInstruction
+      ? unsavedTokenCount
+      : 0
+  const totalTokenCount = selectedTokenCount + draftTokenCount
+
   const totalSelectableCount = instructions.length + Number(hasFormCheckbox)
   const selectedCount =
     selectedInstructionIds.size + Number(hasFormCheckbox && isFormIncluded)
@@ -57,13 +67,17 @@ export function InstructionsPanel() {
     loadInstructions()
   }, [directory?.path])
 
+  function clearUnsavedInstruction() {
+    setUnsavedInstruction(null)
+    setHasUnsavedInstruction(false)
+  }
+
   async function loadInstructions() {
     try {
       const loadedInstructions = await listInstructions(directory.path)
       setInstructions(loadedInstructions)
       setSelectedInstructionIds(new Set())
-      setUnsavedInstruction(null)
-      setHasUnsavedInstruction(false)
+      clearUnsavedInstruction()
     } catch (error) {
       queue.add({
         title: 'Failed to load saved instructions',
@@ -90,6 +104,7 @@ export function InstructionsPanel() {
 
   function handleEdit(instruction: SavedInstructionMetadata) {
     if (!editingInstructionId && !isAddingNew) {
+      clearUnsavedInstruction()
       setEditingInstructionId(instruction.id)
     }
   }
@@ -240,7 +255,7 @@ export function InstructionsPanel() {
       isGroupIndeterminate={isIndeterminate}
       onSelectAll={handleSelectAll}
       onDeselectAll={handleDeselectAll}
-      tokenCount={selectedTokenCount}
+      tokenCount={totalTokenCount}
       actions={
         <CopyButton
           onCopy={handleCopySelectedInstructions}
@@ -280,6 +295,7 @@ export function InstructionsPanel() {
           editingInstruction={null}
           isLoading={isLoading}
           isAddingNew={isAddingNew}
+          draftTokenCount={unsavedTokenCount}
           onSave={handleSaveNew}
           onCancel={handleCancelNew}
           onStartAdd={handleStartAddNew}

@@ -17,11 +17,13 @@ interface InstructionFormProps {
   onIncludeChange: (selected: boolean) => void
   onUnsavedInstructionPresenceChange: (hasUnsavedInstruction: boolean) => void
   onUnsavedInstructionChange: (instruction: Instruction | null) => void
+  draftTokenCount: number
 }
 
 export function InstructionForm({
   isLoading,
   isAddingNew,
+  draftTokenCount,
   onSave,
   onCancel,
   onStartAdd,
@@ -53,7 +55,8 @@ export function InstructionForm({
 
   function handleContentChange(newContent: string) {
     setContent(newContent)
-    onUnsavedInstructionPresenceChange(newContent.trim().length > 0)
+    const trimmedContent = newContent.trim()
+    onUnsavedInstructionPresenceChange(trimmedContent.length > 0)
     updateDraft(name, newContent)
   }
 
@@ -114,6 +117,7 @@ export function InstructionForm({
               onContentChange={handleContentChange}
               onCopy={onCopy}
               onBookmarkClick={handleBookmarkClick}
+              tokenCount={draftTokenCount}
             />
           )}
         </div>
