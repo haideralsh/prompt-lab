@@ -89,10 +89,7 @@ export function InstructionItem({
                 >
                   <Pencil1Icon />
                 </Button>
-                <CopyButton
-                  onCopy={handleCopyClick}
-                  className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                />
+                <CopyButton onCopy={handleCopyClick} />
                 <Button
                   className="text-red/75 hover:text-red data-[disabled]:text-red/75"
                   onPress={handleDeleteClick}

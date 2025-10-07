@@ -260,7 +260,6 @@ export function InstructionsPanel() {
         <CopyButton
           onCopy={handleCopySelectedInstructions}
           isDisabled={!canCopySelection}
-          className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
         />
       }
     >

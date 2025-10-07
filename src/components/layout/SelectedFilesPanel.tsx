@@ -86,13 +86,10 @@ export function SelectedFilesPanel() {
       }}
       tokenCount={totalTokenCount}
       actions={
-        sortedFiles.length ? (
-          <CopyButton
-            onCopy={() => copyFiles(sortedFiles.map((file) => file.path))}
-            className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
-            isDisabled={sortedFiles.length === 0}
-          />
-        ) : undefined
+        <CopyButton
+          onCopy={() => copyFiles(sortedFiles.map((file) => file.path))}
+          isDisabled={sortedFiles.length === 0}
+        />
       }
     >
       {sortedFiles.length > 0 ? (
@@ -151,7 +148,6 @@ export function SelectedFilesPanel() {
                             onCopy={async () => {
                               await copyFiles([file.path])
                             }}
-                            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                           />
                           <TokenCount count={file.tokenCount} />
                         </span>

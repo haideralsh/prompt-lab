@@ -47,7 +47,7 @@ export function NewInstructionTextarea({
           </Button>
           <CopyButton
             onCopy={() => onCopy({ name: '', content })}
-            className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+            isDisabled={content.trim().length === 0}
           />
           <TokenCount count={tokenCount} />
         </div>

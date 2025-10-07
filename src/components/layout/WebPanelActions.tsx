@@ -6,12 +6,14 @@ type WebPanelActionsProps = {
   isAddingNewPage: boolean
   onShowAddNewPress: () => void
   onCopyToClipboardPress: () => Promise<void>
+  savedPagesCount: number
 }
 
 export function WebPanelActions({
   isAddingNewPage,
   onShowAddNewPress,
   onCopyToClipboardPress,
+  savedPagesCount,
 }: WebPanelActionsProps) {
   return (
     <>
@@ -26,7 +28,7 @@ export function WebPanelActions({
       )}
       <CopyButton
         onCopy={onCopyToClipboardPress}
-        className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
+        isDisabled={savedPagesCount === 0}
       />
     </>
   )

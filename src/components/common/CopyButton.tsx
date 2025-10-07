@@ -28,8 +28,12 @@ export function CopyButton({
   }
 
   return (
-    <Button onPress={handlePress} {...props}>
-      {copied ? <CheckIcon className="text-green" /> : <CopyIcon />}
+    <Button className="group" onPress={handlePress} {...props}>
+      {copied ? (
+        <CheckIcon className="text-green" />
+      ) : (
+        <CopyIcon className="text-text-dark/75 hover:text-text-dark group-data-[disabled]:hover:text-text-dark/50 group-data-[disabled]:text-text-dark/50" />
+      )}
     </Button>
   )
 }

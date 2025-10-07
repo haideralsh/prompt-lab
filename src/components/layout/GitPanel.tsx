@@ -179,10 +179,10 @@ export function GitPanel() {
       tokenCount={selectedTokenCount}
       actions={
         <CopyButton
+          isDisabled={selectedDiffIds.size === 0}
           onCopy={async () => {
             await copyToClipboard(selectedDiffIds)
           }}
-          className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
         />
       }
     >
@@ -234,7 +234,6 @@ export function GitPanel() {
                               onCopy={async () => {
                                 await copyToClipboard(change.path)
                               }}
-                              className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                             />
                           )}
                           <TokenCount count={change.tokenCount} />

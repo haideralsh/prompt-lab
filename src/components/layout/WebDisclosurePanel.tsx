@@ -261,6 +261,7 @@ export function WebDisclosurePanel() {
           isAddingNewPage={isAddingNewPage}
           onShowAddNewPress={showAddNewPageForm}
           onCopyToClipboardPress={handleCopySelectedToClipboard}
+          savedPagesCount={savedPages.length}
         />
       }
     >
@@ -344,7 +345,6 @@ export function WebDisclosurePanel() {
                               </Button>
                               <CopyButton
                                 onCopy={() => handleCopyToClipboard(entry)}
-                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
                                 isDisabled={isReloading}
                               />
                               <Button
