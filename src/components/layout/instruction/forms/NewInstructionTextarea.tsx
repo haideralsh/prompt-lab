@@ -23,7 +23,7 @@ export function NewInstructionTextarea({
   const { tokenCount } = useInstructionTokenCount(content)
 
   return (
-    <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid">
+    <div className="flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid mt-0.75">
       <label className="sr-only" htmlFor="user-instruction">
         Enter your instructions here...
       </label>

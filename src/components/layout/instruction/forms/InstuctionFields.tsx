@@ -40,7 +40,6 @@ export function InstructionFields({
   return (
     <div
       className={clsx(
-        // built-in border styles
         'flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid px-1.5 py-1 mt-1',
         className
       )}
