@@ -8,10 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     api::{
-        instruction::{
-            self,
-            lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
-        },
+        instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
         tokenize::count_tokens_for_text,
     },
     errors::ApplicationError,

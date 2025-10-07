@@ -8,7 +8,7 @@ use crate::api::clipboard::lib::{
 use crate::api::git::status::git_diff_text;
 use crate::api::instruction::lib::{get_saved_instructions, ContentLengthMode, Instruction};
 use crate::api::tree::index::DirectoryNode;
-use crate::api::web::load_page_contents_from_store;
+use crate::api::web::lib::load_page_contents_from_store;
 use crate::errors::ApplicationError;
 use crate::store::{open_store, StoreCategoryKey};
 

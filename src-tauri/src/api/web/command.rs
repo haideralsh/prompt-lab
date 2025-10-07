@@ -1,95 +1,17 @@
 use crate::{
     api::{
-        scrape::{page_to_md, ScrapedPage},
         tokenize::count_tokens_for_text,
+        web::{
+            favicon::save_favicon,
+            lib::{extract_saved_pages_from_directory, SavedPageMetadata},
+            scrape::{page_to_md, SavedWebPage},
+        },
     },
     errors::ApplicationError,
     store::{open_store, save_store, StoreCategoryKey, StoreDataKey},
 };
-use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use tauri::{AppHandle, Wry};
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct SavedPageMetadata {
-    pub url: String,
-    pub title: String,
-    pub token_count: Option<usize>,
-}
-
-fn extract_saved_pages_from_directory(value: &Value) -> Vec<SavedPageMetadata> {
-    let Some(directory_object) = value.as_object() else {
-        return Vec::new();
-    };
-
-    let Some(saved_pages_value) = directory_object.get(StoreDataKey::SAVED_WEB_PAGES) else {
-        return Vec::new();
-    };
-
-    let Some(saved_pages_object) = saved_pages_value.as_object() else {
-        return Vec::new();
-    };
-
-    saved_pages_object
-        .values()
-        .filter_map(|page_value| {
-            let page_object = page_value.as_object()?;
-            let title = page_object.get("title")?.as_str()?;
-            let url = page_object.get("url")?.as_str()?;
-
-            Some(SavedPageMetadata {
-                url: url.to_string(),
-                title: title.to_string(),
-                token_count: page_object
-                    .get("tokenCount")
-                    .and_then(|v| v.as_u64())
-                    .map(|v| v as usize),
-            })
-        })
-        .collect()
-}
-
-pub(crate) fn load_page_contents_from_store(
-    app: &AppHandle<Wry>,
-    directory_path: &str,
-    urls: &[String],
-) -> Result<Vec<String>, ApplicationError> {
-    let store = open_store(app)?;
-    let parts = (|| {
-        let data_object = store
-            .get(StoreCategoryKey::DATA)
-            .and_then(|value| value.as_object().cloned())?;
-
-        let directory_object = data_object
-            .get(directory_path)
-            .and_then(|value| value.as_object().cloned())?;
-
-        let saved_pages_object = directory_object
-            .get(StoreDataKey::SAVED_WEB_PAGES)
-            .and_then(|value| value.as_object().cloned())?;
-
-        Some(
-            urls.iter()
-                .filter_map(|url| {
-                    let page_value = saved_pages_object.get(url.as_str())?;
-                    let content = page_value.get("content")?.as_str()?;
-                    let url = page_value.get("url")?.as_str()?;
-
-                    Some(format!(
-                        "The following content was fetched from: {}\n{}",
-                        url, content
-                    ))
-                })
-                .collect(),
-        )
-    })()
-    .unwrap_or_default();
-
-    store.close_resource();
-
-    Ok(parts)
-}
 
 #[tauri::command]
 pub async fn save_page_as_md(
@@ -99,21 +21,27 @@ pub async fn save_page_as_md(
 ) -> Result<SavedPageMetadata, ApplicationError> {
     let store = open_store(&app)?;
 
-    // page_to_md already returns ApplicationError, so just propagate it
-    let scraped_page = page_to_md(&url).await?;
+    let saved_web_page = page_to_md(&url).await?;
 
-    let ScrapedPage {
+    let SavedWebPage {
         url: scraped_url,
         title,
         markdown,
-    } = scraped_page;
+        favicon_url,
+    } = saved_web_page;
 
     let token_count = count_tokens_for_text(&markdown);
+
+    let favicon_path = match favicon_url {
+        Some(ref favicon_url) => save_favicon(&app, favicon_url).await,
+        None => None,
+    };
 
     let metadata = SavedPageMetadata {
         url: scraped_url.clone(),
         title: title.clone(),
         token_count: Some(token_count),
+        favicon_path: favicon_path.clone(),
     };
 
     let mut data: Map<String, Value> = store
@@ -148,6 +76,7 @@ pub async fn save_page_as_md(
                 "title": title,
                 "content": markdown,
                 "tokenCount": token_count,
+                "faviconPath": favicon_path,
             }),
         );
     }

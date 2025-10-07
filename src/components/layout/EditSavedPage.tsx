@@ -4,7 +4,11 @@ import { invoke } from '@tauri-apps/api/core'
 import { queue } from '../ToastQueue'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
-import { SavedPageMetadata, SavedPages } from './WebDisclosurePanel'
+import {
+  SavedPageMetadata,
+  SavedPages,
+  fetchSavedPages,
+} from './WebDisclosurePanel'
 
 type EditSavedPageProps = {
   page: SavedPageMetadata
@@ -52,9 +56,7 @@ export function EditSavedPage({ page, onSave, onCancel }: EditSavedPageProps) {
         newTitle: trimmedTitle,
       })
 
-      const pages = await invoke<SavedPages>('list_saved_pages', {
-        directoryPath: directory.path,
-      })
+      const pages = await fetchSavedPages(directory.path)
 
       setSelectedPagesIds((selectedUrls) =>
         preserveSelectedPages(pages, selectedUrls),

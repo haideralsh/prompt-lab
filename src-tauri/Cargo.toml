@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["devtools", "test"] }
+tauri = { version = "2", features = [ "protocol-asset", "devtools", "test"] }
 tauri-plugin-opener = "2"
 tauri-plugin-clipboard-manager = "2"
 serde = { version = "1", features = ["derive"] }
@@ -29,6 +29,8 @@ ignore = "0.4"
 tiktoken-rs = "0.7"
 git2 = { version = "0.18", features = ["vendored-libgit2"] }
 twars-url2md = "1.4.2" 
-tokio = { version = "1", features = ["full"] }
 notify = "6"
 uuid = { version = "1", features = ["v4"] }
+reqwest = { version = "0.11", features = ["json"] }
+scraper = "0.18"
+url = "2.5"

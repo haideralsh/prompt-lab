@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
   CheckIcon,
@@ -18,14 +18,50 @@ import { EditSavedPage } from './EditSavedPage'
 
 import { preserveSelected } from '../../helpers/preserveSelected'
 import { TokenCount } from '../common/TokenCount'
+import { appDataDir, join } from '@tauri-apps/api/path'
 
 export interface SavedPageMetadata {
   title: string
   url: string
   tokenCount: number
+  faviconPath?: string | null
 }
 
-export type SavedPages = SavedPageMetadata[]
+export type SavedPages = readonly SavedPageMetadata[]
+
+export async function fetchSavedPages(
+  directoryPath: string
+): Promise<SavedPages> {
+  try {
+    const [pages, appDataDirPath] = await Promise.all([
+      invoke<SavedPages>('list_saved_pages', { directoryPath }),
+      appDataDir(),
+    ])
+
+    const faviconPromises = pages
+      .filter((page) => page.faviconPath)
+      .map(async (page) => {
+        const filePath = await join(appDataDirPath, page.faviconPath!)
+        return { page, faviconPath: convertFileSrc(filePath) }
+      })
+
+    const convertedFavicons = await Promise.all(faviconPromises)
+    for (const { page, faviconPath } of convertedFavicons) {
+      page.faviconPath = faviconPath
+    }
+
+    return pages
+  } catch (error) {
+    const message = getErrorMessage(error)
+
+    queue.add({
+      title: 'Failed to load saved pages',
+      description: message,
+    })
+
+    return []
+  }
+}
 
 export function WebDisclosurePanel() {
   const { directory, selectedPagesIds, setSelectedPagesIds } =
@@ -42,20 +78,9 @@ export function WebDisclosurePanel() {
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
-      try {
-        const pages = await invoke<SavedPages>('list_saved_pages', {
-          directoryPath: selectedDirectoryPath,
-        })
-        setSavedPages(pages)
-        setSelectedPagesIds(() => new Set())
-      } catch (error) {
-        const message = getErrorMessage(error)
-
-        queue.add({
-          title: 'Failed to load saved pages',
-          description: message,
-        })
-      }
+      const pages = await fetchSavedPages(selectedDirectoryPath)
+      setSavedPages(pages)
+      setSelectedPagesIds(() => new Set())
     }
 
     void loadSavedPages(directory.path)
@@ -93,9 +118,7 @@ export function WebDisclosurePanel() {
         url: trimmedUrl,
       })
 
-      const pages = await invoke<SavedPages>('list_saved_pages', {
-        directoryPath: directory.path,
-      })
+      const pages = await fetchSavedPages(directory.path)
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
@@ -131,9 +154,7 @@ export function WebDisclosurePanel() {
         url: entry.url,
       })
 
-      const pages = await invoke<SavedPages>('list_saved_pages', {
-        directoryPath: directory.path,
-      })
+      const pages = await fetchSavedPages(directory.path)
 
       setSavedPages(pages)
       setSelectedPagesIds((prev) => {
@@ -171,9 +192,7 @@ export function WebDisclosurePanel() {
         url: entry.url,
       })
 
-      const pages = await invoke<SavedPages>('list_saved_pages', {
-        directoryPath: directory.path,
-      })
+      const pages = await fetchSavedPages(directory.path)
 
       setSavedPages(pages)
       setSelectedPagesIds((prev) => {
@@ -296,6 +315,13 @@ export function WebDisclosurePanel() {
                             {isSelected && <CheckIcon />}
                           </span>
                           <span className="flex items-center gap-1.5 w-full">
+                            {entry.faviconPath && (
+                              <img
+                                src={entry.faviconPath}
+                                alt={entry.title}
+                                className="size-[15px] rounded-xs"
+                              />
+                            )}
                             <span className="font-normal shrink-0 text-text-dark">
                               {entry.title}
                             </span>

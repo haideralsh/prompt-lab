@@ -3,7 +3,7 @@
  * by keeping only the IDs that still exist in the new list
  */
 export function preserveSelected<T>(
-  allItems: T[],
+  allItems: readonly T[],
   selectedIds: Set<string>,
   idGetter: (item: T) => string
 ): Set<string> {
