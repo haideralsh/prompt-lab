@@ -66,6 +66,10 @@ pub(crate) fn copy_diffs_to_clipboard(
     directory_path: String,
     paths: Vec<String>,
 ) -> Result<(), ApplicationError> {
+    if paths.is_empty() {
+        return Ok(());
+    }
+
     let diff = match git_diff_text(&directory_path, paths) {
         Some(content) => content,
         None => return Ok(()),
