@@ -7,6 +7,7 @@ import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import { queue } from '../../ToastQueue'
 import { preserveSelected } from '../../../helpers/preserveSelected'
 import { InstructionForm } from './forms/InstructionForm'
+import { CopyButton } from '../../common/CopyButton'
 import type {
   SavedInstructionMetadata,
   Instruction,
@@ -31,6 +32,9 @@ export function InstructionsPanel() {
   >(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [isFormIncluded, setIsFormIncluded] = useState(true)
+  const [hasUnsavedInstruction, setHasUnsavedInstruction] = useState(false)
+  const [unsavedInstruction, setUnsavedInstruction] =
+    useState<Instruction | null>(null)
 
   const selectedTokenCount = instructions.reduce((accumulator, entry) => {
     if (selectedInstructionIds.has(entry.id)) {
@@ -58,6 +62,8 @@ export function InstructionsPanel() {
       const loadedInstructions = await listInstructions(directory.path)
       setInstructions(loadedInstructions)
       setSelectedInstructionIds(new Set())
+      setUnsavedInstruction(null)
+      setHasUnsavedInstruction(false)
     } catch (error) {
       queue.add({
         title: 'Failed to load saved instructions',
@@ -98,6 +104,34 @@ export function InstructionsPanel() {
 
   async function handleCopyInstruction(instruction: Instruction) {
     await copyInstructionsToClipboard(directory.path, [], [instruction])
+  }
+
+  async function handleCopySelectedInstructions() {
+    const instructionIds = Array.from(selectedInstructionIds)
+    const shouldIncludeDraft =
+      hasFormCheckbox &&
+      isFormIncluded &&
+      unsavedInstruction &&
+      unsavedInstruction.content.trim().length > 0
+    const draftInstructions =
+      shouldIncludeDraft && unsavedInstruction
+        ? [
+            {
+              name: unsavedInstruction.name.trim(),
+              content: unsavedInstruction.content,
+            },
+          ]
+        : []
+
+    if (instructionIds.length === 0 && draftInstructions.length === 0) {
+      return
+    }
+
+    await copyInstructionsToClipboard(
+      directory.path,
+      instructionIds,
+      draftInstructions
+    )
   }
 
   async function handleDelete(id: string) {
@@ -188,18 +222,32 @@ export function InstructionsPanel() {
     }
   }
 
+  const hasCopyableUnsavedInstruction =
+    hasFormCheckbox &&
+    isFormIncluded &&
+    Boolean(unsavedInstruction && unsavedInstruction.content.trim().length > 0)
+
+  const canCopySelection =
+    selectedInstructionIds.size > 0 || hasCopyableUnsavedInstruction
+
   return (
     <PanelDisclosure
       id="instructions"
       label="Instructions"
-      count={instructions.length}
+      count={instructions.length + Number(hasUnsavedInstruction)}
       panelClassName="p-2 flex flex-col"
       isGroupSelected={isAllSelected}
       isGroupIndeterminate={isIndeterminate}
       onSelectAll={handleSelectAll}
       onDeselectAll={handleDeselectAll}
       tokenCount={selectedTokenCount}
-      actions={null}
+      actions={
+        <CopyButton
+          onCopy={handleCopySelectedInstructions}
+          isDisabled={!canCopySelection}
+          className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
+        />
+      }
     >
       {instructions.length > 0 && (
         <CheckboxGroup
@@ -238,6 +286,10 @@ export function InstructionsPanel() {
           onCopy={handleCopyInstruction}
           isIncluded={isFormIncluded}
           onIncludeChange={(selected) => setIsFormIncluded(selected)}
+          onUnsavedInstructionPresenceChange={(exists) =>
+            setHasUnsavedInstruction(exists)
+          }
+          onUnsavedInstructionChange={setUnsavedInstruction}
         />
       )}
     </PanelDisclosure>

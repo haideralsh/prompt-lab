@@ -30,7 +30,7 @@ export function EditInstructionForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid grid-cols-[auto_1fr] gap-x-3 px-2 py-0.5 mb-1"
+      className="grid grid-cols-[auto_1fr] gap-x-3 px-2 mb-1"
     >
       <span className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-accent-border-mid bg-accent-interactive-light flex-shrink-0 mt-2">
         <CheckIcon />

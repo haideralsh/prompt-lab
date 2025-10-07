@@ -15,6 +15,8 @@ interface InstructionFormProps {
   onCopy: (instruction: Instruction) => Promise<void>
   isIncluded: boolean
   onIncludeChange: (selected: boolean) => void
+  onUnsavedInstructionPresenceChange: (hasUnsavedInstruction: boolean) => void
+  onUnsavedInstructionChange: (instruction: Instruction | null) => void
 }
 
 export function InstructionForm({
@@ -26,6 +28,8 @@ export function InstructionForm({
   onCopy,
   isIncluded,
   onIncludeChange,
+  onUnsavedInstructionPresenceChange,
+  onUnsavedInstructionChange,
 }: InstructionFormProps) {
   const [name, setName] = useState('')
   const [content, setContent] = useState('')
@@ -33,6 +37,29 @@ export function InstructionForm({
   function reset() {
     setName('')
     setContent('')
+    onUnsavedInstructionChange(null)
+    onUnsavedInstructionPresenceChange(false)
+  }
+
+  function updateDraft(nextName: string, nextContent: string) {
+    const hasContent = nextContent.trim().length > 0
+    if (!hasContent) {
+      onUnsavedInstructionChange(null)
+      return
+    }
+
+    onUnsavedInstructionChange({ name: nextName, content: nextContent })
+  }
+
+  function handleContentChange(newContent: string) {
+    setContent(newContent)
+    onUnsavedInstructionPresenceChange(newContent.trim().length > 0)
+    updateDraft(name, newContent)
+  }
+
+  function handleNameChange(newName: string) {
+    setName(newName)
+    updateDraft(newName, content)
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -76,15 +103,15 @@ export function InstructionForm({
               name={name}
               content={content}
               isLoading={isLoading}
-              onNameChange={setName}
-              onContentChange={setContent}
+              onNameChange={handleNameChange}
+              onContentChange={handleContentChange}
               onCancel={handleCancel}
             />
           ) : (
             <NewInstructionTextarea
               content={content}
               isLoading={isLoading}
-              onContentChange={setContent}
+              onContentChange={handleContentChange}
               onCopy={onCopy}
               onBookmarkClick={handleBookmarkClick}
             />
