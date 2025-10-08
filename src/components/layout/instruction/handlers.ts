@@ -1,20 +1,42 @@
 import { invoke } from '@tauri-apps/api/core'
+import { queue } from '../../ToastQueue'
+import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import type { Instruction, SavedInstructionMetadata, SavedInstructions } from './types'
 
-export async function listInstructions(directoryPath: string) {
-  return invoke<SavedInstructions>('list_instructions', {
-    directoryPath,
-  })
+export async function listInstructions(
+  directoryPath: string
+): Promise<SavedInstructions | null> {
+  try {
+    return await invoke<SavedInstructions>('list_instructions', {
+      directoryPath,
+    })
+  } catch (error) {
+    queue.add({
+      title: 'Failed to load saved instructions',
+      description: getErrorMessage(error),
+    })
+
+    return null
+  }
 }
 
 export async function getInstruction(
   directoryPath: string,
   instructionId: string
-) {
-  return invoke<SavedInstructionMetadata>('get_instruction', {
-    directoryPath,
-    instructionId,
-  })
+): Promise<SavedInstructionMetadata | null> {
+  try {
+    return await invoke<SavedInstructionMetadata>('get_instruction', {
+      directoryPath,
+      instructionId,
+    })
+  } catch (error) {
+    queue.add({
+      title: 'Failed to load instruction',
+      description: getErrorMessage(error),
+    })
+
+    return null
+  }
 }
 
 export async function upsertInstruction(
@@ -22,39 +44,68 @@ export async function upsertInstruction(
   name: string,
   content: string,
   instructionId?: string
-) {
-  await invoke<string>('upsert_instruction', {
-    directoryPath,
-    instructionId,
-    name,
-    content,
-  })
+): Promise<SavedInstructions | null> {
+  try {
+    await invoke<string>('upsert_instruction', {
+      directoryPath,
+      instructionId,
+      name,
+      content,
+    })
 
-  return listInstructions(directoryPath)
+    return await listInstructions(directoryPath)
+  } catch (error) {
+    queue.add({
+      title: instructionId
+        ? 'Failed to update saved instruction'
+        : 'Failed to save saved instruction',
+      description: getErrorMessage(error),
+    })
+
+    return null
+  }
 }
 
 export async function deleteInstructions(
   directoryPath: string,
   instructionsIds: string[]
-) {
-  await invoke<string>('delete_instructions', {
-    directoryPath,
-    instructionsIds,
-  })
+): Promise<SavedInstructions | null> {
+  try {
+    await invoke<string>('delete_instructions', {
+      directoryPath,
+      instructionsIds,
+    })
 
-  return listInstructions(directoryPath)
+    return await listInstructions(directoryPath)
+  } catch (error) {
+    queue.add({
+      title: 'Failed to delete saved instruction',
+      description: getErrorMessage(error),
+    })
+
+    return null
+  }
 }
 
 export async function copyInstructionsToClipboard(
   directoryPath: string,
   instructionIds: string[],
   instructions: Instruction[]
-) {
-  await invoke<string>('copy_instructions_to_clipboard', {
-    directoryPath,
-    instructionIds,
-    instructions,
-  })
+): Promise<SavedInstructions | null> {
+  try {
+    await invoke<string>('copy_instructions_to_clipboard', {
+      directoryPath,
+      instructionIds,
+      instructions,
+    })
 
-  return listInstructions(directoryPath)
+    return await listInstructions(directoryPath)
+  } catch (error) {
+    queue.add({
+      title: 'Failed to copy instructions',
+      description: getErrorMessage(error),
+    })
+
+    return null
+  }
 }
