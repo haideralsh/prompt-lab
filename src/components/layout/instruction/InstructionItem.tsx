@@ -72,11 +72,11 @@ export function InstructionItem({
             <span className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light flex-shrink-0">
               {isSelected && <CheckIcon />}
             </span>
-            <span className="flex items-center gap-1.5 w-full">
-              <span className="font-normal text-text-dark">
+            <span className="flex items-center gap-1.5 min-w-0">
+              <span className="font-normal text-text-dark truncate min-w-0">
                 {instruction.name}
               </span>
-              <span className="hidden group-hover:inline text-solid-light truncate">
+              <span className="hidden group-hover:block text-solid-light truncate flex-1 min-w-0">
                 {instruction.content}
               </span>
             </span>
