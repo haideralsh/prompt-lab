@@ -16,8 +16,10 @@
 ## Coding Style & Naming Conventions
 
 - TypeScript/React: 2-space indent; components in PascalCase (e.g., `SidebarContent.tsx`); functions/variables in camelCase; constants in SCREAMING_SNAKE_CASE (see `src/constants.ts`).
-- Formatting: Prettier configured in `package.json` (`semi: false`, `singleQuote: true`). Format with `npx prettier -w .` before sending PRs.
-- Rust: Follow rustfmt defaults; modules and functions `snake_case`, types `UpperCamelCase`.
+
+## React best practices
+
+- Always favor using handlers over useEffect. Effects should be reserved for synchronizing with external systems like APIs or browser features, not for transforming data or handling user interactions. Instead of using Effects, calculate derived values directly during rendering, cache expensive computations with useMemo, reset component state by changing the key prop, and handle user-triggered logic in event handlers where you know exactly what action occurred. For managing state between components, lift state up to the parent rather than synchronizing with Effects. The fundamental principle is that if your logic doesn't involve an external system, you likely don't need an Effect—most state management and UI updates can be handled through direct calculations, event handlers, or proper component architecture.
 
 ## Testing Guidelines
 
