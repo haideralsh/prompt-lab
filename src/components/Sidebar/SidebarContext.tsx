@@ -2,6 +2,7 @@ import React, { useState, Dispatch, SetStateAction } from 'react'
 import { FileNode, Tree } from '../../types/FileTree'
 import { DirectoryInfo } from '../../types/DirectoryInfo'
 import { Key } from 'react-aria-components'
+import { Instruction } from '../layout/instruction/types'
 
 type SidebarContext = {
   directory: DirectoryInfo
@@ -22,6 +23,10 @@ type SidebarContext = {
   setTotalTokenCount: Dispatch<SetStateAction<number>>
   indeterminateNodes: Set<Key>
   setIndeterminateNodes: (nodes: Set<Key>) => void
+  selectedInstructionIds: Set<string>
+  setSelectedInstructionIds: Dispatch<SetStateAction<Set<string>>>
+  unsavedInstruction: Instruction | null
+  setUnsavedInstruction: Dispatch<SetStateAction<Instruction | null>>
 }
 
 // @ts-expect-error createContext expects a value on initialization but it really shouldn't :facepalm
@@ -57,6 +62,11 @@ export function SidebarContextProvider(props: SidebarContextProps) {
   const [tree, setTree] = useState<Tree>([])
   const [filteredTree, setFilteredTree] = useState<Tree>([])
   const [directory, setDirectory] = useState<DirectoryInfo>()
+  const [selectedInstructionIds, setSelectedInstructionIds] = useState<
+    Set<string>
+  >(() => new Set())
+  const [unsavedInstruction, setUnsavedInstruction] =
+    useState<Instruction | null>(null)
 
   return (
     <SidebarContext.Provider
@@ -80,6 +90,10 @@ export function SidebarContextProvider(props: SidebarContextProps) {
         setDirectory,
         tree,
         setTree,
+        selectedInstructionIds,
+        setSelectedInstructionIds,
+        unsavedInstruction,
+        setUnsavedInstruction,
       }}
     >
       {props.children}

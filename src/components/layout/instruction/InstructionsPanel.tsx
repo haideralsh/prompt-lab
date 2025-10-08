@@ -22,11 +22,14 @@ import {
 import { useInstructionTokenCount } from './forms/useInstructionTokenCount'
 
 export function InstructionsPanel() {
-  const { directory } = useSidebarContext()
+  const {
+    directory,
+    selectedInstructionIds,
+    setSelectedInstructionIds,
+    unsavedInstruction,
+    setUnsavedInstruction,
+  } = useSidebarContext()
   const [instructions, setInstructions] = useState<SavedInstructions>([])
-  const [selectedInstructionIds, setSelectedInstructionIds] = useState<
-    Set<string>
-  >(() => new Set())
   const [isLoading, setIsLoading] = useState(false)
   const [editingInstructionId, setEditingInstructionId] = useState<
     string | null
@@ -34,8 +37,6 @@ export function InstructionsPanel() {
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [isFormIncluded, setIsFormIncluded] = useState(true)
   const [hasUnsavedInstruction, setHasUnsavedInstruction] = useState(false)
-  const [unsavedInstruction, setUnsavedInstruction] =
-    useState<Instruction | null>(null)
   const { tokenCount: unsavedTokenCount } = useInstructionTokenCount(
     unsavedInstruction?.content ?? ''
   )
