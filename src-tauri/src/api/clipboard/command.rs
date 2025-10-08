@@ -2,15 +2,14 @@ use std::collections::HashSet;
 use tauri::{AppHandle, Wry};
 
 use crate::api::clipboard::lib::{
-    build_clipboard_content, build_web_pages_section, format_instruction_entries,
+    build_clipboard_content, build_instruction_sections, build_web_pages_section,
     get_rendered_tree, write_to_clipboard,
 };
 use crate::api::git::status::git_diff_text;
-use crate::api::instruction::lib::{get_saved_instructions, ContentLengthMode, Instruction};
+use crate::api::instruction::lib::Instruction;
 use crate::api::tree::index::DirectoryNode;
 use crate::api::web::lib::load_page_contents_from_store;
 use crate::errors::ApplicationError;
-use crate::store::{open_store, StoreCategoryKey};
 
 #[tauri::command]
 pub(crate) fn copy_instructions_to_clipboard(
@@ -19,43 +18,12 @@ pub(crate) fn copy_instructions_to_clipboard(
     instruction_ids: Vec<String>,
     instructions: Vec<Instruction>,
 ) -> Result<(), ApplicationError> {
-    let store = open_store(&app)?;
-
-    let stored_instructions = store
-        .get(StoreCategoryKey::DATA)
-        .and_then(|data| data.as_object().cloned())
-        .and_then(|data_map| data_map.get(&directory_path).cloned())
-        .map(|directory_value| get_saved_instructions(&directory_value, ContentLengthMode::Full))
-        .unwrap_or_default();
-
-    store.close_resource();
-
-    let mut meta_instructions = Vec::new();
-    for id in &instruction_ids {
-        if let Some(entry) = stored_instructions.iter().find(|i| i.id == *id) {
-            meta_instructions.push(entry.clone());
-        }
-    }
-
-    let meta_section = format_instruction_entries(&meta_instructions);
-    let user_section = format_instruction_entries(&instructions);
-
-    let mut sections = Vec::new();
-    if !meta_section.is_empty() {
-        sections.push(format!(
-            "<meta_instructions>\n{}\n</meta_instructions>",
-            meta_section
-        ));
-    }
-
-    if !user_section.is_empty() {
-        sections.push(format!(
-            "<user_instructions>\n{}\n</user_instructions>",
-            user_section
-        ));
-    }
-
-    let payload = sections.join("\n\n");
+    let payload = build_instruction_sections(
+        &app,
+        &directory_path,
+        &instruction_ids,
+        &instructions,
+    )?;
 
     write_to_clipboard(&app, payload)
 }
@@ -81,10 +49,12 @@ pub(crate) fn copy_diffs_to_clipboard(
 #[tauri::command]
 pub(crate) fn copy_all_to_clipboard(
     app: AppHandle<Wry>,
-    tree_mode: String,
     full_tree: Vec<DirectoryNode>,
     selected_nodes: HashSet<String>,
+    tree_mode: String,
     git_diff_paths: Vec<String>,
+    instruction_ids: Vec<String>,
+    instructions: Vec<Instruction>,
     root: String,
     urls: Option<Vec<String>>,
 ) -> Result<(), ApplicationError> {
@@ -93,12 +63,23 @@ pub(crate) fn copy_all_to_clipboard(
     let base_payload =
         build_clipboard_content(git_diff_paths, &selected_nodes, &rendered_tree, &root)?;
 
+    let instructions_payload = build_instruction_sections(
+        &app,
+        &root,
+        &instruction_ids,
+        &instructions,
+    )?;
+
     let web_pages_section = build_web_pages_section(&app, &root, &urls)?;
-    let payload = if web_pages_section.is_empty() {
-        base_payload
-    } else {
-        format!("{}{}", base_payload, web_pages_section)
-    };
+    let mut payload = base_payload;
+
+    if !instructions_payload.is_empty() {
+        payload.push_str(&format!("{}\n\n", instructions_payload));
+    }
+
+    if !web_pages_section.is_empty() {
+        payload.push_str(&web_pages_section);
+    }
 
     write_to_clipboard(&app, payload)
 }

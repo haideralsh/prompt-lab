@@ -5,7 +5,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use crate::{
     api::{
         git::status::git_diff_text,
-        instruction::lib::InstructionEntry,
+        instruction::lib::{get_saved_instructions, ContentLengthMode, Instruction, InstructionEntry},
         tree::{
             index::DirectoryNode,
             render::{render_full_tree, render_selected_tree},
@@ -13,6 +13,7 @@ use crate::{
         web::lib::load_page_contents_from_store,
     },
     errors::{codes, ApplicationError},
+    store::{open_store, StoreCategoryKey},
 };
 
 const FILE_CONTENTS_OPENING_TAG: &str = "<file_contents>";
@@ -157,6 +158,65 @@ where
         })
         .collect::<Vec<_>>()
         .join("\n\n")
+}
+
+pub fn build_instruction_sections(
+    app: &AppHandle<Wry>,
+    directory_path: &str,
+    instruction_ids: &[String],
+    instructions: &[Instruction],
+) -> Result<String, ApplicationError> {
+    if instruction_ids.is_empty() && instructions.is_empty() {
+        return Ok(String::new());
+    }
+
+    let mut meta_instructions = Vec::new();
+
+    if !instruction_ids.is_empty() {
+        let store = open_store(app)?;
+
+        let stored_instructions = store
+            .get(StoreCategoryKey::DATA)
+            .and_then(|data| data.as_object().cloned())
+            .and_then(|data_map| data_map.get(directory_path).cloned())
+            .map(|directory_value| {
+                get_saved_instructions(&directory_value, ContentLengthMode::Full)
+            })
+            .unwrap_or_default();
+
+        for id in instruction_ids {
+            if let Some(entry) = stored_instructions.iter().find(|i| &i.id == id) {
+                meta_instructions.push(entry.clone());
+            }
+        }
+
+        store.close_resource();
+    }
+
+    let meta_section = format_instruction_entries(&meta_instructions);
+    let user_section = format_instruction_entries(instructions);
+
+    let mut sections = Vec::new();
+
+    if !meta_section.is_empty() {
+        sections.push(format!(
+            "<meta_instructions>\n{}\n</meta_instructions>",
+            meta_section
+        ));
+    }
+
+    if !user_section.is_empty() {
+        sections.push(format!(
+            "<user_instructions>\n{}\n</user_instructions>",
+            user_section
+        ));
+    }
+
+    if sections.is_empty() {
+        Ok(String::new())
+    } else {
+        Ok(sections.join("\n\n"))
+    }
 }
 
 pub fn write_to_clipboard(app: &AppHandle<Wry>, payload: String) -> Result<(), ApplicationError> {

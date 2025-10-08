@@ -25,6 +25,8 @@ export function Footer() {
     setTotalTokenCount,
     selectedPagesIds,
     selectedDiffIds,
+    selectedInstructionIds,
+    unsavedInstruction,
   } = useSidebarContext()
   let [treeFormat] = useState(new Set<Key>(['full']))
 
@@ -36,6 +38,15 @@ export function Footer() {
       selectedNodes: Array.from(selectedNodes),
       gitDiffPaths: Array.from(selectedDiffIds),
       urls: Array.from(selectedPagesIds),
+      instructionIds: Array.from(selectedInstructionIds),
+      instructions: unsavedInstruction
+        ? [
+            {
+              name: unsavedInstruction.name,
+              content: unsavedInstruction.content,
+            },
+          ]
+        : [],
     })
   }
 
@@ -61,7 +72,7 @@ export function Footer() {
               return Array.from(map.values())
             })
           }
-        },
+        }
       )
     }
 
