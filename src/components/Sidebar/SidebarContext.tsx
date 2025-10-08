@@ -4,6 +4,8 @@ import { DirectoryInfo } from '../../types/DirectoryInfo'
 import { Key } from 'react-aria-components'
 import { Instruction } from '../layout/instruction/types'
 
+export type TreeMode = 'full' | 'selected' | 'none'
+
 type SidebarContext = {
   directory: DirectoryInfo
   setDirectory: (root: DirectoryInfo) => void
@@ -27,6 +29,8 @@ type SidebarContext = {
   setSelectedInstructionIds: Dispatch<SetStateAction<Set<string>>>
   unsavedInstruction: Instruction | null
   setUnsavedInstruction: Dispatch<SetStateAction<Instruction | null>>
+  treeMode: TreeMode
+  setTreeMode: Dispatch<SetStateAction<TreeMode>>
 }
 
 // @ts-expect-error createContext expects a value on initialization but it really shouldn't :facepalm
@@ -67,6 +71,7 @@ export function SidebarContextProvider(props: SidebarContextProps) {
   >(() => new Set())
   const [unsavedInstruction, setUnsavedInstruction] =
     useState<Instruction | null>(null)
+  const [treeMode, setTreeMode] = useState<TreeMode>('selected')
 
   return (
     <SidebarContext.Provider
@@ -94,6 +99,8 @@ export function SidebarContextProvider(props: SidebarContextProps) {
         setSelectedInstructionIds,
         unsavedInstruction,
         setUnsavedInstruction,
+        treeMode,
+        setTreeMode,
       }}
     >
       {props.children}

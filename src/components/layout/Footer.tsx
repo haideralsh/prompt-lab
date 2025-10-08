@@ -1,18 +1,9 @@
-import { Key } from 'react-aria-components'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
 import TokenChart from '../TokenChart'
 import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
-import { TreeMode } from '../../types/FileTree'
-
-function getTreeMode(treeFormat: Set<Key>): TreeMode {
-  if (treeFormat.has('selected')) return 'selected'
-  if (treeFormat.has('full')) return 'full'
-  if (treeFormat.has('none')) return 'none'
-  return undefined
-}
 
 export function Footer() {
   const {
@@ -27,12 +18,12 @@ export function Footer() {
     selectedDiffIds,
     selectedInstructionIds,
     unsavedInstruction,
+    treeMode,
   } = useSidebarContext()
-  let [treeFormat] = useState(new Set<Key>(['full']))
 
   async function handleCopyToClipboard() {
     await invoke('copy_all_to_clipboard', {
-      treeMode: getTreeMode(treeFormat),
+      treeMode,
       fullTree: tree,
       root: directory?.path ?? '',
       selectedNodes: Array.from(selectedNodes),

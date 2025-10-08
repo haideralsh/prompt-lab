@@ -1,10 +1,17 @@
 import { useMemo } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Button, Checkbox } from 'react-aria-components'
+import {
+  Button,
+  Checkbox,
+  Key,
+  ToggleButton,
+  ToggleButtonGroup,
+} from 'react-aria-components'
 import { CheckIcon, ReaderIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'motion/react'
 import { PanelDisclosure } from './PanelDisclosure'
 import { useSidebarContext } from '../Sidebar/SidebarContext'
+import type { TreeMode } from '../Sidebar/SidebarContext'
 import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
 import { FileNode, Id, SelectionResult } from '../../types/FileTree'
 import { CopyButton } from '../common/CopyButton'
@@ -22,6 +29,8 @@ export function SelectedFilesPanel() {
     setIndeterminateNodes,
     totalTokenCount,
     tree,
+    treeMode,
+    setTreeMode,
   } = useSidebarContext()
 
   const sortedFiles = useMemo(() => {
@@ -51,7 +60,7 @@ export function SelectedFilesPanel() {
   async function copyFiles(paths: Id[]) {
     await invoke('copy_files_to_clipboard', {
       directoryPath: directory.path,
-      treeMode: 'selected',
+      treeMode,
       fullTree: tree,
       selectedNodes: paths,
     })
@@ -59,14 +68,19 @@ export function SelectedFilesPanel() {
 
   async function handleOpenFile(file: FileNode) {
     try {
-      await invoke('open_file', {
-        path: file.path,
-      })
+      await invoke('open_file', { path: file.path })
     } catch (error) {
       queue.add({
         title: 'Failed to open file',
         description: (error as ApplicationError).message,
       })
+    }
+  }
+
+  function handleTreeModeChange(keys: Set<Key>) {
+    const [choice] = Array.from(keys) as Array<TreeMode>
+    if (choice) {
+      setTreeMode(choice)
     }
   }
 
@@ -85,7 +99,35 @@ export function SelectedFilesPanel() {
         void deselectAll()
       }}
       tokenCount={totalTokenCount}
-      actions={
+      titleActions={
+        <ToggleButtonGroup
+          aria-label="Directory tree in model context"
+          selectedKeys={new Set([treeMode])}
+          onSelectionChange={handleTreeModeChange}
+          className="hidden group-hover:inline-flex group-hover:items-center rounded-sm border border-border-mid overflow-hidden [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border-mid"
+          disallowEmptySelection
+        >
+          <ToggleButton
+            id="none"
+            className="uppercase text-xs tracking-wide px-1.5 flex items-center justify-center text-text-dark hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
+          >
+            No Tree
+          </ToggleButton>
+          <ToggleButton
+            id="selected"
+            className="uppercase text-xs tracking-wide px-1.5 flex items-center justify-center text-text-dark hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
+          >
+            Selected Only
+          </ToggleButton>
+          <ToggleButton
+            id="full"
+            className="uppercase text-xs tracking-wide px-1.5 flex items-center justify-center text-text-dark hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
+          >
+            Full Tree
+          </ToggleButton>
+        </ToggleButtonGroup>
+      }
+      endActions={
         <CopyButton
           onCopy={() => copyFiles(sortedFiles.map((file) => file.path))}
           isDisabled={sortedFiles.length === 0}
@@ -100,11 +142,7 @@ export function SelectedFilesPanel() {
                 key={file.path}
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                exit={{
-                  opacity: 0,
-                  height: 0,
-                  transition: { duration: 0.15 },
-                }}
+                exit={{ opacity: 0, height: 0, transition: { duration: 0.15 } }}
                 className="overflow-hidden"
                 layout
               >

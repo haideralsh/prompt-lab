@@ -107,10 +107,7 @@ export function InstructionsPanel() {
     clearUnsavedInstruction()
     setIsLoading(true)
 
-    const fullInstruction = await getInstruction(
-      directory.path,
-      instruction.id
-    )
+    const fullInstruction = await getInstruction(directory.path, instruction.id)
 
     if (!fullInstruction) {
       setIsLoading(false)
@@ -266,7 +263,7 @@ export function InstructionsPanel() {
       onSelectAll={handleSelectAll}
       onDeselectAll={handleDeselectAll}
       tokenCount={totalTokenCount}
-      actions={
+      endActions={
         <CopyButton
           onCopy={handleCopySelectedInstructions}
           isDisabled={!canCopySelection}

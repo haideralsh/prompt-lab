@@ -20,7 +20,8 @@ interface PanelDisclosureProps {
   count: number
   tokenCount: number
   children: ReactNode
-  actions: ReactNode
+  endActions: ReactNode
+  titleActions?: ReactNode
   panelClassName?: string
   headingClassName?: string
   iconClassName?: string
@@ -37,7 +38,7 @@ const TRIGGER_BUTTON_CLASS =
 const HEADER_CHECKBOX_CLASS =
   'flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark data-[disabled]:border-interactive-light data-[disabled]:hover:bg-transparent'
 const TITLE_CLASS =
-  'flex items-baseline gap-1.5 uppercase font-medium tracking-wide text-xs'
+  'flex items-center gap-3 uppercase font-medium tracking-wide text-xs'
 const PANEL_CONTENT_CLASS = 'pb-4'
 
 export function PanelDisclosure({
@@ -51,7 +52,8 @@ export function PanelDisclosure({
   isGroupIndeterminate,
   onSelectAll,
   onDeselectAll,
-  actions,
+  endActions,
+  titleActions,
   tokenCount,
 }: PanelDisclosureProps) {
   const resolvedIconClass =
@@ -91,13 +93,16 @@ export function PanelDisclosure({
                   <TriangleRightIcon className={resolvedIconClass} />
                 )}
                 <span className={TITLE_CLASS}>
-                  <span>{label}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span>{label}</span>
+                  </span>
                   <span className="text-solid-dark">{count}</span>
+                  {titleActions}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                  {actions}
+                  {endActions}
                 </span>
                 <TokenCount count={tokenCount} />
               </div>

@@ -5,7 +5,9 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use crate::{
     api::{
         git::status::git_diff_text,
-        instruction::lib::{get_saved_instructions, ContentLengthMode, Instruction, InstructionEntry},
+        instruction::lib::{
+            get_saved_instructions, ContentLengthMode, Instruction, InstructionEntry,
+        },
         tree::{
             index::DirectoryNode,
             render::{render_full_tree, render_selected_tree},
@@ -94,7 +96,7 @@ pub fn build_git_diff(root: &str, git_diff_paths: Vec<String>) -> String {
 
     if let Some(diff) = git_diff_text(root, git_diff_paths) {
         return format!(
-            "{}\n{}\n{}",
+            "\n{}\n{}\n{}\n",
             GIT_DIFF_OPENING_TAG, diff, GIT_DIFF_CLOSING_TAG
         );
     }

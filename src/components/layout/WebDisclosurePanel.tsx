@@ -256,7 +256,7 @@ export function WebDisclosurePanel() {
       tokenCount={savedPages
         .filter((page) => selectedPagesIds.has(page.url))
         .reduce((acc, page) => acc + page.tokenCount, 0)}
-      actions={
+      endActions={
         <WebPanelActions
           isAddingNewPage={isAddingNewPage}
           onShowAddNewPress={showAddNewPageForm}

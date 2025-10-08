@@ -177,7 +177,7 @@ export function GitPanel() {
         setSelectedDiffIds(() => new Set())
       }}
       tokenCount={selectedTokenCount}
-      actions={
+      endActions={
         <CopyButton
           isDisabled={selectedDiffIds.size === 0}
           onCopy={async () => {
