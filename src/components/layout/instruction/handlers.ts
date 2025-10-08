@@ -1,9 +1,19 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { Instruction, SavedInstructions } from './types'
+import type { Instruction, SavedInstructionMetadata, SavedInstructions } from './types'
 
 export async function listInstructions(directoryPath: string) {
   return invoke<SavedInstructions>('list_instructions', {
     directoryPath,
+  })
+}
+
+export async function getInstruction(
+  directoryPath: string,
+  instructionId: string
+) {
+  return invoke<SavedInstructionMetadata>('get_instruction', {
+    directoryPath,
+    instructionId,
   })
 }
 

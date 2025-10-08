@@ -11,7 +11,7 @@ use crate::{
         instruction::lib::{get_saved_instructions, ContentLengthMode, SavedInstruction},
         tokenize::count_tokens_for_text,
     },
-    errors::ApplicationError,
+    errors::{codes, ApplicationError},
     store::{open_store, save_store, StoreCategoryKey, StoreDataKey},
 };
 
@@ -187,6 +187,38 @@ pub fn delete_instructions(
     store.close_resource();
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn get_instruction(
+    app: AppHandle<Wry>,
+    directory_path: String,
+    instruction_id: String,
+) -> Result<SavedInstruction, ApplicationError> {
+    let store = open_store(&app)?;
+
+    let instruction = if let Some(data) = store.get(StoreCategoryKey::DATA) {
+        if let Some(data_map) = data.as_object() {
+            if let Some(dir) = data_map.get(&directory_path) {
+                get_saved_instructions(dir, ContentLengthMode::Full)
+                    .into_iter()
+                    .find(|entry| entry.id == instruction_id)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    store.close_resource();
+
+    instruction.ok_or(ApplicationError {
+        code: codes::STORE_READ_ERROR,
+        message: Some("Instruction not found".to_string()),
+    })
 }
 
 #[tauri::command]

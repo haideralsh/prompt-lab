@@ -30,6 +30,7 @@ pub fn run() {
             api::web::command::edit_saved_page,
             api::instruction::command::upsert_instruction,
             api::instruction::command::delete_instructions,
+            api::instruction::command::get_instruction,
             api::instruction::command::list_instructions,
             api::instruction::command::count_instruction_tokens,
         ])

@@ -9,7 +9,7 @@ interface InstructionItemProps {
   isEditing: boolean
   isEditDisabled: boolean
   isLoading: boolean
-  onEdit: (instruction: SavedInstructionMetadata) => void
+  onEdit: (instruction: SavedInstructionMetadata) => void | Promise<void>
   onSaveEdit: (id: string, data: Instruction) => void
   onCancelEdit: () => void
   onDelete: (id: string) => void

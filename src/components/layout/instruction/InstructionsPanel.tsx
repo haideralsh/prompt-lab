@@ -16,6 +16,7 @@ import type {
 import {
   copyInstructionsToClipboard,
   deleteInstructions,
+  getInstruction,
   listInstructions,
   upsertInstruction,
 } from './handlers'
@@ -103,10 +104,33 @@ export function InstructionsPanel() {
     setSelectedInstructionIds(new Set(values))
   }
 
-  function handleEdit(instruction: SavedInstructionMetadata) {
-    if (!editingInstructionId && !isAddingNew) {
-      clearUnsavedInstruction()
+  async function handleEdit(instruction: SavedInstructionMetadata) {
+    if (editingInstructionId || isAddingNew || isLoading) {
+      return
+    }
+
+    clearUnsavedInstruction()
+    setIsLoading(true)
+
+    try {
+      const fullInstruction = await getInstruction(
+        directory.path,
+        instruction.id
+      )
+
+      setInstructions((current) =>
+        current.map((entry) =>
+          entry.id === instruction.id ? { ...entry, ...fullInstruction } : entry
+        )
+      )
       setEditingInstructionId(instruction.id)
+    } catch (error) {
+      queue.add({
+        title: 'Failed to load instruction',
+        description: getErrorMessage(error),
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
