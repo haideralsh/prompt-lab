@@ -76,6 +76,7 @@ export function WebDisclosurePanel() {
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
   const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
+  const [brokenFavicon, setBrokenFavicon] = useState(false)
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
@@ -317,9 +318,10 @@ export function WebDisclosurePanel() {
                             {isSelected && <CheckIcon />}
                           </span>
                           <span className="flex items-center gap-1.5 w-full">
-                            {entry.faviconPath ? (
+                            {entry.faviconPath && !brokenFavicon ? (
                               <img
                                 src={entry.faviconPath}
+                                onError={() => setBrokenFavicon(true)}
                                 alt={entry.title}
                                 className="size-[15px] rounded-xs"
                               />
