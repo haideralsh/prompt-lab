@@ -46,29 +46,28 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
   return (
     <div
       ref={containerRef}
-      className="h-screen overflow-hidden flex flex-col bg-background-dark"
+      className="flex h-screen overflow-hidden bg-background-dark"
     >
-      <div className="flex flex-1 min-h-0">
+      <div
+        className="relative flex-none border-r border-interactive-mid has-[[data-sidebar-handle]:hover]:border-r-border-light bg-background-light"
+        style={{ width: sidebarWidth }}
+      >
+        <ScrollArea>{sidebar}</ScrollArea>
+
         <div
-          className="border-r border-interactive-mid relative flex-none has-[[data-sidebar-handle]:hover]:border-r-border-light bg-background-light"
-          style={{ width: sidebarWidth }}
-        >
-          <ScrollArea>{sidebar}</ScrollArea>
-
-          <div
-            onMouseDown={startDragging}
-            data-sidebar-handle
-            className="absolute -right-1.25 top-0 h-full w-2 cursor-col-resize select-none"
-          />
-        </div>
-
-        <div className="flex-1">
-          <ScrollArea>{main}</ScrollArea>
-        </div>
+          onMouseDown={startDragging}
+          data-sidebar-handle
+          className="absolute -right-1.25 top-0 h-full w-2 cursor-col-resize select-none"
+        />
       </div>
 
-      <div className="flex-none border-t border-interactive-mid bg-background-light">
-        <div className="p-3">{footer}</div>
+      <div className="flex flex-1 min-h-0 flex-col">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea>{main}</ScrollArea>
+        </div>
+        <div className="border-t border-interactive-mid bg-background-light">
+          <div className="p-3">{footer}</div>
+        </div>
       </div>
     </div>
   )
