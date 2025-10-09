@@ -3,6 +3,7 @@ import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
 import {
   CheckIcon,
+  GlobeIcon,
   Pencil1Icon,
   ReloadIcon,
   TrashIcon,
@@ -316,12 +317,14 @@ export function WebDisclosurePanel() {
                             {isSelected && <CheckIcon />}
                           </span>
                           <span className="flex items-center gap-1.5 w-full">
-                            {entry.faviconPath && (
+                            {entry.faviconPath ? (
                               <img
                                 src={entry.faviconPath}
                                 alt={entry.title}
                                 className="size-[15px] rounded-xs"
                               />
+                            ) : (
+                              <GlobeIcon className="text-solid-light" />
                             )}
                             <span className="font-normal shrink-0 text-text-dark">
                               {entry.title}
