@@ -1,5 +1,4 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useSidebarContext } from './SidebarContext'
 import { SelectionResult, TreeNode } from '../../types/FileTree'
 import {
   FileIcon,
@@ -18,6 +17,13 @@ import {
 import React from 'react'
 import { FolderOpenIcon } from '@heroicons/react/16/solid'
 import { FolderIcon } from '@heroicons/react/16/solid'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import {
+  directoryAtom,
+  indeterminateNodesAtom,
+  selectedFilesAtom,
+  selectedNodesAtom,
+} from '../../state/atoms'
 
 type TreeNodeItemProps = {
   item: TreeNode
@@ -25,14 +31,12 @@ type TreeNodeItemProps = {
 }
 
 export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
-  const {
-    selectedNodes,
-    setSelectedNodes,
-    setSelectedFiles,
-    indeterminateNodes,
-    setIndeterminateNodes,
-    directory,
-  } = useSidebarContext()
+  const [selectedNodes, setSelectedNodes] = useAtom(selectedNodesAtom)
+  const setSelectedFiles = useSetAtom(selectedFilesAtom)
+  const [indeterminateNodes, setIndeterminateNodes] = useAtom(
+    indeterminateNodesAtom
+  )
+  const directory = useAtomValue(directoryAtom)
   const selected = selectedNodes.has(item.id)
   const indeterminate = indeterminateNodes.has(item.id)
 

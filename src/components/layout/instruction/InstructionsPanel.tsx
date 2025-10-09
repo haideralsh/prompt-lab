@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { CheckboxGroup } from 'react-aria-components'
 import { PanelDisclosure } from '../PanelDisclosure'
 import { InstructionItem } from './InstructionItem'
-import { useSidebarContext } from '../../Sidebar/SidebarContext'
 import { preserveSelected } from '../../../helpers/preserveSelected'
 import { InstructionForm } from './forms/InstructionForm'
 import { CopyButton } from '../../common/CopyButton'
@@ -19,15 +18,21 @@ import {
   upsertInstruction,
 } from './handlers'
 import { useInstructionTokenCount } from './forms/useInstructionTokenCount'
+import { useAtom, useAtomValue } from 'jotai'
+import {
+  directoryAtom,
+  selectedInstructionIdsAtom,
+  unsavedInstructionAtom,
+} from '../../../state/atoms'
 
 export function InstructionsPanel() {
-  const {
-    directory,
-    selectedInstructionIds,
-    setSelectedInstructionIds,
-    unsavedInstruction,
-    setUnsavedInstruction,
-  } = useSidebarContext()
+  const directory = useAtomValue(directoryAtom)
+  const [selectedInstructionIds, setSelectedInstructionIds] = useAtom(
+    selectedInstructionIdsAtom
+  )
+  const [unsavedInstruction, setUnsavedInstruction] = useAtom(
+    unsavedInstructionAtom
+  )
   const [instructions, setInstructions] = useState<SavedInstructions>([])
   const [isLoading, setIsLoading] = useState(false)
   const [editingInstructionId, setEditingInstructionId] = useState<
@@ -39,6 +44,10 @@ export function InstructionsPanel() {
   const { tokenCount: unsavedTokenCount } = useInstructionTokenCount(
     unsavedInstruction?.content ?? ''
   )
+
+  if (!directory) {
+    return null
+  }
 
   const selectedTokenCount = instructions.reduce((accumulator, entry) => {
     if (selectedInstructionIds.has(entry.id)) {
@@ -65,7 +74,7 @@ export function InstructionsPanel() {
 
   useEffect(() => {
     loadInstructions()
-  }, [directory?.path])
+  }, [directory.path])
 
   function clearUnsavedInstruction() {
     setUnsavedInstruction(null)

@@ -2,14 +2,14 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './main.css'
 import App from './App'
-import { SidebarContextProvider } from './components/Sidebar/SidebarContext'
 import { Toaster } from './components/ToastQueue'
+import { Provider } from 'jotai'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <SidebarContextProvider>
+    <Provider>
       <Toaster />
       <App />
-    </SidebarContextProvider>
+    </Provider>
   </React.StrictMode>,
 )

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Key, Tree } from 'react-aria-components'
 import { SearchBar } from './SearchBar'
-import { useSidebarContext } from './SidebarContext'
 import { TreeNodeItem } from './TreeNodeItem'
 import type {
   TreeNode,
@@ -9,6 +8,14 @@ import type {
   SelectionResult,
 } from '../../types/FileTree'
 import { invoke } from '@tauri-apps/api/core'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import {
+  directoryAtom,
+  filteredTreeAtom,
+  indeterminateNodesAtom,
+  selectedFilesAtom,
+  selectedNodesAtom,
+} from '../../state/atoms'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)
@@ -19,14 +26,11 @@ function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
 }
 
 export function Sidebar() {
-  const {
-    filteredTree,
-    setFilteredTree,
-    directory,
-    setSelectedFiles,
-    setSelectedNodes,
-    setIndeterminateNodes,
-  } = useSidebarContext()
+  const [filteredTree, setFilteredTree] = useAtom(filteredTreeAtom)
+  const directory = useAtomValue(directoryAtom)
+  const setSelectedFiles = useSetAtom(selectedFilesAtom)
+  const setSelectedNodes = useSetAtom(selectedNodesAtom)
+  const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
 
   async function search(query: string) {
@@ -39,7 +43,7 @@ export function Sidebar() {
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
-        : new Set(),
+        : new Set()
     )
   }
 

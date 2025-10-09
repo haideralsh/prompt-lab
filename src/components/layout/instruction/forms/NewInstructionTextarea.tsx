@@ -40,7 +40,7 @@ export function NewInstructionTextarea({
           <Button
             type="button"
             onPress={onBookmarkClick}
-            className="group/button text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+            className="group/button text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
           >
             <BookmarkIcon className="group-hover/button:hidden" />
             <BookmarkFilledIcon className="hidden group-hover/button:block text-accent-border-light" />

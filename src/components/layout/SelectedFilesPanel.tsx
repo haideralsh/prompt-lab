@@ -9,29 +9,38 @@ import {
 } from 'react-aria-components'
 import { CheckIcon, ReaderIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'motion/react'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { PanelDisclosure } from './PanelDisclosure'
-import { useSidebarContext } from '../Sidebar/SidebarContext'
-import type { TreeMode } from '../Sidebar/SidebarContext'
 import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
-import { FileNode, Id, SelectionResult } from '../../types/FileTree'
+import {
+  FileNode,
+  Id,
+  SelectionResult,
+  TreeDisplayMode,
+} from '../../types/FileTree'
 import { CopyButton } from '../common/CopyButton'
 import { queue } from '../ToastQueue'
 import { ApplicationError } from '../../helpers/getErrorMessage'
 import { TokenCount } from '../common/TokenCount'
+import {
+  directoryAtom,
+  indeterminateNodesAtom,
+  selectedFilesAtom,
+  selectedNodesAtom,
+  treeAtom,
+  treeDisplayModeAtom,
+  totalTokenCountAtom,
+} from '../../state/atoms'
 
 export function SelectedFilesPanel() {
-  const {
-    selectedFiles,
-    directory,
-    selectedNodes,
-    setSelectedFiles,
-    setSelectedNodes,
-    setIndeterminateNodes,
-    totalTokenCount,
-    tree,
-    treeMode,
-    setTreeMode,
-  } = useSidebarContext()
+  const [selectedFiles, setSelectedFiles] = useAtom(selectedFilesAtom)
+  const directory = useAtomValue(directoryAtom)
+  const [selectedNodes, setSelectedNodes] = useAtom(selectedNodesAtom)
+  const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
+  const tree = useAtomValue(treeAtom)
+  const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
+  const setTreeDisplayMode = useSetAtom(treeDisplayModeAtom)
+  const totalTokenCount = useAtomValue(totalTokenCountAtom)
 
   const sortedFiles = useMemo(() => {
     return sortFilesByTokenCount(selectedFiles)
@@ -59,8 +68,8 @@ export function SelectedFilesPanel() {
 
   async function copyFiles(paths: Id[]) {
     await invoke('copy_files_to_clipboard', {
-      directoryPath: directory.path,
-      treeMode,
+      directoryPath: directory?.path,
+      treeDisplayMode,
       fullTree: tree,
       selectedNodes: paths,
     })
@@ -77,10 +86,11 @@ export function SelectedFilesPanel() {
     }
   }
 
-  function handleTreeModeChange(keys: Set<Key>) {
-    const [choice] = Array.from(keys) as Array<TreeMode>
+  function handleTreeDisplayModeChange(keys: Set<Key>) {
+    const [choice] = Array.from(keys) as Array<TreeDisplayMode>
+
     if (choice) {
-      setTreeMode(choice)
+      setTreeDisplayMode(choice)
     }
   }
 
@@ -102,8 +112,8 @@ export function SelectedFilesPanel() {
       titleActions={
         <ToggleButtonGroup
           aria-label="Directory tree in model context"
-          selectedKeys={new Set([treeMode])}
-          onSelectionChange={handleTreeModeChange}
+          selectedKeys={new Set([treeDisplayMode])}
+          onSelectionChange={handleTreeDisplayModeChange}
           className="hidden group-hover:inline-flex group-hover:items-center rounded-sm border border-border-mid overflow-hidden [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border-mid"
           disallowEmptySelection
         >

@@ -10,7 +10,6 @@ import {
 } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
 import { queue } from '../ToastQueue'
-import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { WebPanelActions } from './WebPanelActions'
@@ -20,6 +19,8 @@ import { EditSavedPage } from './EditSavedPage'
 import { preserveSelected } from '../../helpers/preserveSelected'
 import { TokenCount } from '../common/TokenCount'
 import { appDataDir, join } from '@tauri-apps/api/path'
+import { useAtom, useAtomValue } from 'jotai'
+import { directoryAtom, selectedPagesIdsAtom } from '../../state/atoms'
 
 export interface SavedPageMetadata {
   title: string
@@ -65,8 +66,8 @@ export async function fetchSavedPages(
 }
 
 export function WebDisclosurePanel() {
-  const { directory, selectedPagesIds, setSelectedPagesIds } =
-    useSidebarContext()
+  const directory = useAtomValue(directoryAtom)
+  const [selectedPagesIds, setSelectedPagesIds] = useAtom(selectedPagesIdsAtom)
   const [savedPages, setSavedPages] = useState<SavedPages>([])
   const [isAddingNewPage, setIsAddingWeb] = useState(false)
   const [webUrl, setWebUrl] = useState('')
@@ -77,6 +78,10 @@ export function WebDisclosurePanel() {
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
   const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
   const [brokenFavicon, setBrokenFavicon] = useState(false)
+
+  if (!directory) {
+    return null
+  }
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
@@ -142,7 +147,7 @@ export function WebDisclosurePanel() {
   }
 
   async function handleReload(entry: SavedPageMetadata) {
-    if (!directory || reloadingUrls.has(entry.url)) return
+    if (reloadingUrls.has(entry.url)) return
 
     setReloadingUrls((prev) => {
       const next = new Set(prev)
@@ -186,7 +191,6 @@ export function WebDisclosurePanel() {
 
   async function handleDelete(entry: SavedPageMetadata) {
     // TODO: Show a confirmation dialog before deleting
-    if (!directory) return
 
     try {
       await invoke<void>('delete_saved_page', {
@@ -213,7 +217,7 @@ export function WebDisclosurePanel() {
   }
 
   async function handleCopyToClipboard(entry: SavedPageMetadata) {
-    if (!directory?.path) return
+    if (!directory.path) return
 
     await invoke<void>('copy_pages_to_clipboard', {
       directoryPath: directory.path,
@@ -224,7 +228,7 @@ export function WebDisclosurePanel() {
   // title save logic moved into <EditSavedPage />
 
   async function handleCopySelectedToClipboard() {
-    if (!directory?.path) return
+    if (!directory.path) return
 
     await invoke<void>('copy_pages_to_clipboard', {
       directoryPath: directory.path,

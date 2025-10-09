@@ -4,7 +4,6 @@ import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { Checkbox, CheckboxGroup } from 'react-aria-components'
 import { CheckIcon } from '@radix-ui/react-icons'
 import { PanelDisclosure } from './PanelDisclosure'
-import { useSidebarContext } from '../Sidebar/SidebarContext'
 import { CopyButton } from '../common/CopyButton'
 import {
   GitStatusResult,
@@ -12,6 +11,8 @@ import {
   GitTokenCountsEvent,
 } from '../../types/git'
 import { TokenCount } from '../common/TokenCount'
+import { useAtom, useAtomValue } from 'jotai'
+import { directoryAtom, selectedDiffIdsAtom } from '../../state/atoms'
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
@@ -43,11 +44,16 @@ function mergeTokenCountsWithPrevious(
 }
 
 export function GitPanel() {
-  const { directory, selectedDiffIds, setSelectedDiffIds } = useSidebarContext()
+  const directory = useAtomValue(directoryAtom)
+  const [selectedDiffIds, setSelectedDiffIds] = useAtom(selectedDiffIdsAtom)
   const [gitStatus, setGitStatus] = useState<GitStatusResult | null>(null)
 
+  if (!directory) {
+    return null
+  }
+
   async function copyToClipboard(content: string | string[] | Set<string>) {
-    if (!directory?.path) return
+    if (!directory.path) return
 
     const paths = typeof content === 'string' ? [content] : Array.from(content)
 
@@ -94,7 +100,7 @@ export function GitPanel() {
 
   useEffect(() => {
     async function inquireGitStatus() {
-      if (!directory?.path) return
+      if (!directory.path) return
 
       try {
         const changes = await invoke<GitStatusResult | null>('get_git_status', {
@@ -121,7 +127,7 @@ export function GitPanel() {
     let unlisten: UnlistenFn | undefined
 
     async function listenToGitStatus() {
-      if (!directory?.path) return
+      if (!directory.path) return
 
       await invoke<void>('watch_directory_for_git_changes', {
         directoryPath: directory.path,

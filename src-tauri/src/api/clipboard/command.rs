@@ -18,12 +18,8 @@ pub(crate) fn copy_instructions_to_clipboard(
     instruction_ids: Vec<String>,
     instructions: Vec<Instruction>,
 ) -> Result<(), ApplicationError> {
-    let payload = build_instruction_sections(
-        &app,
-        &directory_path,
-        &instruction_ids,
-        &instructions,
-    )?;
+    let payload =
+        build_instruction_sections(&app, &directory_path, &instruction_ids, &instructions)?;
 
     write_to_clipboard(&app, payload)
 }
@@ -51,24 +47,20 @@ pub(crate) fn copy_all_to_clipboard(
     app: AppHandle<Wry>,
     full_tree: Vec<DirectoryNode>,
     selected_nodes: HashSet<String>,
-    tree_mode: String,
+    tree_display_mode: String,
     git_diff_paths: Vec<String>,
     instruction_ids: Vec<String>,
     instructions: Vec<Instruction>,
     root: String,
     urls: Option<Vec<String>>,
 ) -> Result<(), ApplicationError> {
-    let rendered_tree = get_rendered_tree(&tree_mode, &full_tree, &selected_nodes);
+    let rendered_tree = get_rendered_tree(&tree_display_mode, &full_tree, &selected_nodes);
 
     let base_payload =
         build_clipboard_content(git_diff_paths, &selected_nodes, &rendered_tree, &root)?;
 
-    let instructions_payload = build_instruction_sections(
-        &app,
-        &root,
-        &instruction_ids,
-        &instructions,
-    )?;
+    let instructions_payload =
+        build_instruction_sections(&app, &root, &instruction_ids, &instructions)?;
 
     let web_pages_section = build_web_pages_section(&app, &root, &urls)?;
     let mut payload = base_payload;
@@ -88,11 +80,11 @@ pub(crate) fn copy_all_to_clipboard(
 pub(crate) fn copy_files_to_clipboard(
     app: AppHandle<Wry>,
     directory_path: String,
-    tree_mode: String,
+    tree_display_mode: String,
     full_tree: Vec<DirectoryNode>,
     selected_nodes: HashSet<String>,
 ) -> Result<(), ApplicationError> {
-    let rendered_tree = get_rendered_tree(&tree_mode, &full_tree, &selected_nodes);
+    let rendered_tree = get_rendered_tree(&tree_display_mode, &full_tree, &selected_nodes);
 
     let payload =
         build_clipboard_content(Vec::new(), &selected_nodes, &rendered_tree, &directory_path)?;

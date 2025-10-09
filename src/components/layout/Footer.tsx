@@ -1,29 +1,38 @@
 import { useEffect, useMemo } from 'react'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
-import { useSidebarContext } from '../Sidebar/SidebarContext'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import TokenChart from '../TokenChart'
 import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
+import {
+  directoryAtom,
+  selectedFilesAtom,
+  treeAtom,
+  selectedNodesAtom,
+  selectedPagesIdsAtom,
+  selectedDiffIdsAtom,
+  selectedInstructionIdsAtom,
+  unsavedInstructionAtom,
+  treeDisplayModeAtom,
+  totalTokenCountAtom,
+} from '../../state/atoms'
 
 export function Footer() {
-  const {
-    directory,
-    selectedFiles,
-    setSelectedFiles,
-    tree,
-    selectedNodes,
-    totalTokenCount,
-    setTotalTokenCount,
-    selectedPagesIds,
-    selectedDiffIds,
-    selectedInstructionIds,
-    unsavedInstruction,
-    treeMode,
-  } = useSidebarContext()
+  const directory = useAtomValue(directoryAtom)
+  const [selectedFiles, setSelectedFiles] = useAtom(selectedFilesAtom)
+  const tree = useAtomValue(treeAtom)
+  const selectedNodes = useAtomValue(selectedNodesAtom)
+  const selectedPagesIds = useAtomValue(selectedPagesIdsAtom)
+  const selectedDiffIds = useAtomValue(selectedDiffIdsAtom)
+  const selectedInstructionIds = useAtomValue(selectedInstructionIdsAtom)
+  const unsavedInstruction = useAtomValue(unsavedInstructionAtom)
+  const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
+  const totalTokenCount = useAtomValue(totalTokenCountAtom)
+  const setTotalTokenCount = useSetAtom(totalTokenCountAtom)
 
   async function handleCopyToClipboard() {
     await invoke('copy_all_to_clipboard', {
-      treeMode,
+      treeDisplayMode,
       fullTree: tree,
       root: directory?.path ?? '',
       selectedNodes: Array.from(selectedNodes),

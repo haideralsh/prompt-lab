@@ -27,3 +27,5 @@ export interface SelectionResult {
   indeterminateNodesPaths: Id[]
   selectedFiles: FileNode[]
 }
+
+export type TreeDisplayMode = 'full' | 'selected' | 'none'

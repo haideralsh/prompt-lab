@@ -34,11 +34,11 @@ const WEB_PAGES_CLOSING_TAG: &str = "</web_pages>";
 const WEB_PAGES_SEPARATOR: &str = "\n\n* * *\n\n";
 
 pub fn get_rendered_tree(
-    tree_mode: &str,
+    tree_display_mode: &str,
     full_tree: &Vec<DirectoryNode>,
     selected_nodes: &HashSet<String>,
 ) -> String {
-    match tree_mode {
+    match tree_display_mode {
         "selected" => render_selected_tree(full_tree, selected_nodes),
         "full" => render_full_tree(full_tree, selected_nodes),
         "none" | _ => String::new(),

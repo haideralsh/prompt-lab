@@ -3,12 +3,13 @@ import { Button } from 'react-aria-components'
 import { invoke } from '@tauri-apps/api/core'
 import { queue } from '../ToastQueue'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
-import { useSidebarContext } from '../Sidebar/SidebarContext'
 import {
   SavedPageMetadata,
   SavedPages,
   fetchSavedPages,
 } from './WebDisclosurePanel'
+import { useAtomValue, useSetAtom } from 'jotai'
+import { directoryAtom, selectedPagesIdsAtom } from '../../state/atoms'
 
 type EditSavedPageProps = {
   page: SavedPageMetadata
@@ -17,10 +18,15 @@ type EditSavedPageProps = {
 }
 
 export function EditSavedPage({ page, onSave, onCancel }: EditSavedPageProps) {
-  const { directory, setSelectedPagesIds } = useSidebarContext()
+  const directory = useAtomValue(directoryAtom)
+  const setSelectedPagesIds = useSetAtom(selectedPagesIdsAtom)
   const [editingTitle, setEditingTitle] = useState(page.title)
   const [isSaving, setIsSaving] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
+
+  if (!directory) {
+    return null
+  }
 
   const inputId = `edit-title-${encodeURIComponent(page.url)}`
 
@@ -31,7 +37,7 @@ export function EditSavedPage({ page, onSave, onCancel }: EditSavedPageProps) {
 
   function preserveSelectedPages(
     allPages: SavedPages,
-    selectedUrls: Set<string>,
+    selectedUrls: Set<string>
   ) {
     const allUrls = new Set(allPages.map((page) => page.url))
     const updatedAllPages = new Set<string>()
@@ -59,7 +65,7 @@ export function EditSavedPage({ page, onSave, onCancel }: EditSavedPageProps) {
       const pages = await fetchSavedPages(directory.path)
 
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelectedPages(pages, selectedUrls),
+        preserveSelectedPages(pages, selectedUrls)
       )
       onSave(pages)
     } catch (error) {

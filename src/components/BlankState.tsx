@@ -4,13 +4,16 @@ import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { invoke } from '@tauri-apps/api/core'
 import { ERROR_CODES } from '../constants'
 import type { SearchResult } from '../types/FileTree'
-import { useSidebarContext } from './Sidebar/SidebarContext'
 import { queue } from './ToastQueue'
 import { ApplicationError } from '../helpers/getErrorMessage'
+import { useSetAtom } from 'jotai'
+import { directoryAtom, filteredTreeAtom, treeAtom } from '../state/atoms'
 
 export function LaunchScreen() {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([])
-  const { setTree, setDirectory, setFilteredTree } = useSidebarContext()
+  const setTree = useSetAtom(treeAtom)
+  const setDirectory = useSetAtom(directoryAtom)
+  const setFilteredTree = useSetAtom(filteredTreeAtom)
 
   useEffect(() => {
     async function loadRecentOpened() {
