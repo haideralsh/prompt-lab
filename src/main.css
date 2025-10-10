@@ -73,6 +73,7 @@ body {
   margin: 0;
   height: 100%;
   overscroll-behavior: none;
+  overflow: hidden;
 }
 
 @supports (font-variation-settings: normal) {
@@ -81,7 +82,7 @@ body {
   }
 }
 
-textarea {
+.custom-scrollbar {
   resize: none;
 
   display: block;

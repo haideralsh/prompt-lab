@@ -76,7 +76,7 @@ export function InstructionFields({
             disabled={isLoading}
             rows={rows}
             required
-            className="resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark px-1 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
+            className="custom-scrollbar resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark px-1 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
           />
         </div>
 

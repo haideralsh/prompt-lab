@@ -34,7 +34,7 @@ export function NewInstructionTextarea({
           onChange={(e) => onContentChange(e.target.value)}
           disabled={isLoading}
           rows={4}
-          className="resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1.5 px-2 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
+          className="custom-scrollbar resize-none placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1.5 px-2 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
         />
         <div className="absolute bottom-1.5 right-1.5 hidden group-hover/textarea:flex group-hover/textarea:items-center group-hover/textarea:gap-1.5 group-has-focus/textarea:flex group-has-focus/textarea:items-center group-has-focus/textarea:gap-1.5">
           <Button
