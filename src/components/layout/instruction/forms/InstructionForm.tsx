@@ -93,7 +93,7 @@ export function InstructionForm({
             aria-label="Include instructions"
             isSelected={isIncluded}
             onChange={onIncludeChange}
-            className="group mt-1 flex-shrink-0 px-2"
+            className="relative group mt-1 flex-shrink-0 px-2"
           >
             {({ isSelected }) => (
               <span className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light">

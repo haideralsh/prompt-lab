@@ -36,7 +36,7 @@ const TRIGGER_BUTTON_CLASS =
   'flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-1.5 bg-background-light'
 
 const HEADER_CHECKBOX_CLASS =
-  'flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark data-[disabled]:border-interactive-light data-[disabled]:hover:bg-transparent'
+  'relative flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark data-[disabled]:border-interactive-light data-[disabled]:hover:bg-transparent'
 const TITLE_CLASS =
   'flex items-center gap-3 uppercase font-medium tracking-wide text-xs'
 const PANEL_CONTENT_CLASS = 'pb-4'
@@ -77,7 +77,6 @@ export function PanelDisclosure({
             <Heading className="flex justify-between w-full group">
               <div className="flex items-center gap-1 text-xs text-text-dark">
                 <Checkbox
-                  slot="selection"
                   isSelected={isGroupSelected}
                   isIndeterminate={isGroupIndeterminate}
                   onChange={handleSelectionChange}

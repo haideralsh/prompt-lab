@@ -203,7 +203,7 @@ export function GitPanel() {
               <li key={change.path}>
                 <Checkbox
                   value={change.path}
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
+                  className="relative grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
                   slot="selection"
                 >
                   {({ isSelected }) => (

@@ -304,12 +304,11 @@ export function WebDisclosurePanel() {
                     <Checkbox
                       value={entry.url}
                       isDisabled={isReloading || Boolean(editingPageUrl)}
-                      className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
+                      className="relative grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
                               hover:bg-accent-interactive-dark
                               data-[hovered]:bg-accent-interactive-dark
                               data-[disabled]:opacity-75
                               data-[disabled]:hover:bg-transparent"
-                      slot="selection"
                     >
                       {({ isSelected }) => (
                         <>
