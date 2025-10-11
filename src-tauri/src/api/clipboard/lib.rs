@@ -104,6 +104,19 @@ pub fn build_git_diff(root: &str, git_diff_paths: Vec<String>) -> String {
     String::new()
 }
 
+pub fn build_files(selected_nodes: &HashSet<String>) -> Result<String, ApplicationError> {
+    if selected_nodes.is_empty() {
+        return Ok(String::new());
+    }
+
+    let concatenated_files = concatenate_files(selected_nodes)?;
+
+    Ok(format!(
+        "{}\n{}\n{}\n",
+        FILE_CONTENTS_OPENING_TAG, concatenated_files, FILE_CONTENTS_CLOSING_TAG,
+    ))
+}
+
 pub fn build_web_pages_section(
     app: &AppHandle<Wry>,
     directory_path: &str,
@@ -133,18 +146,11 @@ pub fn build_clipboard_content(
     rendered_tree: &str,
     root: &str,
 ) -> Result<String, ApplicationError> {
-    let concatenated_files = concatenate_files(selected_nodes)?;
-    let git_diff = build_git_diff(root, git_diff_paths);
     let file_tree = build_file_tree(rendered_tree, root);
+    let files = build_files(selected_nodes)?;
+    let git_diff = build_git_diff(root, git_diff_paths);
 
-    Ok(format!(
-        "{}\n{}\n{}\n{}\n{}\n",
-        file_tree,
-        FILE_CONTENTS_OPENING_TAG,
-        concatenated_files,
-        FILE_CONTENTS_CLOSING_TAG,
-        git_diff,
-    ))
+    Ok(format!("{}\n{}\n{}\n", file_tree, files, git_diff,))
 }
 
 pub fn format_instruction_entries<T>(entries: &[T]) -> String
@@ -222,6 +228,10 @@ pub fn build_instruction_sections(
 }
 
 pub fn write_to_clipboard(app: &AppHandle<Wry>, payload: String) -> Result<(), ApplicationError> {
+    if payload.trim().is_empty() {
+        return Ok(());
+    }
+
     app.clipboard()
         .write_text(payload)
         .map_err(|err| ApplicationError {
