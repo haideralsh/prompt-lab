@@ -63,14 +63,15 @@ pub(crate) fn copy_all_to_clipboard(
         build_instruction_sections(&app, &root, &instruction_ids, &instructions)?;
 
     let web_pages_section = build_web_pages_section(&app, &root, &urls)?;
-    let mut payload = base_payload;
 
-    if !instructions_payload.is_empty() {
-        payload.push_str(&format!("{}\n\n", instructions_payload));
-    }
+    let mut payload = base_payload;
 
     if !web_pages_section.is_empty() {
         payload.push_str(&web_pages_section);
+    }
+
+    if !instructions_payload.is_empty() {
+        payload.push_str(&format!("{}\n\n", instructions_payload));
     }
 
     write_to_clipboard(&app, payload)
