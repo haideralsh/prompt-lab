@@ -1,5 +1,5 @@
 import { Sidebar } from './components/Sidebar/Sidebar'
-import { LaunchScreen } from './components/BlankState'
+import { LaunchScreen } from './components/LaunchScreen'
 import { Layout } from './components/layout/Layout'
 import { Main } from './components/layout/Main'
 import { Footer } from './components/layout/Footer'

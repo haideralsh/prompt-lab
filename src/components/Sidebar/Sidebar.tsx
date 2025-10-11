@@ -8,7 +8,7 @@ import type {
   SelectionResult,
 } from '../../types/FileTree'
 import { invoke } from '@tauri-apps/api/core'
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import {
   directoryAtom,
   filteredTreeAtom,
@@ -16,6 +16,7 @@ import {
   selectedFilesAtom,
   selectedNodesAtom,
 } from '../../state/atoms'
+import { ExitIcon } from '@radix-ui/react-icons'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)
@@ -27,7 +28,7 @@ function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
 
 export function Sidebar() {
   const [filteredTree, setFilteredTree] = useAtom(filteredTreeAtom)
-  const directory = useAtomValue(directoryAtom)
+  const [directory, setDirectory] = useAtom(directoryAtom)
   const setSelectedFiles = useSetAtom(selectedFilesAtom)
   const setSelectedNodes = useSetAtom(selectedNodesAtom)
   const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
@@ -61,29 +62,51 @@ export function Sidebar() {
     setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
   }
 
+  function exitDirectory() {
+    setDirectory(null)
+    setFilteredTree([])
+    setSelectedNodes(new Set<Key>())
+    setSelectedFiles([])
+    setIndeterminateNodes(new Set<Key>())
+    setExpandedKeys(new Set())
+  }
+
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-end gap-0.5 px-2 pt-2">
-        <button
-          onClick={clearSelection}
-          className="inline-flex items-center gap-1 text-xs py-0.5 px-2 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
-          title="Deselect all"
-        >
-          <span>Deselect all</span>
-        </button>
-        <button
-          onClick={collapseAll}
-          className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
-          title="Collapse all"
-        >
-          <span>Collapse all</span>
-        </button>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center px-2 pt-2">
+          <span className="uppercase font-semibold tracking-wide text-xs text-text-dark">
+            {directory?.name}
+          </span>
+          <button
+            onClick={exitDirectory}
+            className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
+            title="Return to launch screen"
+          >
+            <ExitIcon />
+          </button>
+        </div>
+        <div className="flex items-center gap-0.5 justify-end px-1">
+          <button
+            onClick={clearSelection}
+            className="inline-flex items-center gap-1 text-xs py-0.5 px-2 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
+            title="Deselect all"
+          >
+            <span>Deselect all</span>
+          </button>
+          <button
+            onClick={collapseAll}
+            className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
+            title="Collapse all"
+          >
+            <span>Collapse all</span>
+          </button>
+        </div>
       </div>
       <SearchBar
         onChange={(value) => search(value)}
         onClear={() => search('')}
       />
-
       <div className="flex-1 px-2">
         <div className="h-full overflow-x-hidden rounded-lg">
           {filteredTree.length === 0 ? (
