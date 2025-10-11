@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ScrollArea } from '../ScrollArea'
 
+const DEFAULT_SIDEBAR_WIDTH = 300
 const MIN_SIDEBAR_WIDTH = 15
 const MAX_SIDEBAR_WIDTH = 1000
 
@@ -11,7 +12,7 @@ interface LayoutProps {
 }
 
 export function Layout({ sidebar, main, footer }: LayoutProps) {
-  const [sidebarWidth, setSidebarWidth] = useState(250)
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH)
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
