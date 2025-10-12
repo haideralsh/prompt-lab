@@ -8,14 +8,15 @@
     "opener:default",
     "store:default",
     {
-			"identifier": "opener:allow-open-path",
-			"allow": [
-				{
-					"path": "**"
-				}
-			]
-		},
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
     "clipboard-manager:default",
-    "clipboard-manager:allow-write-text"
+    "clipboard-manager:allow-write-text",
+    "core:window:allow-set-title"
   ]
 }
