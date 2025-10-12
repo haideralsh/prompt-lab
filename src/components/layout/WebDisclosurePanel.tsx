@@ -77,7 +77,9 @@ export function WebDisclosurePanel() {
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
   const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
-  const [brokenFavicon, setBrokenFavicon] = useState(false)
+  const [brokenFavicons, setBrokenFavicons] = useState<Set<string>>(
+    () => new Set()
+  )
 
   if (!directory) {
     return null
@@ -321,10 +323,15 @@ export function WebDisclosurePanel() {
                             {isSelected && <CheckIcon />}
                           </span>
                           <span className="flex items-center gap-1.5 w-full">
-                            {entry.faviconPath && !brokenFavicon ? (
+                            {entry.faviconPath &&
+                            !brokenFavicons.has(entry.url) ? (
                               <img
                                 src={entry.faviconPath}
-                                onError={() => setBrokenFavicon(true)}
+                                onError={() =>
+                                  setBrokenFavicons((prev) =>
+                                    new Set(prev).add(entry.url)
+                                  )
+                                }
                                 alt={entry.title}
                                 className="size-[15px] rounded-xs"
                               />
