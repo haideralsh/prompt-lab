@@ -47,18 +47,18 @@ export function LaunchScreen() {
       setDirectory(directory)
       setTree(resp.results)
       setFilteredTree(resp.results)
-      
-      // Update window title
-      const windowTitle = directory.prettyPath ?? directory.name ?? directory.path
+
+      const windowTitle =
+        directory.prettyPath ?? directory.name ?? directory.path
+
       try {
         await getCurrentWindow().setTitle(windowTitle)
       } catch (error) {
-        console.error('Failed to set window title:', error)
         queue.add({
           title: 'Failed to set window title.',
         })
       }
-      
+
       invoke('add_recent_directory', { directory })
     } catch (err) {
       const e = err as ApplicationError

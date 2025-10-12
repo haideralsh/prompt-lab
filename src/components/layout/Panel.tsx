@@ -14,14 +14,13 @@ import {
 } from '@radix-ui/react-icons'
 import { TokenCount } from '../common/TokenCount'
 
-interface PanelDisclosureProps {
+export interface PanelDisclosureProps {
   id: string
   label: string
   count: number
   tokenCount: number
   children: ReactNode
   endActions: ReactNode
-  titleActions?: ReactNode
   panelClassName?: string
   headingClassName?: string
   iconClassName?: string
@@ -31,34 +30,23 @@ interface PanelDisclosureProps {
   onDeselectAll: () => void
 }
 
-const PANEL_CLASS_NAME = 'border-b border-interactive-mid -mx-2'
-const TRIGGER_BUTTON_CLASS =
-  'flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-1.5 bg-background-light'
-
-const HEADER_CHECKBOX_CLASS =
-  'relative flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark data-[disabled]:border-interactive-light data-[disabled]:hover:bg-transparent'
-const TITLE_CLASS =
-  'flex items-center gap-3 uppercase font-medium tracking-wide text-xs'
-const PANEL_CONTENT_CLASS = 'pb-4'
-
-export function PanelDisclosure({
+export function Panel({
   id,
   label,
   count,
   children,
   panelClassName,
+  headingClassName,
   iconClassName,
   isGroupSelected,
   isGroupIndeterminate,
   onSelectAll,
   onDeselectAll,
   endActions,
-  titleActions,
   tokenCount,
 }: PanelDisclosureProps) {
   const resolvedIconClass =
     iconClassName === undefined ? 'size-4' : iconClassName
-  const resolvedPanelClass = panelClassName ?? PANEL_CONTENT_CLASS
 
   function handleSelectionChange(selected: boolean) {
     if (selected) {
@@ -70,18 +58,25 @@ export function PanelDisclosure({
     onSelectAll === false && (count === 0 || !isGroupSelected)
 
   return (
-    <Disclosure id={id} className={PANEL_CLASS_NAME}>
+    <Disclosure id={id} className="-mx-2">
       {({ isExpanded }) => (
         <>
-          <Button slot="trigger" className={TRIGGER_BUTTON_CLASS}>
-            <Heading className="flex justify-between w-full group">
+          <Button
+            slot="trigger"
+            className="flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-1.5 bg-interactive-dark z-10"
+          >
+            <Heading
+              className={`flex justify-between w-full group ${
+                headingClassName ?? ''
+              }`}
+            >
               <div className="flex items-center gap-1 text-xs text-text-dark">
                 <Checkbox
                   isSelected={isGroupSelected}
                   isIndeterminate={isGroupIndeterminate}
                   onChange={handleSelectionChange}
                   isDisabled={shouldDisableGroupCheckbox}
-                  className={HEADER_CHECKBOX_CLASS}
+                  className="relative flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark data-[disabled]:border-interactive-light data-[disabled]:hover:bg-transparent"
                 >
                   {isGroupSelected && <CheckIcon />}
                   {isGroupIndeterminate && <MinusIcon />}
@@ -91,12 +86,9 @@ export function PanelDisclosure({
                 ) : (
                   <TriangleRightIcon className={resolvedIconClass} />
                 )}
-                <span className={TITLE_CLASS}>
-                  <span className="flex items-center gap-1.5">
-                    <span>{label}</span>
-                  </span>
+                <span className="flex items-center gap-3 uppercase font-medium tracking-wide text-xs">
+                  <span>{label}</span>
                   <span className="text-solid-dark">{count}</span>
-                  {titleActions}
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -107,7 +99,7 @@ export function PanelDisclosure({
               </div>
             </Heading>
           </Button>
-          <DisclosurePanel className={resolvedPanelClass}>
+          <DisclosurePanel className={`${panelClassName} bg-background-light`}>
             {children}
           </DisclosurePanel>
         </>

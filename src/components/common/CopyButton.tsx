@@ -28,7 +28,7 @@ export function CopyButton({
   }
 
   return (
-    <Button className="group" onPress={handlePress} {...props}>
+    <Button onPress={handlePress} {...props}>
       {copied ? (
         <CheckIcon className="text-green" />
       ) : (

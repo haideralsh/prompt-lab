@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
-import { Checkbox, CheckboxGroup } from 'react-aria-components'
-import { CheckIcon } from '@radix-ui/react-icons'
-import { PanelDisclosure } from './PanelDisclosure'
 import { CopyButton } from '../common/CopyButton'
 import {
   GitStatusResult,
   GitStatusUpdatedEvent,
   GitTokenCountsEvent,
 } from '../../types/git'
+import { Panel } from './Panel'
 import { TokenCount } from '../common/TokenCount'
 import { useAtom, useAtomValue } from 'jotai'
 import { directoryAtom, selectedDiffIdsAtom } from '../../state/atoms'
+import { PanelRowCheckbox } from './PanelRowCheckbox'
+import { PanelList } from './PanelList'
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
@@ -47,10 +47,6 @@ export function GitPanel() {
   const directory = useAtomValue(directoryAtom)
   const [selectedDiffIds, setSelectedDiffIds] = useAtom(selectedDiffIdsAtom)
   const [gitStatus, setGitStatus] = useState<GitStatusResult | null>(null)
-
-  if (!directory) {
-    return null
-  }
 
   async function copyToClipboard(content: string | string[] | Set<string>) {
     if (!directory.path) return
@@ -167,7 +163,7 @@ export function GitPanel() {
   }, 0)
 
   return (
-    <PanelDisclosure
+    <Panel
       id="git"
       label="Git"
       count={gitChanges.length}
@@ -193,65 +189,50 @@ export function GitPanel() {
       }
     >
       {gitChanges.length > 0 ? (
-        <CheckboxGroup
-          aria-label="Git changes"
-          value={Array.from(selectedDiffIds)}
-          onChange={(values) => setSelectedDiffIds(new Set(values))}
+        <PanelList
+          ariaLabel="Git changes"
+          selectedValues={selectedDiffIds}
+          onChangeSelectedValues={(values) => setSelectedDiffIds(values)}
+          className="text-sm text-text-dark"
         >
-          <ul className="text-sm text-text-dark">
-            {gitChanges.map((change) => (
-              <li key={change.path}>
-                <Checkbox
-                  value={change.path}
-                  className="relative grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5 hover:bg-accent-interactive-dark data-[hovered]:bg-accent-interactive-dark"
-                  slot="selection"
-                >
-                  {({ isSelected }) => (
-                    <>
-                      <span
-                        className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
-                                  border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
-                                  bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
-                                  flex-shrink-0"
-                      >
-                        {isSelected && <CheckIcon />}
-                      </span>
-                      <span className="flex items-center gap-3 w-full">
-                        <span
-                          className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5 justify-self-start -mr-1"
-                          title={change.changeType}
-                        >
-                          {change.changeType.slice(0, 1).toUpperCase()}
-                        </span>
-                        <span className="font-normal text-text-dark break-all">
-                          {change.path}
-                        </span>
-                        <span className="text-red bg-red/15 px-1 py-0.5 rounded-l-sm rounded-r-none text-xs font-semibold justify-self-start">
-                          -{change.linesDeleted}
-                        </span>
-                        <span className="text-green bg-green/15 px-1 py-0.5 rounded-r-sm rounded-l-none text-xs font-semibold justify-self-start -ml-3">
-                          +{change.linesAdded}
-                        </span>
-                      </span>
-                      <span>
-                        <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                          {change.tokenCount && (
-                            <CopyButton
-                              onCopy={async () => {
-                                await copyToClipboard(change.path)
-                              }}
-                            />
-                          )}
-                          <TokenCount count={change.tokenCount} />
-                        </span>
-                      </span>
-                    </>
-                  )}
-                </Checkbox>
-              </li>
-            ))}
-          </ul>
-        </CheckboxGroup>
+          {gitChanges.map((change) => (
+            <li key={change.path}>
+              <PanelRowCheckbox
+                value={change.path}
+                endActions={
+                  <>
+                    {change.tokenCount && (
+                      <CopyButton
+                        onCopy={async () => {
+                          await copyToClipboard(change.path)
+                        }}
+                      />
+                    )}
+                    <TokenCount count={change.tokenCount} />
+                  </>
+                }
+              >
+                <span className="flex items-center gap-3 w-full">
+                  <span
+                    className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5 justify-self-start -mr-1"
+                    title={change.changeType}
+                  >
+                    {change.changeType.slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="font-normal text-text-dark break-all">
+                    {change.path}
+                  </span>
+                  <span className="text-red bg-red/15 px-1 py-0.5 rounded-l-sm rounded-r-none text-xs font-semibold justify-self-start">
+                    -{change.linesDeleted}
+                  </span>
+                  <span className="text-green bg-green/15 px-1 py-0.5 rounded-r-sm rounded-l-none text-xs font-semibold justify-self-start -ml-3">
+                    +{change.linesAdded}
+                  </span>
+                </span>
+              </PanelRowCheckbox>
+            </li>
+          ))}
+        </PanelList>
       ) : (
         <div className="text-xs/loose text-solid-light">
           {gitStatus === null
@@ -259,6 +240,6 @@ export function GitPanel() {
             : 'Your Git changes will appear here.'}
         </div>
       )}
-    </PanelDisclosure>
+    </Panel>
   )
 }

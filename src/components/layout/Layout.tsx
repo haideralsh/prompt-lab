@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ScrollArea } from '../ScrollArea'
-
-const DEFAULT_SIDEBAR_WIDTH = 300
-const MIN_SIDEBAR_WIDTH = 15
-const MAX_SIDEBAR_WIDTH = 1000
+import { useTokenCountListener } from './useTokenCountListener'
+import HeaderBar from './HeaderBar'
+import { useResizeableSidebar } from './useResizeableSidebar'
 
 interface LayoutProps {
   sidebar: React.ReactNode
@@ -12,64 +11,63 @@ interface LayoutProps {
 }
 
 export function Layout({ sidebar, main, footer }: LayoutProps) {
-  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH)
-  const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { sidebarWidth, startDragging, isDragging } =
+    useResizeableSidebar(containerRef)
 
-  function startDragging(e: React.MouseEvent) {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const stopDragging = () => setIsDragging(false)
-
-  const onMouseMove = (e: MouseEvent) => {
-    if (isDragging && containerRef.current) {
-      const containerRect = containerRef.current.getBoundingClientRect()
-      const newWidth = e.clientX - containerRect.left
-      if (newWidth >= MIN_SIDEBAR_WIDTH && newWidth <= MAX_SIDEBAR_WIDTH) {
-        setSidebarWidth(newWidth)
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', onMouseMove)
-      window.addEventListener('mouseup', stopDragging)
-    }
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', stopDragging)
-    }
-  }, [isDragging])
+  useTokenCountListener()
 
   return (
     <div
       ref={containerRef}
-      className="flex h-screen overflow-hidden bg-background-dark"
+      className="flex h-screen overflow-hidden bg-background-light"
     >
       <div
-        className="relative flex-none border-r border-interactive-mid has-[[data-sidebar-handle]:hover]:border-r-border-light bg-background-light"
+        className="relative flex-none bg-background-dark"
         style={{ width: sidebarWidth }}
       >
         <ScrollArea>{sidebar}</ScrollArea>
-
-        <div
-          onMouseDown={startDragging}
-          data-sidebar-handle
-          className="absolute -right-1.25 top-0 h-full w-2 cursor-col-resize select-none"
+        <SidebarResizeHandle
+          startDragging={startDragging}
+          isDragging={isDragging}
         />
       </div>
 
       <div className="flex flex-1 min-h-0 flex-col">
+        <HeaderBar />
+
         <div className="flex-1 min-h-0 overflow-hidden">
           <ScrollArea>{main}</ScrollArea>
         </div>
-        <div className="border-t border-interactive-mid bg-background-light">
-          <div className="p-3">{footer}</div>
-        </div>
+
+        {footer}
       </div>
+    </div>
+  )
+}
+
+interface SidebarResizeHandleProps {
+  startDragging: (e: React.MouseEvent<Element, MouseEvent>) => void
+  isDragging: boolean
+}
+
+function SidebarResizeHandle({
+  startDragging,
+  isDragging,
+}: SidebarResizeHandleProps) {
+  return (
+    <div
+      onMouseDown={startDragging}
+      data-sidebar-handle
+      className="absolute -right-0.25 top-0 h-full w-2 cursor-col-resize select-none group"
+    >
+      <div
+        className={`absolute right-0 top-0 h-full transition-all z-20 ${
+          isDragging
+            ? 'w-1 bg-accent-border-dark'
+            : 'w-0 bg-accent-border-dark group-hover:w-1'
+        }`}
+      />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 export interface DirectoryInfo {
-  name: string | null
+  name: string
   path: string
-  prettyPath: string | null
+  prettyPath: string
 }

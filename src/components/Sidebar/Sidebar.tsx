@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Key, Tree } from 'react-aria-components'
+import { Button, Key, Tree } from 'react-aria-components'
 import { SearchBar } from './SearchBar'
 import { TreeNodeItem } from './TreeNodeItem'
 import type {
@@ -74,17 +74,13 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center px-2 pt-2">
-          <span className="uppercase font-semibold tracking-wide text-xs text-text-dark">
+        <div className="flex items-center p-2 gap-1">
+          <span className="font-medium tracking-wide text-xs text-text-dark">
             {directory?.name}
           </span>
-          <button
-            onClick={exitDirectory}
-            className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
-            title="Return to launch screen"
-          >
-            <ExitIcon />
-          </button>
+          <Button onPress={exitDirectory}>
+            <ExitIcon className="text-text-dark/75 hover:text-text-dark group-data-[disabled]:hover:text-text-dark/50 group-data-[disabled]:text-text-dark/50" />
+          </Button>
         </div>
         <div className="flex items-center gap-0.5 justify-end px-1">
           <button
@@ -110,7 +106,7 @@ export function Sidebar() {
       <div className="flex-1 px-2">
         <div className="h-full overflow-x-hidden rounded-lg">
           {filteredTree.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-xs text-text-dark">
+            <div className="flex h-full py-1 px-2 text-xs text-text-dark">
               No results found
             </div>
           ) : (

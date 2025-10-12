@@ -1,14 +1,13 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
-import { Button, Checkbox, CheckboxGroup } from 'react-aria-components'
+import { Button } from 'react-aria-components'
 import {
-  CheckIcon,
   GlobeIcon,
   Pencil1Icon,
   ReloadIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
-import { PanelDisclosure } from './PanelDisclosure'
+import { PanelDisclosure, PanelList, PanelRowCheckbox } from './Panel'
 import { queue } from '../ToastQueue'
 import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
@@ -81,9 +80,9 @@ export function WebDisclosurePanel() {
     () => new Set()
   )
 
-  if (!directory) {
-    return null
-  }
+  const totalTokenCount = savedPages
+    .filter((page) => selectedPagesIds.has(page.url))
+    .reduce((acc, page) => acc + page.tokenCount, 0)
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {
@@ -261,9 +260,7 @@ export function WebDisclosurePanel() {
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={selectAll}
       onDeselectAll={deselectAll}
-      tokenCount={savedPages
-        .filter((page) => selectedPagesIds.has(page.url))
-        .reduce((acc, page) => acc + page.tokenCount, 0)}
+      tokenCount={totalTokenCount}
       endActions={
         <WebPanelActions
           isAddingNewPage={isAddingNewPage}
@@ -274,125 +271,99 @@ export function WebDisclosurePanel() {
       }
     >
       {savedPages.length > 0 ? (
-        <CheckboxGroup
-          aria-label="Saved pages"
-          value={Array.from(selectedPagesIds)}
-          onChange={(values) => setSelectedPagesIds(new Set(values))}
+        <PanelList
+          ariaLabel="Saved pages"
+          selectedValues={selectedPagesIds}
+          onChangeSelectedValues={(values) => setSelectedPagesIds(values)}
+          className="text-sm"
         >
-          <ul className="text-sm">
-            {savedPages.map((entry) => {
-              const isReloading = reloadingUrls.has(entry.url)
-              const isEditing = editingPageUrl === entry.url
+          {savedPages.map((entry) => {
+            const isReloading = reloadingUrls.has(entry.url)
+            const isEditing = editingPageUrl === entry.url
 
-              return (
-                <li
-                  key={`${entry.url}`}
-                  className={`${
-                    isReloading
-                      ? 'opacity-75 pointer-events-none'
-                      : 'opacity-100'
-                  }`}
-                >
-                  {isEditing ? (
-                    <EditSavedPage
-                      page={entry}
-                      onSave={(savedPages) => {
-                        setSavedPages(savedPages)
-                        setEditingPageUrl(null)
-                      }}
-                      onCancel={() => setEditingPageUrl(null)}
-                    />
-                  ) : (
-                    <Checkbox
-                      value={entry.url}
-                      isDisabled={isReloading || Boolean(editingPageUrl)}
-                      className="relative grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 group text-left w-full rounded-sm px-2 py-0.5
-                              hover:bg-accent-interactive-dark
-                              data-[hovered]:bg-accent-interactive-dark
-                              data-[disabled]:opacity-75
-                              data-[disabled]:hover:bg-transparent"
-                    >
-                      {({ isSelected }) => (
-                        <>
-                          <span
-                            className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light
-                                    border border-border-light  group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid
-                                    bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light
-                                    flex-shrink-0"
-                          >
-                            {isSelected && <CheckIcon />}
-                          </span>
-                          <span className="flex items-center gap-1.5 w-full">
-                            {entry.faviconPath &&
-                            !brokenFavicons.has(entry.url) ? (
-                              <img
-                                src={entry.faviconPath}
-                                onError={() =>
-                                  setBrokenFavicons((prev) =>
-                                    new Set(prev).add(entry.url)
-                                  )
-                                }
-                                alt={entry.title}
-                                className="size-[15px] rounded-xs"
-                              />
-                            ) : (
-                              <GlobeIcon className="text-solid-light" />
-                            )}
-                            <span className="font-normal shrink-0 text-text-dark">
-                              {entry.title}
-                            </span>
-                            <span className="hidden group-hover:inline text-solid-light truncate">
-                              {entry.url}
-                            </span>
-                          </span>
-                          <span>
-                            <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                              <Button
-                                onPress={() => {
-                                  setEditingPageUrl(entry.url)
-                                }}
-                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                                isDisabled={
-                                  isReloading || Boolean(editingPageUrl)
-                                }
-                              >
-                                <Pencil1Icon />
-                              </Button>
-                              <CopyButton
-                                onCopy={() => handleCopyToClipboard(entry)}
-                                isDisabled={isReloading}
-                              />
-                              <Button
-                                onPress={() => {
-                                  void handleReload(entry)
-                                }}
-                                className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
-                                isDisabled={isReloading}
-                              >
-                                <ReloadIcon />
-                              </Button>
-                              <Button
-                                onPress={() => {
-                                  void handleDelete(entry)
-                                }}
-                                className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
-                                isDisabled={isReloading}
-                              >
-                                <TrashIcon />
-                              </Button>
-
-                              <TokenCount count={entry.tokenCount} />
-                            </span>
-                          </span>
-                        </>
-                      )}
-                    </Checkbox>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        </CheckboxGroup>
+            return (
+              <li
+                key={`${entry.url}`}
+                className={`${
+                  isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'
+                }`}
+              >
+                {isEditing ? (
+                  <EditSavedPage
+                    page={entry}
+                    onSave={(savedPages) => {
+                      setSavedPages(savedPages)
+                      setEditingPageUrl(null)
+                    }}
+                    onCancel={() => setEditingPageUrl(null)}
+                  />
+                ) : (
+                  <PanelRowCheckbox
+                    value={entry.url}
+                    isDisabled={isReloading || Boolean(editingPageUrl)}
+                    endActions={
+                      <>
+                        <Button
+                          onPress={() => {
+                            setEditingPageUrl(entry.url)
+                          }}
+                          className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                          isDisabled={isReloading || Boolean(editingPageUrl)}
+                        >
+                          <Pencil1Icon />
+                        </Button>
+                        <CopyButton
+                          onCopy={() => handleCopyToClipboard(entry)}
+                          isDisabled={isReloading}
+                        />
+                        <Button
+                          onPress={() => {
+                            void handleReload(entry)
+                          }}
+                          className="text-text-light/75 hover:text-text-light data-[disabled]:text-text-light/75"
+                          isDisabled={isReloading}
+                        >
+                          <ReloadIcon />
+                        </Button>
+                        <Button
+                          onPress={() => {
+                            void handleDelete(entry)
+                          }}
+                          className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
+                          isDisabled={isReloading}
+                        >
+                          <TrashIcon />
+                        </Button>
+                        <TokenCount count={entry.tokenCount} />
+                      </>
+                    }
+                  >
+                    {entry.faviconPath && !brokenFavicons.has(entry.url) ? (
+                      <img
+                        src={entry.faviconPath}
+                        onError={() =>
+                          setBrokenFavicons((prev) =>
+                            new Set(prev).add(entry.url)
+                          )
+                        }
+                        alt={entry.title}
+                        className="size-[15px] rounded-xs"
+                      />
+                    ) : (
+                      <GlobeIcon className="text-solid-light" />
+                    )}
+                    <span className="font-normal shrink-0 text-text-dark">
+                      {entry.title}
+                    </span>
+                    <span className="hidden group-hover:inline text-solid-light truncate">
+                      {entry.url}
+                    </span>
+                  </PanelRowCheckbox>
+                )}
+              </li>
+            )
+          })}
+        </PanelList>
       ) : !isAddingNewPage ? (
         <div className="text-xs/loose text-solid-light">
           Web pages you add here will be formatted as markdown and included with

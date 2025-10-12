@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { CheckboxGroup } from 'react-aria-components'
-import { PanelDisclosure } from '../PanelDisclosure'
 import { InstructionItem } from './InstructionItem'
 import { preserveSelected } from '../../../helpers/preserveSelected'
 import { InstructionForm } from './forms/InstructionForm'
 import { CopyButton } from '../../common/CopyButton'
+import { Panel } from '../Panel'
 import type {
   SavedInstructionMetadata,
   Instruction,
@@ -262,7 +262,7 @@ export function InstructionsPanel() {
     selectedInstructionIds.size > 0 || hasCopyableUnsavedInstruction
 
   return (
-    <PanelDisclosure
+    <Panel
       id="instructions"
       label="Instructions"
       count={instructions.length + Number(hasUnsavedInstruction)}
@@ -323,6 +323,6 @@ export function InstructionsPanel() {
           onUnsavedInstructionChange={setUnsavedInstruction}
         />
       )}
-    </PanelDisclosure>
+    </Panel>
   )
 }
