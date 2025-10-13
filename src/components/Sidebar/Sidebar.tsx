@@ -73,7 +73,7 @@ export function Sidebar() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col min-h-full">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center p-2 gap-1">
           <span className="font-medium tracking-wide text-xs text-text-dark">
