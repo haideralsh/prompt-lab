@@ -26,18 +26,18 @@ export default function TokenChart({
   const topFiles = files.slice(0, FILES_TO_DISPLAY_COUNT).map((file) => ({
     ...file,
     percentage: file.tokenCount
-      ? Math.ceil((file.tokenCount / totalTokenCount) * 100)
+      ? (file.tokenCount / totalTokenCount) * 100
       : 0,
   }))
 
   const remainingFiles = files.slice(FILES_TO_DISPLAY_COUNT)
   const remainingTokens = remainingFiles.reduce(
     (sum, file) => sum + (file.tokenCount || 0),
-    0,
+    0
   )
   const otherPercentage =
     remainingTokens > 0
-      ? Math.ceil((remainingTokens / totalTokenCount) * 100)
+      ? (remainingTokens / totalTokenCount) * 100
       : 0
 
   const chartData = [...topFiles]
@@ -51,23 +51,36 @@ export default function TokenChart({
     })
   }
 
+  const adjustedData = chartData.map((file) => ({
+    ...file,
+    percentage: Math.max(file.percentage, 0.1),
+  }))
+  const sum = adjustedData.reduce((acc, file) => acc + file.percentage, 0)
+  const finalData =
+    sum > 0
+      ? adjustedData.map((file) => ({
+          ...file,
+          percentage: Number(((file.percentage / sum) * 100).toFixed(1)),
+        }))
+      : []
+
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   return (
     <div className="w-full mx-auto">
       <div className="relative h-1.5 bg-interactive-dark rounded-full overflow-hidden mb-2">
-        {chartData.map((file, index) => (
+        {finalData.map((file, index) => (
           <div
             key={file.path}
             className="absolute top-0 h-full transition-all duration-300 cursor-pointer ease-linear"
             style={{
               backgroundColor: colors[index],
-              left: `${chartData
+              left: `${finalData
                 .slice(0, index)
                 .reduce((sum, f) => sum + f.percentage, 0)}%`,
               width: `${file.percentage}%`,
               borderRight:
-                index !== chartData.length - 1
+                index !== finalData.length - 1
                   ? '3px solid var(--color-background-dark)'
                   : undefined,
               opacity:
@@ -80,7 +93,7 @@ export default function TokenChart({
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
-        {chartData.map((file, index) => (
+        {finalData.map((file, index) => (
           <div
             key={file.path}
             className="flex items-center gap-1.5 cursor-pointer transition-opacity duration-300"
