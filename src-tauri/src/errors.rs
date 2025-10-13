@@ -1,7 +1,7 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Serializable error returned from Tauri commands for store operations.
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ApplicationError {
     pub code: u8,
     pub message: Option<String>,
@@ -16,6 +16,7 @@ pub mod codes {
 
     /// Failed to open/read the store.
     pub const STORE_READ_ERROR: u8 = 3;
+
     /// Failed to write/save the store.
     pub const STORE_WRITE_ERROR: u8 = 4;
 
@@ -24,11 +25,13 @@ pub mod codes {
 
     /// Failed to open the clipboard.
     pub const CLIPBOARD_OPEN_ERROR: u8 = 6;
+
     /// Failed to write to the system clipboard.
     pub const CLIPBOARD_WRITE_ERROR: u8 = 7;
 
     /// Failed to fetch a web page over HTTP(S).
     pub const WEB_FETCH_ERROR: u8 = 8;
+
     /// Failed to convert HTML into Markdown.
     pub const MARKDOWN_CONVERT_ERROR: u8 = 9;
 
