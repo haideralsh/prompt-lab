@@ -22,6 +22,7 @@ import { directoryAtom, selectedPagesIdsAtom } from '../../state/atoms'
 import { PanelList } from './PanelList'
 import { PanelRowCheckbox } from './PanelRowCheckbox'
 import { Panel } from './Panel'
+import { EmptyPanelListMessage } from './EmptyPanelListMessage'
 
 export interface SavedPageMetadata {
   title: string
@@ -363,10 +364,11 @@ export function WebDisclosurePanel() {
           })}
         </PanelList>
       ) : !isAddingNewPage ? (
-        <div className="text-xs/loose text-solid-light">
-          Web pages you add here will be formatted as markdown and included with
-          your prompt.
-        </div>
+        <EmptyPanelListMessage>
+          Web pages will be formatted as markdown and included with your prompt.
+          Add a new web page by clicking on the + button in the web panel
+          header.
+        </EmptyPanelListMessage>
       ) : null}
 
       {isAddingNewPage && (

@@ -13,6 +13,7 @@ import { useAtom, useAtomValue } from 'jotai'
 import { directoryAtom, selectedDiffIdsAtom } from '../../state/atoms'
 import { PanelRowCheckbox } from './PanelRowCheckbox'
 import { PanelList } from './PanelList'
+import { EmptyPanelListMessage } from './EmptyPanelListMessage'
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
@@ -234,11 +235,11 @@ export function GitPanel() {
           ))}
         </PanelList>
       ) : (
-        <div className="text-xs/loose text-solid-light">
+        <EmptyPanelListMessage>
           {gitStatus === null
             ? 'This directory does not appear to be a Git repository'
-            : 'Your Git changes will appear here.'}
-        </div>
+            : 'Your Git changes will appear here. Selected Git diffs will be included in your prompt.'}
+        </EmptyPanelListMessage>
       )}
     </Panel>
   )

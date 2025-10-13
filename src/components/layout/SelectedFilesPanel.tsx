@@ -32,6 +32,7 @@ import {
 import { Panel } from './Panel'
 import { PanelList } from './PanelList'
 import { PanelRowCheckbox } from './PanelRowCheckbox'
+import { EmptyPanelListMessage } from './EmptyPanelListMessage'
 
 export function SelectedFilesPanel() {
   const [selectedFiles, setSelectedFiles] = useAtom(selectedFilesAtom)
@@ -196,10 +197,10 @@ export function SelectedFilesPanel() {
           </AnimatePresence>
         </PanelList>
       ) : (
-        <div className="text-xs/loose text-solid-light ">
+        <EmptyPanelListMessage>
           Files selected in the tree will appear here and their content will be
           included in the prompt.
-        </div>
+        </EmptyPanelListMessage>
       )}
     </Panel>
   )
