@@ -17,6 +17,7 @@ import {
   selectedNodesAtom,
 } from '../../state/atoms'
 import { ExitIcon } from '@radix-ui/react-icons'
+import { NO_DIRECTORY } from '../../state/initial'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)
@@ -36,7 +37,7 @@ export function Sidebar() {
 
   async function search(query: string) {
     const { results } = await invoke<SearchResult>('search_tree', {
-      path: directory?.path,
+      path: directory.path,
       term: query.trim(),
     })
 
@@ -54,7 +55,7 @@ export function Sidebar() {
 
   async function clearSelection() {
     const selection = await invoke<SelectionResult>('clear_selection', {
-      directoryPath: directory?.path,
+      directoryPath: directory.path,
     })
 
     setSelectedNodes(new Set(selection.selectedNodesPaths))
@@ -63,7 +64,7 @@ export function Sidebar() {
   }
 
   function exitDirectory() {
-    setDirectory(null)
+    setDirectory(NO_DIRECTORY)
     setFilteredTree([])
     setSelectedNodes(new Set<Key>())
     setSelectedFiles([])

@@ -7,7 +7,6 @@ export interface InstructionFieldsProps {
   title: string
   content: string
   isLoading?: boolean
-  submitLabel?: string
   rows?: number
   className?: string
   onTitleChange: (value: string) => void
@@ -23,7 +22,6 @@ export function InstructionFields({
   onTitleChange,
   onContentChange,
   onCancel,
-  submitLabel = 'Save',
   rows = 4,
   className,
 }: InstructionFieldsProps) {
@@ -86,7 +84,7 @@ export function InstructionFields({
             isDisabled={saveDisabled}
             className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark data-[disabled]:text-text-dark/60 hover:text-text-light"
           >
-            {submitLabel}
+            Save
           </Button>
 
           <Button

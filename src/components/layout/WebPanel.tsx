@@ -7,7 +7,6 @@ import {
   ReloadIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
-import { PanelDisclosure, PanelList, PanelRowCheckbox } from './Panel'
 import { queue } from '../ToastQueue'
 import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
@@ -20,6 +19,9 @@ import { TokenCount } from '../common/TokenCount'
 import { appDataDir, join } from '@tauri-apps/api/path'
 import { useAtom, useAtomValue } from 'jotai'
 import { directoryAtom, selectedPagesIdsAtom } from '../../state/atoms'
+import { PanelList } from './PanelList'
+import { PanelRowCheckbox } from './PanelRowCheckbox'
+import { Panel } from './Panel'
 
 export interface SavedPageMetadata {
   title: string
@@ -218,8 +220,6 @@ export function WebDisclosurePanel() {
   }
 
   async function handleCopyToClipboard(entry: SavedPageMetadata) {
-    if (!directory.path) return
-
     await invoke<void>('copy_pages_to_clipboard', {
       directoryPath: directory.path,
       urls: [entry.url],
@@ -229,8 +229,6 @@ export function WebDisclosurePanel() {
   // title save logic moved into <EditSavedPage />
 
   async function handleCopySelectedToClipboard() {
-    if (!directory.path) return
-
     await invoke<void>('copy_pages_to_clipboard', {
       directoryPath: directory.path,
       urls: Array.from(selectedPagesIds),
@@ -251,7 +249,7 @@ export function WebDisclosurePanel() {
     selectedPagesIds.size > 0 && selectedPagesIds.size < savedPages.length
 
   return (
-    <PanelDisclosure
+    <Panel
       id="web"
       label="Web"
       count={savedPages.length}
@@ -419,6 +417,6 @@ export function WebDisclosurePanel() {
           </div>
         </form>
       )}
-    </PanelDisclosure>
+    </Panel>
   )
 }

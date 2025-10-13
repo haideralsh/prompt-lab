@@ -27,7 +27,7 @@ function HeaderBar() {
     await invoke('copy_all_to_clipboard', {
       treeDisplayMode,
       fullTree: tree,
-      root: directory?.path ?? '',
+      root: directory.path,
       selectedNodes: Array.from(selectedNodes),
       gitDiffPaths: Array.from(selectedDiffIds),
       urls: Array.from(selectedPagesIds),

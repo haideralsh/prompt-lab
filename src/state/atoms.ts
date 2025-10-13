@@ -3,8 +3,9 @@ import type { Key } from 'react-aria-components'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import type { FileNode, Tree, TreeDisplayMode } from '../types/FileTree'
 import type { Instruction } from '../components/layout/instruction/types'
+import { NO_DIRECTORY } from './initial'
 
-export const directoryAtom = atom<DirectoryInfo>(null)
+export const directoryAtom = atom<DirectoryInfo>(NO_DIRECTORY)
 export const treeAtom = atom<Tree>([])
 export const filteredTreeAtom = atom<Tree>([])
 export const selectedNodesAtom = atom<Set<Key>>(new Set<Key>())

@@ -44,7 +44,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
 
   async function onToggle() {
     const selection = await invoke<SelectionResult>('toggle_selection', {
-      directoryPath: directory?.path,
+      directoryPath: directory.path,
       current: Array.from(selectedNodes) as string[],
       nodePath: item.id,
     })

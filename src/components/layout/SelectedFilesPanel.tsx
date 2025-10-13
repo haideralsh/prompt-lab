@@ -9,7 +9,6 @@ import {
 import { ReaderIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { PanelDisclosure, PanelList, PanelRowCheckbox } from './Panel'
 import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
 import {
   FileNode,
@@ -30,6 +29,9 @@ import {
   treeDisplayModeAtom,
   totalFilesTokenCountAtom,
 } from '../../state/atoms'
+import { Panel } from './Panel'
+import { PanelList } from './PanelList'
+import { PanelRowCheckbox } from './PanelRowCheckbox'
 
 export function SelectedFilesPanel() {
   const [selectedFiles, setSelectedFiles] = useAtom(selectedFilesAtom)
@@ -47,7 +49,7 @@ export function SelectedFilesPanel() {
 
   async function deselect(path: Id) {
     const selection = await invoke<SelectionResult>('toggle_selection', {
-      directoryPath: directory?.path,
+      directoryPath: directory.path,
       current: Array.from(selectedNodes),
       nodePath: path,
     })
@@ -58,7 +60,7 @@ export function SelectedFilesPanel() {
 
   async function deselectAll() {
     const selection = await invoke<SelectionResult>('clear_selection', {
-      directoryPath: directory?.path,
+      directoryPath: directory.path,
     })
     setSelectedNodes(new Set(selection.selectedNodesPaths))
     setSelectedFiles(selection.selectedFiles)
@@ -67,7 +69,7 @@ export function SelectedFilesPanel() {
 
   async function copyFiles(paths: Id[]) {
     await invoke('copy_files_to_clipboard', {
-      directoryPath: directory?.path,
+      directoryPath: directory.path,
       treeDisplayMode,
       fullTree: tree,
       selectedNodes: paths,
@@ -94,7 +96,7 @@ export function SelectedFilesPanel() {
   }
 
   return (
-    <PanelDisclosure
+    <Panel
       id="selected"
       label="Selected files"
       count={sortedFiles.length}
@@ -144,7 +146,10 @@ export function SelectedFilesPanel() {
       }
     >
       {sortedFiles.length > 0 ? (
-        <PanelList ariaLabel="Selected files" className="text-sm text-text-dark">
+        <PanelList
+          ariaLabel="Selected files"
+          className="text-sm text-text-dark"
+        >
           <AnimatePresence initial={false}>
             {Array.from(sortedFiles).map((file) => (
               <motion.li
@@ -196,6 +201,6 @@ export function SelectedFilesPanel() {
           included in the prompt.
         </div>
       )}
-    </PanelDisclosure>
+    </Panel>
   )
 }

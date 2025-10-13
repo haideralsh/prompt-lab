@@ -9,7 +9,7 @@ import { directoryAtom } from './state/atoms'
 function App() {
   const directory = useAtomValue(directoryAtom)
 
-  if (directory)
+  if (directory.path)
     return <Layout sidebar={<Sidebar />} main={<Main />} footer={<Footer />} />
 
   return <LaunchScreen />

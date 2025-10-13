@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { ScrollArea } from '../ScrollArea'
 import { useTokenCountListener } from './useTokenCountListener'
 import HeaderBar from './HeaderBar'
 import { useResizeableSidebar } from './useResizeableSidebar'
+import { SidebarResizeHandle } from './SidebarResizeHandle'
 
 interface LayoutProps {
   sidebar: React.ReactNode
@@ -42,32 +43,6 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
 
         {footer}
       </div>
-    </div>
-  )
-}
-
-interface SidebarResizeHandleProps {
-  startDragging: (e: React.MouseEvent<Element, MouseEvent>) => void
-  isDragging: boolean
-}
-
-function SidebarResizeHandle({
-  startDragging,
-  isDragging,
-}: SidebarResizeHandleProps) {
-  return (
-    <div
-      onMouseDown={startDragging}
-      data-sidebar-handle
-      className="absolute -right-0.25 top-0 h-full w-2 cursor-col-resize select-none group"
-    >
-      <div
-        className={`absolute right-0 top-0 h-full transition-all z-20 ${
-          isDragging
-            ? 'w-1 bg-accent-border-dark'
-            : 'w-0 bg-accent-border-dark group-hover:w-1'
-        }`}
-      />
     </div>
   )
 }
