@@ -12,9 +12,10 @@
   "app": {
     "windows": [
       {
-        "width": 1200,
-        "height": 800,
-        "title": "Contexter"
+        "width": 1280,
+        "height": 920,
+        "title": "Contexter",
+        "devtools": false
       }
     ],
     "security": {
