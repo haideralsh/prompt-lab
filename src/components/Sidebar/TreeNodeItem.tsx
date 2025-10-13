@@ -87,7 +87,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                 isSelected={selected}
                 isIndeterminate={indeterminate}
                 onChange={onToggle}
-                className="flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
+                className="relative flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
               border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
               bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
               flex-shrink-0"
