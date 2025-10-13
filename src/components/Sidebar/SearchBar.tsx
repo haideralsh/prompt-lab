@@ -22,7 +22,7 @@ export function SearchBar({
   }
 
   return (
-    <div className="sticky top-0 p-2 bg-background-dark transition-colors">
+    <div className="sticky z-10 top-0 p-2 bg-background-dark transition-colors">
       <div className="px-1.5 rounded-sm group bg-interactive-mid has-focus:bg-interactive-light">
         <label className="sr-only" htmlFor="sidebar-search">
           filter tree by file name
