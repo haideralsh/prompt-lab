@@ -76,7 +76,6 @@ export function InstructionForm({
   }
 
   function handleCancel() {
-    reset()
     onCancel()
   }
 
