@@ -7,10 +7,14 @@ import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
 export function CopyButton({
   onCopy,
   errorMessage = 'Failed to copy to clipboard',
+  idleLabel,
+  copiedLabel,
   ...props
 }: {
   onCopy: () => Promise<void>
   errorMessage?: string
+  idleLabel?: string
+  copiedLabel?: string
 } & React.ComponentProps<typeof Button>) {
   const [copied, setCopied] = useState(false)
 
@@ -28,12 +32,25 @@ export function CopyButton({
   }
 
   return (
-    <Button onPress={handlePress} {...props}>
-      {copied ? (
-        <CheckIcon className="text-green" />
-      ) : (
-        <CopyIcon className="text-text-dark/75 hover:text-text-dark group-data-[disabled]:hover:text-text-dark/50 group-data-[disabled]:text-text-dark/50" />
-      )}
+    <Button
+      className="group"
+      onPress={handlePress}
+      isDisabled={copied}
+      {...props}
+    >
+      <div className="flex items-center text-xs gap-1.25 text-text-dark/75 hover:text-text-dark group-data-[disabled]:hover:text-text-dark/75 group-data-[disabled]:text-text-dark/75">
+        {copied ? (
+          <>
+            <CheckIcon className="text-green" />
+            {copiedLabel && <span>{copiedLabel}</span>}
+          </>
+        ) : (
+          <>
+            <CopyIcon />
+            {idleLabel && <span>{idleLabel}</span>}
+          </>
+        )}
+      </div>
     </Button>
   )
 }

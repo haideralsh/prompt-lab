@@ -11,7 +11,7 @@ import {
   treeDisplayModeAtom,
 } from '../../state/atoms'
 import { invoke } from '@tauri-apps/api/core'
-import { CopyIcon } from '@radix-ui/react-icons'
+import { CopyButton } from '../common/CopyButton'
 
 function HeaderBar() {
   const directory = useAtomValue(directoryAtom)
@@ -49,15 +49,12 @@ function HeaderBar() {
         Prompt
       </span>
 
-      <div className="flex items-center gap-1">
-        <button
-          onClick={handleCopyToClipboard}
-          className="inline-flex items-center gap-1.5 text-xs py-0.5 px-2 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
-          title="Copy to clipboard"
-        >
-          <CopyIcon />
-          <span>Copy to clipboard</span>
-        </button>
+      <div className="flex items-center gap-3">
+        <CopyButton
+          onCopy={handleCopyToClipboard}
+          idleLabel="Copy all"
+          copiedLabel="Copied"
+        />
         <TokenCount count={0} />
       </div>
     </div>
