@@ -99,8 +99,10 @@ export function Panel({
               </div>
             </Heading>
           </Button>
-          <DisclosurePanel className={`${panelClassName} bg-background-light`}>
-            {children}
+          <DisclosurePanel>
+            <div className={`${panelClassName} bg-background-light`}>
+              {children}
+            </div>
           </DisclosurePanel>
         </>
       )}
