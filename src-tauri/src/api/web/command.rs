@@ -11,7 +11,8 @@ use crate::{
     store::{open_store, save_store, StoreCategoryKey, StoreDataKey},
 };
 use serde_json::{json, Map, Value};
-use tauri::{AppHandle, Wry};
+use std::fs;
+use tauri::{AppHandle, Manager, Wry};
 
 #[tauri::command]
 pub async fn save_page_as_md(
@@ -169,6 +170,19 @@ pub fn delete_saved_page(
             if let Some(saved_pages_value) = directory_object.get_mut(StoreDataKey::SAVED_WEB_PAGES)
             {
                 if let Some(saved_pages_object) = saved_pages_value.as_object_mut() {
+                    if let Some(page_data) = saved_pages_object.get(&url) {
+                        if let Some(page_object) = page_data.as_object() {
+                            if let Some(favicon_path) =
+                                page_object.get("faviconPath").and_then(|v| v.as_str())
+                            {
+                                if let Ok(app_data_dir) = app.path().app_data_dir() {
+                                    let favicon_file_path = app_data_dir.join(favicon_path);
+                                    let _ = fs::remove_file(favicon_file_path);
+                                }
+                            }
+                        }
+                    }
+
                     saved_pages_object.remove(&url);
 
                     if saved_pages_object.is_empty() {
