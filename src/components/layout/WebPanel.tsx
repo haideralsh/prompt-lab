@@ -377,12 +377,15 @@ export function WebDisclosurePanel() {
             void handleAddNewPage(event)
           }}
         >
-          <div className="ml-8.5 mr-2 mt-1 mb-2">
-            <div className="px-1.5 rounded-sm group bg-transparent border border-interactive-light has-focus:border-border-mid ">
+          <div className="ml-8 mr-2 mt-1 mb-2">
+            <div className="rounded-sm group bg-transparent outline-1 -outline-offset-1 outline-interactive-light has-[input:focus-within]:outline-1 has-[input:focus-within]:-outline-offset-1 has-[input:focus-within]:outline-border-mid">
               <label className="sr-only" htmlFor="web-url">
                 add a web page URL
               </label>
-              <div className="relative flex items-center">
+              <div className="grid grid-cols-[auto_1fr_auto] items-center">
+                <div className="shrink-0 pl-2">
+                  <GlobeIcon className="text-solid-light" />
+                </div>
                 <input
                   id="web-url"
                   type="url"
@@ -394,14 +397,14 @@ export function WebDisclosurePanel() {
                   value={webUrl}
                   onChange={(event) => setWebUrl(event.target.value)}
                   disabled={isSavingWeb}
-                  className="placeholder:text-sm placeholder:text-solid-light w-full text-text-dark py-1 pl-1 pr-26 text-sm focus:outline-none bg-transparent disabled:text-text-dark/60"
+                  className="min-w-0 grow py-1.5 px-2 text-sm text-text-dark placeholder:text-solid-light focus:outline-none bg-transparent disabled:text-text-dark/60"
                 />
 
-                <div className="absolute inset-y-0 right-0.5 flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 px-1">
                   <Button
                     type="submit"
                     isDisabled={isSavingWeb || !webUrl.trim()}
-                    className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm  text-text-dark data-[disabled]:text-text-dark/60  hover:text-text-light"
+                    className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark data-[disabled]:text-text-dark/60 hover:text-text-light"
                   >
                     Add
                   </Button>
