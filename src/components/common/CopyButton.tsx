@@ -38,7 +38,7 @@ export function CopyButton({
       isDisabled={copied}
       {...props}
     >
-      <div className="flex items-center text-xs gap-1.25 text-text-dark/75 hover:text-text-dark group-data-[disabled]:hover:text-text-dark/75 group-data-[disabled]:text-text-dark/75">
+      <div className="flex items-center text-xs gap-1.25 text-text-dark hover:text-text-light group-data-[disabled]:hover:text-text-dark group-data-[disabled]:text-text-dark group-data-[disabled]:cursor-not-allowed">
         {copied ? (
           <>
             <CheckIcon className="text-green" />
