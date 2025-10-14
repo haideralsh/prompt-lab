@@ -4,12 +4,14 @@ import { useState } from 'react'
 interface SearchBarProps {
   onChange(value: string): void
   onClear(): void
+  onNavigateOut?: () => void
   disabled?: boolean
 }
 
 export function SearchBar({
   onChange,
   onClear,
+  onNavigateOut,
   disabled = false,
 }: SearchBarProps) {
   const [value, setValue] = useState('')
@@ -19,6 +21,12 @@ export function SearchBar({
 
     setValue('')
     onClear()
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'ArrowDown') {
+      onNavigateOut?.()
+    }
   }
 
   return (
@@ -44,6 +52,7 @@ export function SearchBar({
               setValue(e.target.value)
               onChange(e.target.value)
             }}
+            onKeyDown={handleKeyDown}
             disabled={disabled}
             className="placeholder:text-sm placeholder:text-solid-light w-full text-text-light py-1 pl-5.5 pr-5.5 text-sm focus:outline-none"
           />
@@ -54,9 +63,9 @@ export function SearchBar({
               type="button"
               onClick={clear}
               aria-label="Clear search"
-              className="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600 disabled:opacity-0 disabled:pointer-events-none"
+              className="absolute inset-y-0 right-0 flex items-center text-text-dark hover:text-text-light disabled:opacity-0 disabled:pointer-events-none focus:outline-none group"
             >
-              <span className="text-base leading-none">
+              <span className="text-base leading-none rounded-sm group-focus-visible:ring-2 group-focus-visible:ring-accent-border-light">
                 <Cross2Icon className="text-text-dark group-has-focus:text-text-light" />
               </span>
             </button>

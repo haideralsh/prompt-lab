@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Button, Key, Tree } from 'react-aria-components'
 import { SearchBar } from './SearchBar'
 import { TreeNodeItem } from './TreeNodeItem'
@@ -34,6 +34,7 @@ export function Sidebar() {
   const setSelectedNodes = useSetAtom(selectedNodesAtom)
   const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
+  const treeRef = useRef<HTMLDivElement>(null)
 
   async function search(query: string) {
     const { results } = await invoke<SearchResult>('search_tree', {
@@ -103,15 +104,17 @@ export function Sidebar() {
       <SearchBar
         onChange={(value) => search(value)}
         onClear={() => search('')}
+        onNavigateOut={() => treeRef.current?.focus()}
       />
       <div className="flex-1 px-2">
-        <div className="h-full overflow-x-hidden rounded-lg">
+        <div className="h-full overflow-x-hidden">
           {filteredTree.length === 0 ? (
             <div className="flex h-full py-1 px-2 text-xs text-text-dark">
               No results found
             </div>
           ) : (
             <Tree
+              ref={treeRef}
               aria-label="directory tree"
               selectionMode="multiple"
               items={filteredTree}
