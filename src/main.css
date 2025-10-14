@@ -82,6 +82,10 @@ body {
   }
 }
 
+::selection {
+  background-color: var(--color-accent-border-light);
+}
+
 .custom-scrollbar {
   resize: none;
 
