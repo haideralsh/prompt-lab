@@ -42,7 +42,7 @@ export function SelectedFilesPanel() {
   const tree = useAtomValue(treeAtom)
   const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
   const setTreeDisplayMode = useSetAtom(treeDisplayModeAtom)
-  const totalTokenCount = useAtomValue(totalFilesTokenCountAtom)
+  const totalFilesTokenCount = useAtomValue(totalFilesTokenCountAtom)
 
   const sortedFiles = useMemo(() => {
     return sortFilesByTokenCount(selectedFiles)
@@ -110,7 +110,7 @@ export function SelectedFilesPanel() {
       onDeselectAll={() => {
         void deselectAll()
       }}
-      tokenCount={totalTokenCount}
+      tokenCount={totalFilesTokenCount}
       endActions={
         <>
           <ToggleButtonGroup

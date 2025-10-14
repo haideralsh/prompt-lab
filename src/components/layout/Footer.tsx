@@ -6,7 +6,7 @@ import { selectedFilesAtom, totalFilesTokenCountAtom } from '../../state/atoms'
 
 export function Footer() {
   const selectedFiles = useAtomValue(selectedFilesAtom)
-  const totalTokenCount = useAtomValue(totalFilesTokenCountAtom)
+  const totalFilesTokenCount = useAtomValue(totalFilesTokenCountAtom)
 
   const sortedFiles = useMemo(() => {
     return sortFilesByTokenCount(selectedFiles)
@@ -16,7 +16,10 @@ export function Footer() {
 
   return (
     <div className="flex p-3 gap-8 justify-between items-center bg-background-dark">
-      <TokenChart files={sortedFiles} totalTokenCount={totalTokenCount} />
+      <TokenChart
+        files={sortedFiles}
+        totalFilesTokenCount={totalFilesTokenCount}
+      />
     </div>
   )
 }

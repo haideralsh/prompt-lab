@@ -28,10 +28,10 @@ import {
 export function InstructionsPanel() {
   const directory = useAtomValue(directoryAtom)
   const [selectedInstructionIds, setSelectedInstructionIds] = useAtom(
-    selectedInstructionIdsAtom
+    selectedInstructionIdsAtom,
   )
   const [unsavedInstruction, setUnsavedInstruction] = useAtom(
-    unsavedInstructionAtom
+    unsavedInstructionAtom,
   )
   const [instructions, setInstructions] = useState<SavedInstructions>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -42,7 +42,7 @@ export function InstructionsPanel() {
   const [isFormIncluded, setIsFormIncluded] = useState(true)
   const [hasUnsavedInstruction, setHasUnsavedInstruction] = useState(false)
   const { tokenCount: unsavedTokenCount } = useInstructionTokenCount(
-    unsavedInstruction?.content ?? ''
+    unsavedInstruction?.content ?? '',
   )
 
   if (!directory) {
@@ -61,7 +61,7 @@ export function InstructionsPanel() {
     hasFormCheckbox && isFormIncluded && hasUnsavedInstruction
       ? unsavedTokenCount
       : 0
-  const totalTokenCount = selectedTokenCount + draftTokenCount
+  const totalInstructionTokenCount = selectedTokenCount + draftTokenCount
 
   const totalSelectableCount = instructions.length + Number(hasFormCheckbox)
   const selectedCount =
@@ -94,7 +94,7 @@ export function InstructionsPanel() {
 
   function handleSelectAll() {
     setSelectedInstructionIds(
-      new Set(instructions.map((instruction) => instruction.id))
+      new Set(instructions.map((instruction) => instruction.id)),
     )
     setIsFormIncluded(true)
   }
@@ -125,8 +125,8 @@ export function InstructionsPanel() {
 
     setInstructions((current) =>
       current.map((entry) =>
-        entry.id === instruction.id ? { ...entry, ...fullInstruction } : entry
-      )
+        entry.id === instruction.id ? { ...entry, ...fullInstruction } : entry,
+      ),
     )
     setEditingInstructionId(instruction.id)
     setIsLoading(false)
@@ -168,7 +168,7 @@ export function InstructionsPanel() {
     await copyInstructionsToClipboard(
       directory.path,
       instructionIds,
-      draftInstructions
+      draftInstructions,
     )
   }
 
@@ -183,8 +183,8 @@ export function InstructionsPanel() {
       preserveSelected(
         updatedInstructions,
         selectedIds,
-        (instruction) => instruction.id
-      )
+        (instruction) => instruction.id,
+      ),
     )
 
     if (editingInstructionId === id) {
@@ -198,7 +198,7 @@ export function InstructionsPanel() {
       directory.path,
       data.name,
       data.content,
-      instructionId
+      instructionId,
     )
 
     if (!updatedInstructions) {
@@ -211,8 +211,8 @@ export function InstructionsPanel() {
       preserveSelected(
         updatedInstructions,
         selectedIds,
-        (instruction) => instruction.id
-      )
+        (instruction) => instruction.id,
+      ),
     )
     setEditingInstructionId(null)
     setIsLoading(false)
@@ -223,7 +223,7 @@ export function InstructionsPanel() {
     const updatedInstructions = await upsertInstruction(
       directory.path,
       data.name,
-      data.content
+      data.content,
     )
 
     if (!updatedInstructions) {
@@ -236,8 +236,8 @@ export function InstructionsPanel() {
       preserveSelected(
         updatedInstructions,
         selectedIds,
-        (instruction) => instruction.id
-      )
+        (instruction) => instruction.id,
+      ),
     )
     setIsAddingNew(false)
     setIsLoading(false)
@@ -271,7 +271,7 @@ export function InstructionsPanel() {
       isGroupIndeterminate={isIndeterminate}
       onSelectAll={handleSelectAll}
       onDeselectAll={handleDeselectAll}
-      tokenCount={totalTokenCount}
+      tokenCount={totalInstructionTokenCount}
       endActions={
         <CopyButton
           onCopy={handleCopySelectedInstructions}

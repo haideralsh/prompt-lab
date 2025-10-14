@@ -88,7 +88,7 @@ struct TokenCountResult {
 #[serde(rename_all = "camelCase")]
 struct TokenCountsEvent {
     selection_id: String,
-    total_token_count: usize,
+    total_files_token_count: usize,
     files: Vec<TokenCountResult>,
 }
 
@@ -193,7 +193,7 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
                 "file-token-counts",
                 TokenCountsEvent {
                     selection_id: sid,
-                    total_token_count: 0,
+                    total_files_token_count: 0,
                     files: Vec::new(),
                 },
             );
@@ -266,7 +266,7 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
                     "file-token-counts",
                     TokenCountsEvent {
                         selection_id: sid.clone(),
-                        total_token_count: total,
+                        total_files_token_count: total,
                         files: batch.clone(),
                     },
                 );
@@ -279,7 +279,7 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
                 "file-token-counts",
                 TokenCountsEvent {
                     selection_id: sid,
-                    total_token_count: total,
+                    total_files_token_count: total,
                     files: batch,
                 },
             );

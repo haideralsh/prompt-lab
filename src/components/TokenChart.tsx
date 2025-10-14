@@ -13,7 +13,7 @@ interface ChartDataItem {
 
 interface TokenChartProps {
   files: FileNode[]
-  totalTokenCount: number
+  totalFilesTokenCount: number
 }
 
 const colors = [
@@ -33,12 +33,12 @@ const MIN_VISIBLE_WIDTH = 0.5
 
 export default function TokenChart({
   files,
-  totalTokenCount,
+  totalFilesTokenCount,
 }: TokenChartProps) {
   const topFiles = files.slice(0, FILES_TO_DISPLAY_COUNT).map((file) => ({
     ...file,
     actualPercentage: file.tokenCount
-      ? (file.tokenCount / totalTokenCount) * 100
+      ? (file.tokenCount / totalFilesTokenCount) * 100
       : 0,
   }))
 
@@ -48,7 +48,7 @@ export default function TokenChart({
     0,
   )
   const otherActualPercentage =
-    remainingTokens > 0 ? (remainingTokens / totalTokenCount) * 100 : 0
+    remainingTokens > 0 ? (remainingTokens / totalFilesTokenCount) * 100 : 0
 
   const chartData = [...topFiles]
   if (otherActualPercentage > 0) {

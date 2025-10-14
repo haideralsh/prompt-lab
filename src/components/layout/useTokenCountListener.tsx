@@ -5,7 +5,7 @@ import { useSetAtom } from 'jotai'
 import { selectedFilesAtom, totalFilesTokenCountAtom } from '../../state/atoms'
 
 export function useTokenCountListener() {
-  const setTotalTokenCount = useSetAtom(totalFilesTokenCountAtom)
+  const setTotalFilesTokenCount = useSetAtom(totalFilesTokenCountAtom)
   const setSelectedFiles = useSetAtom(selectedFilesAtom)
 
   useEffect(() => {
@@ -15,8 +15,8 @@ export function useTokenCountListener() {
       unlisten = await listen<TokenCountsEvent>(
         'file-token-counts',
         (event) => {
-          const { files, totalTokenCount: eventTotalTokenCount } = event.payload
-          setTotalTokenCount(eventTotalTokenCount)
+          const { files, totalFilesTokenCount } = event.payload
+          setTotalFilesTokenCount(totalFilesTokenCount)
 
           if (files?.length) {
             setSelectedFiles((prev) => {
@@ -30,7 +30,7 @@ export function useTokenCountListener() {
               return Array.from(map.values())
             })
           }
-        }
+        },
       )
     }
 

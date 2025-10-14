@@ -6,6 +6,6 @@ interface TokenCountResult {
 
 type TokenCountsEvent = {
   selectionId: string
-  totalTokenCount: number
+  totalFilesTokenCount: number
   files: TokenCountResult[]
 }

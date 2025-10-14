@@ -18,7 +18,11 @@ import { preserveSelected } from '../../helpers/preserveSelected'
 import { TokenCount } from '../common/TokenCount'
 import { appDataDir, join } from '@tauri-apps/api/path'
 import { useAtom, useAtomValue } from 'jotai'
-import { directoryAtom, selectedPagesIdsAtom } from '../../state/atoms'
+import {
+  directoryAtom,
+  selectedPagesIdsAtom,
+  totalFilesTokenCountAtom,
+} from '../../state/atoms'
 import { PanelList } from './PanelList'
 import { PanelRowCheckbox } from './PanelRowCheckbox'
 import { Panel } from './Panel'
@@ -34,7 +38,7 @@ export interface SavedPageMetadata {
 export type SavedPages = readonly SavedPageMetadata[]
 
 export async function fetchSavedPages(
-  directoryPath: string
+  directoryPath: string,
 ): Promise<SavedPages> {
   try {
     const [pages, appDataDirPath] = await Promise.all([
@@ -75,15 +79,15 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
   const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
   const [brokenFavicons, setBrokenFavicons] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
 
-  const totalTokenCount = savedPages
+  const totalPagesTokenCount = savedPages
     .filter((page) => selectedPagesIds.has(page.url))
     .reduce((acc, page) => acc + page.tokenCount, 0)
 
@@ -133,7 +137,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelected(pages, selectedUrls, (page) => page.url)
+        preserveSelected(pages, selectedUrls, (page) => page.url),
       )
 
       setWebUrl('')
@@ -259,7 +263,7 @@ export function WebDisclosurePanel() {
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={selectAll}
       onDeselectAll={deselectAll}
-      tokenCount={totalTokenCount}
+      tokenCount={totalPagesTokenCount}
       endActions={
         <WebPanelActions
           isAddingNewPage={isAddingNewPage}
@@ -342,7 +346,7 @@ export function WebDisclosurePanel() {
                         src={entry.faviconPath}
                         onError={() =>
                           setBrokenFavicons((prev) =>
-                            new Set(prev).add(entry.url)
+                            new Set(prev).add(entry.url),
                           )
                         }
                         alt={entry.title}
