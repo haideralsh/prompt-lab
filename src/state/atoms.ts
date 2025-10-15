@@ -15,9 +15,15 @@ export const selectedDiffIdsAtom = atom<Set<string>>(new Set<string>())
 export const indeterminateNodesAtom = atom<Set<Key>>(new Set<Key>())
 export const selectedInstructionIdsAtom = atom<Set<string>>(new Set<string>())
 export const unsavedInstructionAtom = atom<Instruction | null>(null)
+export const instructionsTokenCountAtom = atom<number>(0)
 export const totalFilesTokenCountAtom = atom<number>(0)
 export const totalPagesTokenCountAtom = atom<number>(0)
+export const totalGitDiffTokenCountAtom = atom<number>(0)
 export const totalTokenCountAtom = atom<number>(
-  (get) => get(totalFilesTokenCountAtom) + get(totalPagesTokenCountAtom),
+  (get) =>
+    get(totalFilesTokenCountAtom) +
+    get(totalPagesTokenCountAtom) +
+    get(totalGitDiffTokenCountAtom) +
+    get(instructionsTokenCountAtom),
 )
 export const treeDisplayModeAtom = atom<TreeDisplayMode>('selected')

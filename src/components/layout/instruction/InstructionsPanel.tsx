@@ -18,9 +18,10 @@ import {
   upsertInstruction,
 } from './handlers'
 import { useInstructionTokenCount } from './forms/useInstructionTokenCount'
-import { useAtom, useAtomValue } from 'jotai'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,
+  instructionsTokenCountAtom,
   selectedInstructionIdsAtom,
   unsavedInstructionAtom,
 } from '../../../state/atoms'
@@ -44,6 +45,7 @@ export function InstructionsPanel() {
   const { tokenCount: unsavedTokenCount } = useInstructionTokenCount(
     unsavedInstruction?.content ?? '',
   )
+  const setInstructionsTokenCountAtom = useSetAtom(instructionsTokenCountAtom)
 
   if (!directory) {
     return null
@@ -71,6 +73,10 @@ export function InstructionsPanel() {
     totalSelectableCount > 0 && selectedCount === totalSelectableCount
   const isIndeterminate =
     selectedCount > 0 && selectedCount < totalSelectableCount
+
+  useEffect(() => {
+    setInstructionsTokenCountAtom(totalInstructionTokenCount)
+  }, [totalInstructionTokenCount, setInstructionsTokenCountAtom])
 
   useEffect(() => {
     loadInstructions()

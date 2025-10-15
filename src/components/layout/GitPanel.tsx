@@ -9,22 +9,26 @@ import {
 } from '../../types/git'
 import { Panel } from './Panel'
 import { TokenCount } from '../common/TokenCount'
-import { useAtom, useAtomValue } from 'jotai'
-import { directoryAtom, selectedDiffIdsAtom } from '../../state/atoms'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import {
+  directoryAtom,
+  selectedDiffIdsAtom,
+  totalGitDiffTokenCountAtom,
+} from '../../state/atoms'
 import { PanelRowCheckbox } from './PanelRowCheckbox'
 import { PanelList } from './PanelList'
 import { EmptyPanelListMessage } from './EmptyPanelListMessage'
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
-  previous: GitStatusResult
+  previous: GitStatusResult,
 ): GitStatusResult {
   if (previous.length === 0) return incoming
 
   const previousTokenCounts = new Map(
     previous
       .filter((change) => change.tokenCount != null)
-      .map((change) => [change.path, change.tokenCount as number])
+      .map((change) => [change.path, change.tokenCount as number]),
   )
 
   if (previousTokenCounts.size === 0) {
@@ -48,6 +52,7 @@ export function GitPanel() {
   const directory = useAtomValue(directoryAtom)
   const [selectedDiffIds, setSelectedDiffIds] = useAtom(selectedDiffIdsAtom)
   const [gitStatus, setGitStatus] = useState<GitStatusResult | null>(null)
+  const setTotalGitDiffTokenCount = useSetAtom(totalGitDiffTokenCountAtom)
 
   async function copyToClipboard(content: string | string[] | Set<string>) {
     if (!directory.path) return
@@ -84,7 +89,7 @@ export function GitPanel() {
 
             return didUpdate ? next : prev
           })
-        }
+        },
       )
     }
 
@@ -140,7 +145,7 @@ export function GitPanel() {
             if (!prev || prev.length === 0) return payload.changes
             return mergeTokenCountsWithPrevious(payload.changes, prev)
           })
-        }
+        },
       )
     }
 
@@ -163,6 +168,10 @@ export function GitPanel() {
     return acc + tokenCount
   }, 0)
 
+  useEffect(() => {
+    setTotalGitDiffTokenCount(selectedTokenCount)
+  }, [selectedTokenCount, setTotalGitDiffTokenCount])
+
   return (
     <Panel
       id="git"
@@ -173,7 +182,7 @@ export function GitPanel() {
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={() => {
         setSelectedDiffIds(
-          () => new Set(gitChanges.map((change) => change.path))
+          () => new Set(gitChanges.map((change) => change.path)),
         )
       }}
       onDeselectAll={() => {
