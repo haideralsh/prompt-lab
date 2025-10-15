@@ -51,11 +51,11 @@ export function InstructionsPanel() {
     return null
   }
 
-  const selectedTokenCount = instructions.reduce((accumulator, entry) => {
-    if (selectedInstructionIds.has(entry.id)) {
-      return accumulator + (entry.tokenCount ?? 0)
+  const selectedTokenCount = instructions.reduce((total, instruction) => {
+    if (selectedInstructionIds.has(instruction.id)) {
+      return total + (instruction.tokenCount ?? 0)
     }
-    return accumulator
+    return total
   }, 0)
 
   const hasFormCheckbox = editingInstructionId === null
