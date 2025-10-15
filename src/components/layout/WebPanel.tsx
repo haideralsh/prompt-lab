@@ -17,11 +17,11 @@ import { EditSavedPage } from './EditSavedPage'
 import { preserveSelected } from '../../helpers/preserveSelected'
 import { TokenCount } from '../common/TokenCount'
 import { appDataDir, join } from '@tauri-apps/api/path'
-import { useAtom, useAtomValue } from 'jotai'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,
   selectedPagesIdsAtom,
-  totalFilesTokenCountAtom,
+  totalPagesTokenCountAtom,
 } from '../../state/atoms'
 import { PanelList } from './PanelList'
 import { PanelRowCheckbox } from './PanelRowCheckbox'
@@ -74,6 +74,7 @@ export async function fetchSavedPages(
 export function WebDisclosurePanel() {
   const directory = useAtomValue(directoryAtom)
   const [selectedPagesIds, setSelectedPagesIds] = useAtom(selectedPagesIdsAtom)
+  const setTotalPagesTokenCount = useSetAtom(totalPagesTokenCountAtom)
   const [savedPages, setSavedPages] = useState<SavedPages>([])
   const [isAddingNewPage, setIsAddingWeb] = useState(false)
   const [webUrl, setWebUrl] = useState('')
@@ -90,6 +91,10 @@ export function WebDisclosurePanel() {
   const totalPagesTokenCount = savedPages
     .filter((page) => selectedPagesIds.has(page.url))
     .reduce((acc, page) => acc + page.tokenCount, 0)
+
+  useEffect(() => {
+    setTotalPagesTokenCount(totalPagesTokenCount)
+  }, [totalPagesTokenCount, setTotalPagesTokenCount])
 
   useEffect(() => {
     async function loadSavedPages(selectedDirectoryPath: string) {

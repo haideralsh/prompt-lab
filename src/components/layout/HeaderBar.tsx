@@ -9,7 +9,7 @@ import {
   selectedInstructionIdsAtom,
   unsavedInstructionAtom,
   treeDisplayModeAtom,
-  totalFilesTokenCountAtom,
+  totalTokenCountAtom,
 } from '../../state/atoms'
 import { invoke } from '@tauri-apps/api/core'
 import { CopyButton } from '../common/CopyButton'
@@ -23,7 +23,7 @@ function HeaderBar() {
   const selectedInstructionIds = useAtomValue(selectedInstructionIdsAtom)
   const unsavedInstruction = useAtomValue(unsavedInstructionAtom)
   const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
-  const totalFilesTokenCount = useAtomValue(totalFilesTokenCountAtom)
+  const totalTokenCount = useAtomValue(totalTokenCountAtom)
 
   async function handleCopyToClipboard() {
     await invoke('copy_all_to_clipboard', {
@@ -57,7 +57,7 @@ function HeaderBar() {
           idleLabel="Copy all"
           copiedLabel="Copied"
         />
-        <TokenCount count={totalFilesTokenCount} />
+        <TokenCount count={totalTokenCount} />
       </div>
     </div>
   )
