@@ -16,7 +16,7 @@ pub(crate) struct SearchMatch {
 }
 
 #[tauri::command]
-pub(crate) fn search_tree(
+pub(crate) fn load_tree(
     path: String,
     term: Option<String>,
 ) -> Result<SearchMatch, ApplicationError> {
