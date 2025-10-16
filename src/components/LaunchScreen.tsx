@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { DirectoryPickerButton } from './DirectoryPickerButton'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { invoke } from '@tauri-apps/api/core'
-import { getCurrentWindow } from '@tauri-apps/api/window'
+import { updateWindowTitle } from './Sidebar/updateWindowTitle'
 import { ERROR_CODES } from '../constants'
 import type { SearchResult } from '../types/FileTree'
 import { queue } from './ToastQueue'
@@ -39,8 +39,7 @@ export function LaunchScreen() {
 
   async function handleDirectoryPick(directory: DirectoryInfo) {
     try {
-      // TODO: change command name; not really the most descriptive name
-      const resp = await invoke<SearchResult>('search_tree', {
+      const resp = await invoke<SearchResult>('load_tree', {
         path: directory.path,
       })
 
@@ -48,17 +47,9 @@ export function LaunchScreen() {
       setTree(resp.results)
       setFilteredTree(resp.results)
 
-      const windowTitle =
+      updateWindowTitle(
         directory.prettyPath ?? directory.name ?? directory.path
-
-      try {
-        await getCurrentWindow().setTitle(windowTitle)
-      } catch (error) {
-        queue.add({
-          title: 'Failed to set window title.',
-        })
-      }
-
+      )
       invoke('add_recent_directory', { directory })
     } catch (err) {
       const e = err as ApplicationError

@@ -8,7 +8,7 @@ import type {
   SelectionResult,
 } from '../../types/FileTree'
 import { invoke } from '@tauri-apps/api/core'
-import { useAtom, useSetAtom } from 'jotai'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,
   filteredTreeAtom,
@@ -17,7 +17,8 @@ import {
   selectedNodesAtom,
 } from '../../state/atoms'
 import { ExitIcon } from '@radix-ui/react-icons'
-import { NO_DIRECTORY } from '../../state/initial'
+import { useResetState } from './useResetState'
+import { resetWindowTitle } from './updateWindowTitle'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)
@@ -29,15 +30,16 @@ function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
 
 export function Sidebar() {
   const [filteredTree, setFilteredTree] = useAtom(filteredTreeAtom)
-  const [directory, setDirectory] = useAtom(directoryAtom)
+  const directory = useAtomValue(directoryAtom)
   const setSelectedFiles = useSetAtom(selectedFilesAtom)
   const setSelectedNodes = useSetAtom(selectedNodesAtom)
   const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
   const treeRef = useRef<HTMLDivElement>(null)
+  const resetState = useResetState()
 
   async function search(query: string) {
-    const { results } = await invoke<SearchResult>('search_tree', {
+    const { results } = await invoke<SearchResult>('load_tree', {
       path: directory.path,
       term: query.trim(),
     })
@@ -64,13 +66,9 @@ export function Sidebar() {
     setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
   }
 
-  function exitDirectory() {
-    setDirectory(NO_DIRECTORY)
-    setFilteredTree([])
-    setSelectedNodes(new Set<Key>())
-    setSelectedFiles([])
-    setIndeterminateNodes(new Set<Key>())
-    setExpandedKeys(new Set())
+  async function exitDirectory() {
+    resetState()
+    await resetWindowTitle()
   }
 
   return (
