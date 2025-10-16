@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "contexter",
+  "productName": "promptlab",
   "version": "0.1.0",
-  "identifier": "haideralsh.contexter.app",
+  "identifier": "haideralsh.promptlab.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,10 +12,8 @@
   "app": {
     "windows": [
       {
-        "width": 1280,
-        "height": 920,
-        "title": "Contexter",
-        "devtools": false
+        "title": "PromptLab",
+        "maximized": true
       }
     ],
     "security": {

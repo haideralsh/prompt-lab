@@ -791,29 +791,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "contexter"
-version = "0.1.0"
-dependencies = [
- "git2",
- "ignore",
- "notify",
- "reqwest 0.11.27",
- "rfd",
- "scraper",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-clipboard-manager",
- "tauri-plugin-opener",
- "tauri-plugin-store",
- "tiktoken-rs",
- "twars-url2md",
- "url",
- "uuid",
-]
-
-[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4066,6 +4043,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "beef09f85ae72cea1ef96ba6870c51e6382ebfa4f0e85b643459331f3daa5be0"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "promptlab"
+version = "0.1.0"
+dependencies = [
+ "git2",
+ "ignore",
+ "notify",
+ "reqwest 0.11.27",
+ "rfd",
+ "scraper",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-clipboard-manager",
+ "tauri-plugin-opener",
+ "tauri-plugin-store",
+ "tiktoken-rs",
+ "twars-url2md",
+ "url",
+ "uuid",
 ]
 
 [[package]]
