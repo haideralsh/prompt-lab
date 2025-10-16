@@ -12,9 +12,9 @@ export function Main() {
         allowsMultipleExpanded
       >
         <InstructionsPanel />
-        <GitPanel />
-        <WebDisclosurePanel />
         <SelectedFilesPanel />
+        <WebDisclosurePanel />
+        <GitPanel />
       </DisclosureGroup>
     </section>
   )
