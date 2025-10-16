@@ -15,6 +15,7 @@ import {
   Id,
   SelectionResult,
   TreeDisplayMode,
+  treeDisplayModes,
 } from '../../types/FileTree'
 import { CopyButton } from '../common/CopyButton'
 import { queue } from '../ToastQueue'
@@ -28,6 +29,7 @@ import {
   treeAtom,
   treeDisplayModeAtom,
   totalFilesTokenCountAtom,
+  treeTokenCountAtom,
 } from '../../state/atoms'
 import { Panel } from './Panel'
 import { PanelList } from './PanelList'
@@ -40,9 +42,9 @@ export function SelectedFilesPanel() {
   const [selectedNodes, setSelectedNodes] = useAtom(selectedNodesAtom)
   const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
   const tree = useAtomValue(treeAtom)
-  const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
-  const setTreeDisplayMode = useSetAtom(treeDisplayModeAtom)
+  const [treeDisplayMode, setTreeDisplayMode] = useAtom(treeDisplayModeAtom)
   const totalFilesTokenCount = useAtomValue(totalFilesTokenCountAtom)
+  const [treeTokenCount, setTreeTokenCount] = useAtom(treeTokenCountAtom)
 
   const sortedFiles = useMemo(() => {
     return sortFilesByTokenCount(selectedFiles)
@@ -89,11 +91,22 @@ export function SelectedFilesPanel() {
   }
 
   function handleTreeDisplayModeChange(keys: Set<Key>) {
-    const [choice] = Array.from(keys) as Array<TreeDisplayMode>
+    const [mode] = Array.from(keys) as Array<TreeDisplayMode>
 
-    if (choice) {
-      setTreeDisplayMode(choice)
+    if (treeDisplayModes.has(mode)) {
+      setTreeDisplayMode(mode)
+      void updateTreeTokenCount(mode)
     }
+  }
+
+  async function updateTreeTokenCount(mode: TreeDisplayMode) {
+    invoke<number>('count_rendered_tree_tokens', {
+      treeDisplayMode: mode,
+      fullTree: tree,
+      selectedNodes: Array.from(selectedNodes) as string[],
+    })
+      .then((count) => setTreeTokenCount(count))
+      .catch(() => setTreeTokenCount(0))
   }
 
   return (
@@ -103,21 +116,20 @@ export function SelectedFilesPanel() {
       count={sortedFiles.length}
       headingClassName="flex items-center gap-1 text-text-dark"
       panelClassName="p-2 flex flex-col gap-1"
-      iconClassName=""
       isGroupSelected={sortedFiles.length > 0}
       isGroupIndeterminate={false}
       onSelectAll={false}
       onDeselectAll={() => {
         void deselectAll()
       }}
-      tokenCount={totalFilesTokenCount}
+      tokenCount={totalFilesTokenCount + treeTokenCount}
       endActions={
         <>
           <ToggleButtonGroup
             aria-label="Directory tree in model context"
             selectedKeys={new Set([treeDisplayMode])}
             onSelectionChange={handleTreeDisplayModeChange}
-            className="hidden group-hover:inline-flex group-hover:items-center rounded-sm border border-border-mid overflow-hidden [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border-mid"
+            className="inline-flex items-center rounded-sm border border-border-mid overflow-hidden [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border-mid"
             disallowEmptySelection
           >
             <ToggleButton
@@ -141,7 +153,7 @@ export function SelectedFilesPanel() {
           </ToggleButtonGroup>
           <CopyButton
             onCopy={() => copyFiles(sortedFiles.map((file) => file.path))}
-            isDisabled={sortedFiles.length === 0}
+            isDisabled={sortedFiles.length === 0 && treeDisplayMode === 'none'}
           />
         </>
       }

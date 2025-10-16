@@ -29,3 +29,9 @@ export interface SelectionResult {
 }
 
 export type TreeDisplayMode = 'full' | 'selected' | 'none'
+
+export const treeDisplayModes: Set<TreeDisplayMode> = new Set([
+  'selected',
+  'full',
+  'none',
+])

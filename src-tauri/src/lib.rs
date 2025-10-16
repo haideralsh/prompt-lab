@@ -17,6 +17,7 @@ pub fn run() {
             api::tree::search::load_tree,
             api::tree::select::command::toggle_selection,
             api::tree::select::command::clear_selection,
+            api::tree::render::count_rendered_tree_tokens,
             api::clipboard::command::copy_diffs_to_clipboard,
             api::clipboard::command::copy_all_to_clipboard,
             api::clipboard::command::copy_pages_to_clipboard,
