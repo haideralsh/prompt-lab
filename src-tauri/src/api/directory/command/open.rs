@@ -42,6 +42,16 @@ pub(crate) fn open_file(app: AppHandle<Wry>, path: &str) -> Result<(), Applicati
     }
 
     let editor = resolve_editor(&app)?;
+
+    if editor.is_none() {
+        return Err(ApplicationError {
+            code: codes::FILE_OPEN_ERROR,
+            message: Some(
+                "No editor configured. Configure an editor to use in the settings.".to_string(),
+            ),
+        });
+    }
+
     let path_string = path_buf.to_string_lossy().into_owned();
 
     app.opener()
