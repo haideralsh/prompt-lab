@@ -81,7 +81,7 @@ export function SelectedFilesPanel() {
 
   async function handleOpenFile(file: FileNode) {
     try {
-      await invoke('open_file', { path: file.path })
+      await invoke('open_with_editor', { path: file.path })
     } catch (error) {
       queue.add({
         title: 'Failed to open file',

@@ -13,7 +13,6 @@ pub fn run() {
             api::directory::command::list::list_directory,
             api::directory::command::recent::get_recent_directories,
             api::directory::command::recent::add_recent_directory,
-            api::directory::command::open::open_file,
             api::tree::search::load_tree,
             api::tree::select::command::toggle_selection,
             api::tree::select::command::clear_selection,
@@ -34,6 +33,10 @@ pub fn run() {
             api::instruction::command::get_instruction,
             api::instruction::command::list_instructions,
             api::instruction::command::count_instruction_tokens,
+            api::editor::pick_editor,
+            api::editor::set_editor,
+            api::editor::get_editor,
+            api::editor::open_with_editor,
         ])
         .run(tauri::generate_context!())
         .expect("An error occurred while running the App");

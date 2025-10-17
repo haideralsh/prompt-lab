@@ -1,10 +1,56 @@
 use std::path::PathBuf;
 
+use crate::errors::{codes, ApplicationError};
+use crate::store::{open_store, save_store, StoreCategoryKey, StoreConfigKey};
+use rfd::FileDialog;
+use serde_json::{json, Map, Value};
 use tauri::{AppHandle, Wry};
 use tauri_plugin_opener::OpenerExt;
 
-use crate::errors::{codes, ApplicationError};
-use crate::store::{open_store, StoreCategoryKey, StoreConfigKey};
+#[tauri::command]
+pub(crate) fn pick_editor() -> Result<String, ApplicationError> {
+    let picked = FileDialog::new()
+        .set_title("Choose an editor application")
+        .pick_file();
+
+    match picked {
+        Some(path) => Ok(path.to_string_lossy().into_owned()),
+        None => Err(ApplicationError {
+            code: codes::DIALOG_CANCELLED,
+            message: None,
+        }),
+    }
+}
+
+#[tauri::command]
+pub(crate) fn set_editor(app: AppHandle<Wry>, editor_path: String) -> Result<(), ApplicationError> {
+    let store = open_store(&app)?;
+
+    let mut config = store
+        .get(StoreCategoryKey::CONFIG)
+        .and_then(|v| v.as_object().cloned())
+        .unwrap_or_else(|| Map::new());
+
+    config.insert(StoreConfigKey::EDITOR.to_string(), json!(editor_path));
+
+    store.set(StoreCategoryKey::CONFIG, Value::Object(config));
+    save_store(&store)?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) fn get_editor(app: AppHandle<Wry>) -> Result<Option<String>, ApplicationError> {
+    let store = open_store(&app)?;
+
+    let editor_path = store
+        .get(StoreCategoryKey::CONFIG)
+        .and_then(|v| v.as_object().cloned())
+        .and_then(|config| config.get(StoreConfigKey::EDITOR).cloned())
+        .and_then(|v| v.as_str().map(|s| s.to_string()));
+
+    Ok(editor_path)
+}
 
 fn resolve_editor(app: &AppHandle<Wry>) -> Result<Option<String>, ApplicationError> {
     let store = open_store(app)?;
@@ -31,7 +77,7 @@ fn resolve_editor(app: &AppHandle<Wry>) -> Result<Option<String>, ApplicationErr
 }
 
 #[tauri::command]
-pub(crate) fn open_file(app: AppHandle<Wry>, path: &str) -> Result<(), ApplicationError> {
+pub(crate) fn open_with_editor(app: AppHandle<Wry>, path: &str) -> Result<(), ApplicationError> {
     let path_buf = PathBuf::from(path);
 
     if !path_buf.exists() {

@@ -2,7 +2,7 @@
  * The Tauri Store used in this application follows this structure:
  * {
  *     config: {
- *           editor: String
+ *           path_to_editor: String
  *     },
  *     state: {
  *           recently_opened_directories: [PickedDirectory, ...]

@@ -13,6 +13,9 @@ import {
 } from '../../state/atoms'
 import { invoke } from '@tauri-apps/api/core'
 import { CopyButton } from '../common/CopyButton'
+import { SettingsDialog } from './SettingsDialog'
+import { Button } from 'react-aria-components'
+import { DividerVerticalIcon, MixerHorizontalIcon } from '@radix-ui/react-icons'
 
 function HeaderBar() {
   const directory = useAtomValue(directoryAtom)
@@ -47,16 +50,22 @@ function HeaderBar() {
 
   return (
     <div className="bg-background-dark p-2 flex items-center justify-between">
-      <span className="uppercase font-medium tracking-wide text-xs text-text-dark">
-        Prompt
-      </span>
+      <div className="flex items-center gap-1.5">
+        <span className="uppercase font-medium tracking-wide text-xs text-text-dark">
+          Prompt
+        </span>
+      </div>
 
-      <div className="flex items-center gap-3">
-        <CopyButton
-          onCopy={handleCopyToClipboard}
-          idleLabel="Copy all"
-          copiedLabel="Copied"
-        />
+      <div className="flex items-center gap-3 text-text-dark">
+        <div className="flex item-center gap-1.5">
+          <SettingsDialog />
+          <DividerVerticalIcon className="text-border-light" />
+          <CopyButton
+            onCopy={handleCopyToClipboard}
+            idleLabel="Copy all"
+            copiedLabel="Copied"
+          />
+        </div>
         <TokenCount count={totalTokenCount} showLabel />
       </div>
     </div>
