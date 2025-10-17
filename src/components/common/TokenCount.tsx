@@ -6,7 +6,7 @@ interface TokenCountProps {
   showLabel?: boolean
 }
 
-export function TokenCount({ count, showLabel = true }: TokenCountProps) {
+export function TokenCount({ count, showLabel = false }: TokenCountProps) {
   const labelRef = useRef<HTMLSpanElement>(null)
   const [labelWidth, setLabelWidth] = useState(0)
   const [isHovered, setIsHovered] = useState(false)

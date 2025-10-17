@@ -95,7 +95,7 @@ export function Panel({
                 <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
                   {endActions}
                 </span>
-                <TokenCount count={tokenCount} />
+                <TokenCount count={tokenCount} showLabel />
               </div>
             </Heading>
           </Button>

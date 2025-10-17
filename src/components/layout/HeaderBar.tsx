@@ -57,7 +57,7 @@ function HeaderBar() {
           idleLabel="Copy all"
           copiedLabel="Copied"
         />
-        <TokenCount count={totalTokenCount} />
+        <TokenCount count={totalTokenCount} showLabel />
       </div>
     </div>
   )
