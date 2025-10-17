@@ -52,23 +52,27 @@ export function SettingsDialog() {
       <DialogTrigger className="text-text-dark hover:text-text-light">
         <MixerHorizontalIcon />
       </DialogTrigger>
-      <DialogContent
-        title="Settings"
-        description="Configure how the content is displayed and processed."
-      >
-        <div className="mb-6">
-          <h3 className="text-sm font-medium mb-2">Editor</h3>
-          <button
-            onClick={handlePickEditor}
-            className="px-3 py-1.5 text-sm bg-background-light hover:bg-background text-text-light rounded"
-          >
-            {editorPath ? 'Change Editor' : 'Pick Editor'}
-          </button>
-          {editorPath && (
-            <p className="text-xs text-text-dark mt-2 break-all">
-              {editorPath}
+      <DialogContent title="Settings">
+        <div className="space-y-1">
+          <h3 className="text-xs text-text-dark">Prompt Lab</h3>
+          <p className="text-xs text-text-light">Version 0.0.1</p>
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-xs text-text-dark">
+            Path to editor for opening files. When not set the system default
+            will be used.
+          </h3>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-text-light break-all">
+              {editorPath ? editorPath : 'No editor set'}
             </p>
-          )}
+            <button
+              className="bg-accent-interactive-dark rounded-sm text-text-light flex items-center gap-1.5 text-xs cursor-pointer px-2 py-1 w-fit"
+              onClick={handlePickEditor}
+            >
+              Choose editor
+            </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

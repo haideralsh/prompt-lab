@@ -14,8 +14,7 @@ import {
 import { invoke } from '@tauri-apps/api/core'
 import { CopyButton } from '../common/CopyButton'
 import { SettingsDialog } from './SettingsDialog'
-import { Button } from 'react-aria-components'
-import { DividerVerticalIcon, MixerHorizontalIcon } from '@radix-ui/react-icons'
+import { DividerVerticalIcon } from '@radix-ui/react-icons'
 
 function HeaderBar() {
   const directory = useAtomValue(directoryAtom)
