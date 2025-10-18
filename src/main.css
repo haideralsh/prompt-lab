@@ -58,8 +58,6 @@
 
   /* =============== Typography =============== */
   --font-sans: Inter, sans-serif;
-  --text-xs: 0.75rem;
-  --text-xs--line-height: calc(1 / 0.75);
 }
 
 :root {
