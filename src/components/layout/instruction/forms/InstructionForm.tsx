@@ -37,12 +37,6 @@ export function InstructionForm({
   const [newFormName, setNewFormName] = useState('')
   const [newFormContent, setNewFormContent] = useState('')
 
-  function resetTextarea() {
-    setTextareaContent('')
-    onUnsavedInstructionChange(null)
-    onUnsavedInstructionPresenceChange(false)
-  }
-
   function resetNewForm() {
     setNewFormName('')
     setNewFormContent('')

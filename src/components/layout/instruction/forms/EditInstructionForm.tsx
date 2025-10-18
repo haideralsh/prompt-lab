@@ -1,5 +1,4 @@
 import { FormEvent, useState } from 'react'
-import { CheckIcon } from '@radix-ui/react-icons'
 import { SavedInstructionMetadata, Instruction } from '../types'
 import { InstructionFields } from './InstuctionFields'
 
