@@ -33,53 +33,63 @@ export function InstructionForm({
   onUnsavedInstructionPresenceChange,
   onUnsavedInstructionChange,
 }: InstructionFormProps) {
-  const [name, setName] = useState('')
-  const [content, setContent] = useState('')
+  const [textareaContent, setTextareaContent] = useState('')
+  const [newFormName, setNewFormName] = useState('')
+  const [newFormContent, setNewFormContent] = useState('')
 
-  function reset() {
-    setName('')
-    setContent('')
+  function resetTextarea() {
+    setTextareaContent('')
     onUnsavedInstructionChange(null)
     onUnsavedInstructionPresenceChange(false)
   }
 
-  function updateDraft(nextName: string, nextContent: string) {
+  function resetNewForm() {
+    setNewFormName('')
+    setNewFormContent('')
+  }
+
+  function updateTextareaDraft(nextContent: string) {
     const hasContent = nextContent.trim().length > 0
     if (!hasContent) {
       onUnsavedInstructionChange(null)
       return
     }
 
-    onUnsavedInstructionChange({ name: nextName, content: nextContent })
+    onUnsavedInstructionChange({ name: '', content: nextContent })
   }
 
-  function handleContentChange(newContent: string) {
-    setContent(newContent)
+  function handleTextareaContentChange(newContent: string) {
+    setTextareaContent(newContent)
     const trimmedContent = newContent.trim()
     onUnsavedInstructionPresenceChange(trimmedContent.length > 0)
-    updateDraft(name, newContent)
+    updateTextareaDraft(newContent)
   }
 
-  function handleNameChange(newName: string) {
-    setName(newName)
-    updateDraft(newName, content)
+  function handleNewFormNameChange(newName: string) {
+    setNewFormName(newName)
+  }
+
+  function handleNewFormContentChange(newContent: string) {
+    setNewFormContent(newContent)
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const trimmedContent = content.trim()
-    const trimmedName = name.trim()
+    const trimmedContent = newFormContent.trim()
+    const trimmedName = newFormName.trim()
     if (!trimmedContent || !trimmedName || isLoading) return
 
     await onSave({ name: trimmedName, content: trimmedContent })
-    reset()
+    resetNewForm()
   }
 
   function handleCancel() {
+    resetNewForm()
     onCancel()
   }
 
   function handleBookmarkClick() {
+    setNewFormContent(textareaContent)
     onStartAdd()
   }
 
@@ -87,37 +97,39 @@ export function InstructionForm({
     <form onSubmit={handleSubmit}>
       <div className="mr-2 mt-0.5 mb-2">
         <div className="flex items-start">
-          <Checkbox
-            slot="selection"
-            aria-label="Include instructions"
-            isSelected={isIncluded}
-            onChange={onIncludeChange}
-            className="relative group mt-1 flex-shrink-0 px-2"
-          >
-            {({ isSelected }) => (
-              <span className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light">
-                {isSelected && <CheckIcon />}
-              </span>
-            )}
-          </Checkbox>
           {isAddingNew ? (
             <NewInstructionForm
-              name={name}
-              content={content}
+              name={newFormName}
+              content={newFormContent}
               isLoading={isLoading}
-              onNameChange={handleNameChange}
-              onContentChange={handleContentChange}
+              onNameChange={handleNewFormNameChange}
+              onContentChange={handleNewFormContentChange}
               onCancel={handleCancel}
             />
           ) : (
-            <NewInstructionTextarea
-              content={content}
-              isLoading={isLoading}
-              onContentChange={handleContentChange}
-              onCopy={onCopy}
-              onBookmarkClick={handleBookmarkClick}
-              tokenCount={draftTokenCount}
-            />
+            <>
+              <Checkbox
+                slot="selection"
+                aria-label="Include instructions"
+                isSelected={isIncluded}
+                onChange={onIncludeChange}
+                className="relative group mt-1 flex-shrink-0 px-2"
+              >
+                {({ isSelected }) => (
+                  <span className="flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light group-data-[selected]:border-accent-border-mid group-data-[indeterminate]:border-accent-border-mid bg-transparent group-data-[selected]:bg-accent-interactive-light group-data-[indeterminate]:bg-accent-interactive-light">
+                    {isSelected && <CheckIcon />}
+                  </span>
+                )}
+              </Checkbox>
+              <NewInstructionTextarea
+                content={textareaContent}
+                isLoading={isLoading}
+                onContentChange={handleTextareaContentChange}
+                onCopy={onCopy}
+                onBookmarkClick={handleBookmarkClick}
+                tokenCount={draftTokenCount}
+              />
+            </>
           )}
         </div>
       </div>

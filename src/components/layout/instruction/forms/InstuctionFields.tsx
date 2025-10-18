@@ -38,7 +38,7 @@ export function InstructionFields({
   return (
     <div
       className={clsx(
-        'flex-1 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid px-1.5 py-1 mt-1',
+        'flex-1 ml-8 rounded-sm bg-transparent border border-interactive-light has-focus:border-border-mid px-1.5 py-1 mt-1',
         className
       )}
     >

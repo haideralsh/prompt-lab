@@ -40,10 +40,10 @@ export function NewInstructionTextarea({
           <Button
             type="button"
             onPress={onBookmarkClick}
-            className="group/button text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
+            className="group/button text-text-dark hover:text-text-dark data-[disabled]:text-text-dark"
           >
             <BookmarkIcon className="group-hover/button:hidden" />
-            <BookmarkFilledIcon className="hidden group-hover/button:block text-accent-border-light" />
+            <BookmarkFilledIcon className="hidden group-hover/button:block text-accent-solid-dark" />
           </Button>
           <CopyButton
             onCopy={() => onCopy({ name: '', content })}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { CheckboxGroup } from 'react-aria-components'
+import { CheckboxGroup, Button } from 'react-aria-components'
+import { PlusIcon } from '@radix-ui/react-icons'
 import { InstructionItem } from './InstructionItem'
 import { preserveSelected } from '../../../helpers/preserveSelected'
 import { InstructionForm } from './forms/InstructionForm'
@@ -279,10 +280,21 @@ export function InstructionsPanel() {
       onDeselectAll={handleDeselectAll}
       tokenCount={totalInstructionTokenCount}
       endActions={
-        <CopyButton
-          onCopy={handleCopySelectedInstructions}
-          isDisabled={!canCopySelection}
-        />
+        <>
+          {!isAddingNew && (
+            <Button
+              type="button"
+              onPress={handleStartAddNew}
+              className="text-text-dark/75 hover:text-text-dark data-[disabled]:text-text-dark/75"
+            >
+              <PlusIcon />
+            </Button>
+          )}
+          <CopyButton
+            onCopy={handleCopySelectedInstructions}
+            isDisabled={!canCopySelection}
+          />
+        </>
       }
     >
       {instructions.length > 0 && (
