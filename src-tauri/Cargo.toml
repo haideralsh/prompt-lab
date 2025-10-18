@@ -18,9 +18,10 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [ "protocol-asset", "devtools", "test"] }
+tauri = { version = "2", features = [ "protocol-asset", "test"] }
 tauri-plugin-opener = "2"
 tauri-plugin-clipboard-manager = "2"
+tauri-plugin-prevent-default = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rfd = "0.14"

@@ -8,6 +8,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_prevent_default::init())
         .invoke_handler(tauri::generate_handler![
             api::directory::command::pick::pick_directory,
             api::directory::command::list::list_directory,
