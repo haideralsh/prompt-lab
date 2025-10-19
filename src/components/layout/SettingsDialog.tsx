@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import { getVersion } from '@tauri-apps/api/app'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
 export function SettingsDialog() {
   const [editorPath, setEditorPath] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [version, setVersion] = useState<string>('...')
 
   useEffect(() => {
     async function loadPath() {
@@ -22,6 +24,15 @@ export function SettingsDialog() {
 
     if (isOpen) loadPath()
   }, [isOpen])
+
+  useEffect(() => {
+    async function loadVersion() {
+      const appVersion = await getVersion()
+      setVersion(appVersion)
+    }
+
+    loadVersion()
+  }, [])
 
   async function loadEditorPath() {
     try {
@@ -55,7 +66,7 @@ export function SettingsDialog() {
       <DialogContent title="Settings">
         <div className="space-y-1">
           <h3 className="text-xs text-text-dark">Prompt Lab</h3>
-          <p className="text-xs text-text-light">Version 0.0.1</p>
+          <p className="text-xs text-text-light">Version {version}</p>
         </div>
         <div className="space-y-1">
           <h3 className="text-xs text-text-dark">
