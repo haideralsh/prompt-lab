@@ -13,6 +13,7 @@ import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { WebPanelActions } from './WebPanelActions'
 import { CopyButton } from '../common/CopyButton'
 import { EditSavedPage } from './EditSavedPage'
+import { GhostButton } from '../common/GhostButton'
 
 import { preserveSelected } from '../../helpers/preserveSelected'
 import { TokenCount } from '../common/TokenCount'
@@ -38,7 +39,7 @@ export interface SavedPageMetadata {
 export type SavedPages = readonly SavedPageMetadata[]
 
 export async function fetchSavedPages(
-  directoryPath: string,
+  directoryPath: string
 ): Promise<SavedPages> {
   try {
     const [pages, appDataDirPath] = await Promise.all([
@@ -80,12 +81,12 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
   const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
   const [brokenFavicons, setBrokenFavicons] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   )
 
   const totalPagesTokenCount = savedPages
@@ -142,7 +143,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelected(pages, selectedUrls, (page) => page.url),
+        preserveSelected(pages, selectedUrls, (page) => page.url)
       )
 
       setWebUrl('')
@@ -235,8 +236,6 @@ export function WebDisclosurePanel() {
       urls: [entry.url],
     })
   }
-
-  // title save logic moved into <EditSavedPage />
 
   async function handleCopySelectedToClipboard() {
     await invoke<void>('copy_pages_to_clipboard', {
@@ -351,7 +350,7 @@ export function WebDisclosurePanel() {
                         src={entry.faviconPath}
                         onError={() =>
                           setBrokenFavicons((prev) =>
-                            new Set(prev).add(entry.url),
+                            new Set(prev).add(entry.url)
                           )
                         }
                         alt={entry.title}
@@ -410,21 +409,19 @@ export function WebDisclosurePanel() {
                 />
 
                 <div className="flex items-center gap-1.5 px-1">
-                  <Button
+                  <GhostButton
                     type="submit"
                     isDisabled={isSavingWeb || !webUrl.trim()}
-                    className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark data-[disabled]:text-text-dark/60 hover:text-text-light"
                   >
                     Add
-                  </Button>
-                  <Button
+                  </GhostButton>
+                  <GhostButton
                     type="button"
                     onPress={handleCancelWeb}
                     isDisabled={isSavingWeb}
-                    className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark hover:text-text-light"
                   >
                     Cancel
-                  </Button>
+                  </GhostButton>
                 </div>
               </div>
             </div>

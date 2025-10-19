@@ -1,6 +1,6 @@
 import { ChangeEvent } from 'react'
-import { Button } from 'react-aria-components'
 import clsx from 'clsx'
+import { GhostButton } from '../../../common/GhostButton'
 
 export interface InstructionFieldsProps {
   id: string
@@ -79,22 +79,13 @@ export function InstructionFields({
         </div>
 
         <div className="flex items-center justify-end gap-1.5 pt-1">
-          <Button
-            type="submit"
-            isDisabled={saveDisabled}
-            className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark data-[disabled]:text-text-dark/60 hover:text-text-light"
-          >
+          <GhostButton type="submit" isDisabled={saveDisabled}>
             Save
-          </Button>
+          </GhostButton>
 
-          <Button
-            type="button"
-            onPress={onCancel}
-            isDisabled={isLoading}
-            className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark hover:text-text-light data-[disabled]:text-text-dark/60"
-          >
+          <GhostButton type="button" onPress={onCancel} isDisabled={isLoading}>
             Cancel
-          </Button>
+          </GhostButton>
         </div>
       </div>
     </div>

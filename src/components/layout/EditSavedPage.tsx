@@ -6,6 +6,7 @@ import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { SavedPageMetadata, SavedPages, fetchSavedPages } from './WebPanel'
 import { useAtomValue, useSetAtom } from 'jotai'
 import { directoryAtom, selectedPagesIdsAtom } from '../../state/atoms'
+import { GhostButton } from '../common/GhostButton'
 
 type EditSavedPageProps = {
   page: SavedPageMetadata
@@ -98,21 +99,15 @@ export function EditSavedPage({ page, onSave, onCancel }: EditSavedPageProps) {
           />
 
           <div className="absolute inset-y-0 right-0.5 flex items-center gap-1.5">
-            <Button
+            <GhostButton
               type="submit"
               isDisabled={isSaving || !editingTitle.trim()}
-              className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark data-[disabled]:text-text-dark/60 hover:text-text-light"
             >
               Save
-            </Button>
-            <Button
-              type="button"
-              onPress={onCancel}
-              isDisabled={isSaving}
-              className="text-xs tracking-wide p-1 flex items-center justify-center rounded-sm text-text-dark hover:text-text-light data-[disabled]:text-text-dark/60"
-            >
+            </GhostButton>
+            <GhostButton type="button" onPress={onCancel} isDisabled={isSaving}>
               Cancel
-            </Button>
+            </GhostButton>
           </div>
         </div>
       </div>
