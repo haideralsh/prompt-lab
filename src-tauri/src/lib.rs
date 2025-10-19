@@ -17,7 +17,7 @@ pub fn run() {
             api::tree::search::load_tree,
             api::tree::select::command::toggle_selection,
             api::tree::select::command::clear_selection,
-            api::tree::render::count_rendered_tree_tokens,
+            api::tree::render::command::count_rendered_tree_tokens,
             api::clipboard::command::copy_diffs_to_clipboard,
             api::clipboard::command::copy_all_to_clipboard,
             api::clipboard::command::copy_pages_to_clipboard,
@@ -34,10 +34,10 @@ pub fn run() {
             api::instruction::command::get_instruction,
             api::instruction::command::list_instructions,
             api::instruction::command::count_instruction_tokens,
-            api::editor::pick_editor,
-            api::editor::set_editor,
-            api::editor::get_editor,
-            api::editor::open_with_editor,
+            api::editor::command::pick_editor,
+            api::editor::command::set_editor,
+            api::editor::command::get_editor,
+            api::editor::command::open_with_editor,
         ])
         .run(tauri::generate_context!())
         .expect("An error occurred while running the App");

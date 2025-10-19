@@ -1,6 +1,5 @@
 use crate::api::tree::index::DirectoryNode;
 use std::collections::HashSet;
-use crate::{api::{clipboard::get_rendered_tree, tokenize::count_tokens_for_text}, errors::ApplicationError};
 
 pub fn render_selected_tree(nodes: &[DirectoryNode], selected: &HashSet<String>) -> String {
     fn mark_kept(
@@ -97,14 +96,4 @@ pub fn render_full_tree(nodes: &[DirectoryNode], selected: &HashSet<String>) -> 
     let mut lines: Vec<String> = Vec::new();
     render_nodes(nodes, "", &mut lines, selected);
     lines.join("\n")
-}
-
-#[tauri::command]
-pub(crate) fn count_rendered_tree_tokens(
-    tree_display_mode: String,
-    full_tree: Vec<DirectoryNode>,
-    selected_nodes: HashSet<String>,
-) -> Result<usize, ApplicationError> {
-    let rendered_tree = get_rendered_tree(&tree_display_mode, &full_tree, &selected_nodes);
-    Ok(count_tokens_for_text(&rendered_tree))
 }

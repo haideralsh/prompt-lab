@@ -10,7 +10,7 @@ use crate::{
         },
         tree::{
             index::DirectoryNode,
-            render::{render_full_tree, render_selected_tree},
+            render::lib::{render_full_tree, render_selected_tree},
         },
         web::lib::load_page_contents_from_store,
     },

@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use crate::api::editor::lib::resolve_editor;
 use crate::errors::{codes, ApplicationError};
 use crate::store::{open_store, save_store, StoreCategoryKey, StoreConfigKey};
 use rfd::FileDialog;
@@ -52,30 +53,6 @@ pub(crate) fn get_editor(app: AppHandle<Wry>) -> Result<Option<String>, Applicat
     Ok(editor_path)
 }
 
-fn resolve_editor(app: &AppHandle<Wry>) -> Result<Option<String>, ApplicationError> {
-    let store = open_store(app)?;
-
-    let editor_from_store = store
-        .get(StoreCategoryKey::CONFIG)
-        .and_then(|value| value.as_object().cloned())
-        .and_then(|config| config.get(StoreConfigKey::EDITOR).cloned())
-        .and_then(|value| match value {
-            serde_json::Value::String(value) => {
-                let trimmed = value.trim().to_string();
-                if trimmed.is_empty() {
-                    None
-                } else {
-                    Some(trimmed)
-                }
-            }
-            _ => None,
-        });
-
-    store.close_resource();
-
-    Ok(editor_from_store)
-}
-
 #[tauri::command]
 pub(crate) fn open_with_editor(app: AppHandle<Wry>, path: &str) -> Result<(), ApplicationError> {
     let path_buf = PathBuf::from(path);
@@ -90,7 +67,6 @@ pub(crate) fn open_with_editor(app: AppHandle<Wry>, path: &str) -> Result<(), Ap
     let editor = resolve_editor(&app)?;
 
     // TODO: still not sure if we should error out, or just use the system default editor.
-
     // if editor.is_none() {
     //     return Err(ApplicationError {
     //         code: codes::FILE_OPEN_ERROR,
