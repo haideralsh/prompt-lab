@@ -1,5 +1,4 @@
 use crate::api::directory::lib::{pretty_directory_path, PickedDirectory};
-use crate::errors::{codes, ApplicationError};
 use rfd::FileDialog;
 use std::path::PathBuf;
 
@@ -7,9 +6,7 @@ pub trait DirectoryPicker {
     fn pick_folder(&self) -> Option<PathBuf>;
 }
 
-pub(crate) fn pick_directory_with_picker(
-    picker: &dyn DirectoryPicker,
-) -> Result<PickedDirectory, ApplicationError> {
+pub(crate) fn pick_directory_with_picker(picker: &dyn DirectoryPicker) -> Option<PickedDirectory> {
     let picked = picker.pick_folder();
     match picked {
         Some(path) => {
@@ -19,16 +16,13 @@ pub(crate) fn pick_directory_with_picker(
                 .unwrap_or_else(|| path.to_string_lossy().into_owned());
             let path_string = path.to_string_lossy().into_owned();
             let pretty_path = pretty_directory_path(&path_string);
-            Ok(PickedDirectory {
+            Some(PickedDirectory {
                 name,
                 path: path_string,
                 pretty_path,
             })
         }
-        None => Err(ApplicationError {
-            code: codes::DIALOG_CANCELLED,
-            message: None,
-        }),
+        None => None,
     }
 }
 
@@ -43,7 +37,7 @@ impl DirectoryPicker for RfdDirectoryPicker {
 }
 
 #[tauri::command]
-pub(crate) fn pick_directory() -> Result<PickedDirectory, ApplicationError> {
+pub(crate) fn pick_directory() -> Option<PickedDirectory> {
     pick_directory_with_picker(&RfdDirectoryPicker)
 }
 
@@ -70,7 +64,7 @@ mod tests {
 
         let result = pick_directory_with_picker(&mock);
 
-        assert!(result.is_ok());
+        assert!(result.is_some());
         let picked = result.unwrap();
         assert_eq!(picked.name, "documents");
         assert_eq!(picked.path, "/home/user/documents");
@@ -82,9 +76,7 @@ mod tests {
 
         let result = pick_directory_with_picker(&mock);
 
-        assert!(result.is_err());
-        let err = result.unwrap_err();
-        assert_eq!(err.code, codes::DIALOG_CANCELLED);
+        assert!(result.is_none());
     }
 
     #[test]
@@ -95,7 +87,7 @@ mod tests {
 
         let result = pick_directory_with_picker(&mock);
 
-        assert!(result.is_ok());
+        assert!(result.is_some());
         let picked = result.unwrap();
         assert_eq!(picked.path, "/");
     }
