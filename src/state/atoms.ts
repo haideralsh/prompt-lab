@@ -20,6 +20,7 @@ export const totalFilesTokenCountAtom = atom<number>(0)
 export const totalPagesTokenCountAtom = atom<number>(0)
 export const totalGitDiffTokenCountAtom = atom<number>(0)
 export const treeTokenCountAtom = atom<number>(0)
+export const treeDisplayModeAtom = atom<TreeDisplayMode>('selected')
 export const totalTokenCountAtom = atom<number>(
   (get) =>
     get(totalFilesTokenCountAtom) +
@@ -28,4 +29,3 @@ export const totalTokenCountAtom = atom<number>(
     get(instructionsTokenCountAtom) +
     get(treeTokenCountAtom)
 )
-export const treeDisplayModeAtom = atom<TreeDisplayMode>('selected')
