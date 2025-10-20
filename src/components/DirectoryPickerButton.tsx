@@ -17,11 +17,11 @@ export function DirectoryPickerButton({ onPick }: DirectoryPickerProps) {
 
   return (
     <button
-      className="bg-accent-interactive-dark rounded-sm text-text-light flex items-center gap-1.5 text-sm cursor-pointer pl-2 pr-3.5 py-1 w-fit"
+      className="bg-accent-interactive-mid hover:bg-accent-interactive-light transition-colors rounded-sm text-text-light flex items-center gap-1.5 text-sm cursor-pointer pl-2 pr-3.5 py-1 w-fit"
       onClick={pickDirectory}
     >
-      <PlusIcon className="text-text-light" />
-      <span className="text-text-light">New directory</span>
+      <PlusIcon />
+      <span>New directory</span>
     </button>
   )
 }
