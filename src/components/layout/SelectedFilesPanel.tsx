@@ -55,6 +55,8 @@ export function SelectedFilesPanel() {
       directoryPath: directory.path,
       current: Array.from(selectedNodes),
       nodePath: path,
+      treeDisplayMode,
+      fullTree: tree,
     })
     setSelectedNodes(new Set(selection.selectedNodesPaths))
     setSelectedFiles(selection.selectedFiles)
@@ -123,7 +125,7 @@ export function SelectedFilesPanel() {
         void deselectAll()
       }}
       tokenCount={totalFilesTokenCount + treeTokenCount}
-      endActions={
+      actions={
         <>
           <ToggleButtonGroup
             aria-label="Directory tree in model context"

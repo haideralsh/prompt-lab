@@ -1,6 +1,6 @@
 use crate::api::tokenize::{ensure_cache_loaded_for_dir, spawn_token_count_task};
 use crate::api::tree::cache::cache;
-use crate::api::tree::index::ensure_index;
+use crate::api::tree::index::{ensure_index, DirectoryNode};
 use crate::api::tree::select::lib::{
     collect_selected_files, compute_indeterminate, update_ancestors_selection,
 };
@@ -32,6 +32,8 @@ pub(crate) fn toggle_selection(
     directory_path: String,
     current: Vec<String>,
     node_path: String,
+    tree_display_mode: String,
+    full_tree: Vec<DirectoryNode>,
 ) -> Result<SelectionResult, ApplicationError> {
     ensure_index(&directory_path)?;
     let guard = cache().read().expect("cache read poisoned");
@@ -50,7 +52,15 @@ pub(crate) fn toggle_selection(
 
             let selection_ids: Vec<String> =
                 selected_files.iter().map(|f| f.path.clone()).collect();
-            spawn_token_count_task(app.clone(), directory_path.clone(), selection_ids);
+
+            spawn_token_count_task(
+                app.clone(),
+                directory_path.clone(),
+                selection_ids,
+                tree_display_mode.clone(),
+                full_tree.clone(),
+                set.clone(),
+            );
 
             return Ok(SelectionResult {
                 selected_nodes_paths: set.into_iter().collect(),
@@ -87,7 +97,15 @@ pub(crate) fn toggle_selection(
     let selected_files = collect_selected_files(tree_index, &set);
 
     let selection_ids: Vec<String> = selected_files.iter().map(|f| f.path.clone()).collect();
-    spawn_token_count_task(app.clone(), directory_path.clone(), selection_ids);
+
+    spawn_token_count_task(
+        app.clone(),
+        directory_path.clone(),
+        selection_ids,
+        tree_display_mode.clone(),
+        full_tree.clone(),
+        set.clone(),
+    );
 
     Ok(SelectionResult {
         selected_nodes_paths: set.into_iter().collect(),
@@ -100,6 +118,8 @@ pub(crate) fn toggle_selection(
 pub(crate) fn clear_selection(
     app: AppHandle<Wry>,
     directory_path: String,
+    tree_display_mode: String,
+    full_tree: Vec<DirectoryNode>,
 ) -> Result<SelectionResult, ApplicationError> {
     ensure_index(&directory_path)?;
     let cache = cache().read().expect("cache read poisoned");
@@ -114,7 +134,14 @@ pub(crate) fn clear_selection(
     let indeterminates = compute_indeterminate(tree_index, &set);
     let selected_files = collect_selected_files(tree_index, &set);
 
-    spawn_token_count_task(app.clone(), directory_path.clone(), Vec::new());
+    spawn_token_count_task(
+        app.clone(),
+        directory_path.clone(),
+        Vec::new(),
+        tree_display_mode,
+        full_tree,
+        set.clone(),
+    );
 
     Ok(SelectionResult {
         selected_nodes_paths: Vec::new(),

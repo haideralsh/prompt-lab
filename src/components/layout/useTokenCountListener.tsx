@@ -2,10 +2,15 @@ import { UnlistenFn } from '@tauri-apps/api/event'
 import { useEffect } from 'react'
 import { listen } from '@tauri-apps/api/event'
 import { useSetAtom } from 'jotai'
-import { selectedFilesAtom, totalFilesTokenCountAtom } from '../../state/atoms'
+import {
+  selectedFilesAtom,
+  totalFilesTokenCountAtom,
+  treeTokenCountAtom,
+} from '../../state/atoms'
 
 export function useTokenCountListener() {
   const setTotalFilesTokenCount = useSetAtom(totalFilesTokenCountAtom)
+  const setTreeTokenCount = useSetAtom(treeTokenCountAtom)
   const setSelectedFiles = useSetAtom(selectedFilesAtom)
 
   useEffect(() => {
@@ -15,8 +20,10 @@ export function useTokenCountListener() {
       unlisten = await listen<TokenCountsEvent>(
         'file-token-counts',
         (event) => {
-          const { files, totalFilesTokenCount } = event.payload
+          const { files, totalFilesTokenCount, totalTreeTokenCount } =
+            event.payload
           setTotalFilesTokenCount(totalFilesTokenCount)
+          setTreeTokenCount(totalTreeTokenCount ?? 0)
 
           if (files?.length) {
             setSelectedFiles((prev) => {

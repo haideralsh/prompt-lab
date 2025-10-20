@@ -1,3 +1,5 @@
+use crate::api::clipboard::get_rendered_tree;
+use crate::api::tree::index::DirectoryNode;
 use crate::store::{save_store, StoreCategoryKey, StoreDataKey, STORE_FILE_NAME};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -89,6 +91,7 @@ struct TokenCountResult {
 struct TokenCountsEvent {
     selection_id: String,
     total_files_token_count: usize,
+    total_tree_token_count: Option<usize>,
     files: Vec<TokenCountResult>,
 }
 
@@ -183,10 +186,24 @@ fn save_cache_batch_to_store(app: &AppHandle<Wry>, root: &str, batch: &[(String,
     }
 }
 
-pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: Vec<String>) {
+pub fn spawn_token_count_task(
+    app: AppHandle<Wry>,
+    root: String,
+    selection_ids: Vec<String>,
+    tree_display_mode: String,
+    full_tree: Vec<DirectoryNode>,
+    selected_set: HashSet<String>,
+) {
     std::thread::spawn(move || {
         let bpe = cl100k_base().ok();
         let sid = selection_id_for(&selection_ids);
+
+        let tree_token_count = if tree_display_mode == "none" {
+            None
+        } else {
+            let rendered_tree = get_rendered_tree(&tree_display_mode, &full_tree, &selected_set);
+            Some(count_tokens_for_text(&rendered_tree))
+        };
 
         if selection_ids.is_empty() {
             let _ = app.emit(
@@ -194,6 +211,7 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
                 TokenCountsEvent {
                     selection_id: sid,
                     total_files_token_count: 0,
+                    total_tree_token_count: tree_token_count,
                     files: Vec::new(),
                 },
             );
@@ -267,6 +285,7 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
                     TokenCountsEvent {
                         selection_id: sid.clone(),
                         total_files_token_count: total,
+                        total_tree_token_count: tree_token_count,
                         files: batch.clone(),
                     },
                 );
@@ -280,6 +299,7 @@ pub fn spawn_token_count_task(app: AppHandle<Wry>, root: String, selection_ids: 
                 TokenCountsEvent {
                     selection_id: sid,
                     total_files_token_count: total,
+                    total_tree_token_count: tree_token_count,
                     files: batch,
                 },
             );

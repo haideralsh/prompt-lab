@@ -7,5 +7,6 @@ interface TokenCountResult {
 type TokenCountsEvent = {
   selectionId: string
   totalFilesTokenCount: number
+  totalTreeTokenCount?: number
   files: TokenCountResult[]
 }

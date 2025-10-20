@@ -24,6 +24,8 @@ import {
   indeterminateNodesAtom,
   selectedFilesAtom,
   selectedNodesAtom,
+  treeAtom,
+  treeDisplayModeAtom,
 } from '../../state/atoms'
 
 type TreeNodeItemProps = {
@@ -38,6 +40,9 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
     indeterminateNodesAtom
   )
   const directory = useAtomValue(directoryAtom)
+  const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
+  const tree = useAtomValue(treeAtom)
+
   const selected = selectedNodes.has(item.id)
   const indeterminate = indeterminateNodes.has(item.id)
   const treeStateRef = React.useRef<TreeState<TreeNode> | null>(null)
@@ -47,7 +52,10 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       directoryPath: directory.path,
       current: Array.from(selectedNodes) as string[],
       nodePath: item.id,
+      treeDisplayMode,
+      fullTree: tree,
     })
+
     setSelectedNodes(new Set(selection.selectedNodesPaths))
     setSelectedFiles(selection.selectedFiles)
     setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
