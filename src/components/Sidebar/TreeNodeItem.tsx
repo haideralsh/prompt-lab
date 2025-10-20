@@ -18,7 +18,6 @@ import React from 'react'
 import { FolderOpenIcon } from '@heroicons/react/16/solid'
 import { FolderIcon } from '@heroicons/react/16/solid'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import type { TreeState } from '@react-stately/tree'
 import {
   directoryAtom,
   indeterminateNodesAtom,
@@ -33,11 +32,15 @@ type TreeNodeItemProps = {
   depth?: number
 }
 
+type TreeNodeItemState = {
+  toggleKey: (key: string) => void
+}
+
 export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
   const [selectedNodes, setSelectedNodes] = useAtom(selectedNodesAtom)
   const setSelectedFiles = useSetAtom(selectedFilesAtom)
   const [indeterminateNodes, setIndeterminateNodes] = useAtom(
-    indeterminateNodesAtom
+    indeterminateNodesAtom,
   )
   const directory = useAtomValue(directoryAtom)
   const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
@@ -45,7 +48,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
 
   const selected = selectedNodes.has(item.id)
   const indeterminate = indeterminateNodes.has(item.id)
-  const treeStateRef = React.useRef<TreeState<TreeNode> | null>(null)
+  const treeStateRef = React.useRef<TreeNodeItemState | null>(null)
 
   async function onToggle() {
     const selection = await invoke<SelectionResult>('toggle_selection', {
@@ -82,7 +85,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded, state }) => {
-          treeStateRef.current = state as TreeState<TreeNode>
+          treeStateRef.current = state as TreeNodeItemState
 
           return (
             <div

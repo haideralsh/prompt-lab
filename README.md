@@ -32,10 +32,10 @@ Refer to the [Tauri documentation](https://tauri.app/start/) for the requirement
 PromptLab uses pnpm as the package manager for dependencies. Refer to the [pnpm install instructions](https://pnpm.io/installation) for how to install it on your platform.
 
 ```bash
-git clone https://github.com/haideralsh/promptlab
-cd promptlab
+git clone https://github.com/haideralsh/prompt-lab
+cd prompt-lab
 pnpm install
-pnpm build
+pnpm tauri build
 ```
 
 ## Contributing
