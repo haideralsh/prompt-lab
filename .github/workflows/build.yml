@@ -1,9 +1,9 @@
-name: 'test-on-pr'
+name: 'build'
 
 on: [push]
 
 jobs:
-  test-tauri:
+  build-tauri:
     strategy:
       fail-fast: false
       matrix:
