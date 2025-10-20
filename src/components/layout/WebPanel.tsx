@@ -268,7 +268,7 @@ export function WebDisclosurePanel() {
       onSelectAll={selectAll}
       onDeselectAll={deselectAll}
       tokenCount={totalPagesTokenCount}
-      endActions={
+      actions={
         <WebPanelActions
           isAddingNewPage={isAddingNewPage}
           onShowAddNewPress={showAddNewPageForm}

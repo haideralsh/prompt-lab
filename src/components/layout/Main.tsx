@@ -6,7 +6,7 @@ import { InstructionsPanel } from './instruction/InstructionsPanel'
 
 export function Main() {
   return (
-    <section className="flex-1 px-2 bg-background-dark">
+    <section className="flex-1 px-2">
       <DisclosureGroup
         defaultExpandedKeys={['selected', 'git', 'web', 'instructions']}
         allowsMultipleExpanded

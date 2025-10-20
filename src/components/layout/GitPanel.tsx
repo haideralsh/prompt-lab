@@ -21,14 +21,14 @@ import { EmptyPanelListMessage } from './EmptyPanelListMessage'
 
 function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,
-  previous: GitStatusResult,
+  previous: GitStatusResult
 ): GitStatusResult {
   if (previous.length === 0) return incoming
 
   const previousTokenCounts = new Map(
     previous
       .filter((change) => change.tokenCount != null)
-      .map((change) => [change.path, change.tokenCount as number]),
+      .map((change) => [change.path, change.tokenCount as number])
   )
 
   if (previousTokenCounts.size === 0) {
@@ -89,7 +89,7 @@ export function GitPanel() {
 
             return didUpdate ? next : prev
           })
-        },
+        }
       )
     }
 
@@ -145,7 +145,7 @@ export function GitPanel() {
             if (!prev || prev.length === 0) return payload.changes
             return mergeTokenCountsWithPrevious(payload.changes, prev)
           })
-        },
+        }
       )
     }
 
@@ -182,14 +182,14 @@ export function GitPanel() {
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={() => {
         setSelectedDiffIds(
-          () => new Set(gitChanges.map((change) => change.path)),
+          () => new Set(gitChanges.map((change) => change.path))
         )
       }}
       onDeselectAll={() => {
         setSelectedDiffIds(() => new Set())
       }}
       tokenCount={selectedTokenCount}
-      endActions={
+      actions={
         <CopyButton
           isDisabled={selectedDiffIds.size === 0}
           onCopy={async () => {

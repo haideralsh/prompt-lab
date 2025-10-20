@@ -46,7 +46,7 @@ pub(crate) fn list_directory(path: &str) -> Result<Vec<DirectoryNode>, Applicati
 
         let rel = match directory_entry.path().strip_prefix(&dir) {
             Ok(r) => r.to_path_buf(),
-            Err(_) => continue, // Skip anything we can't relativize (shouldn't happen under root)
+            Err(_) => continue,
         };
 
         is_dir_map.insert(rel.clone(), is_dir);

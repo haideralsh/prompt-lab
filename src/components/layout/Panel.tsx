@@ -20,7 +20,7 @@ export interface PanelDisclosureProps {
   count: number
   tokenCount: number
   children: ReactNode
-  endActions: ReactNode
+  actions: ReactNode
   panelClassName?: string
   headingClassName?: string
   iconClassName?: string
@@ -42,7 +42,7 @@ export function Panel({
   isGroupIndeterminate,
   onSelectAll,
   onDeselectAll,
-  endActions,
+  actions,
   tokenCount,
 }: PanelDisclosureProps) {
   const resolvedIconClass =
@@ -58,7 +58,7 @@ export function Panel({
     onSelectAll === false && (count === 0 || !isGroupSelected)
 
   return (
-    <Disclosure id={id} className="-mx-2">
+    <Disclosure id={id} className="-mx-2 mb-0.5">
       {({ isExpanded }) => (
         <>
           <Button
@@ -93,7 +93,7 @@ export function Panel({
               </div>
               <div className="flex items-center gap-3">
                 <span className="hidden group-hover:flex group-hover:items-center group-hover:gap-1.5">
-                  {endActions}
+                  {actions}
                 </span>
                 <TokenCount count={tokenCount} showLabel />
               </div>

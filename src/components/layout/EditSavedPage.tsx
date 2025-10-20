@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button } from 'react-aria-components'
 import { invoke } from '@tauri-apps/api/core'
 import { queue } from '../ToastQueue'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
