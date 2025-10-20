@@ -13,11 +13,11 @@ import {
   directoryAtom,
   filteredTreeAtom,
   indeterminateNodesAtom,
+  resetStateAtom,
   selectedFilesAtom,
   selectedNodesAtom,
 } from '../../state/atoms'
 import { ExitIcon } from '@radix-ui/react-icons'
-import { useResetState } from './useResetState'
 import { resetWindowTitle } from './updateWindowTitle'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
@@ -36,7 +36,7 @@ export function Sidebar() {
   const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
   const treeRef = useRef<HTMLDivElement>(null)
-  const resetState = useResetState()
+  const resetState = useSetAtom(resetStateAtom)
 
   async function search(query: string) {
     const { results } = await invoke<SearchResult>('load_tree', {
