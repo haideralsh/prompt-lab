@@ -20,7 +20,7 @@ export function TokenCount({ count, showLabel = false }: TokenCountProps) {
 
   return (
     <span
-      className="flex items-baseline text-xs border px-1 rounded-sm uppercase text-text-dark border-border-mid overflow-hidden relative"
+      className="flex items-center text-xs border px-1 rounded-sm uppercase text-text-dark border-border-mid overflow-hidden relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
