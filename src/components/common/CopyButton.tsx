@@ -3,6 +3,7 @@ import { Button } from 'react-aria-components'
 import { queue } from '../ToastQueue'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
+import clsx from 'clsx'
 
 export function CopyButton({
   onCopy,
@@ -42,12 +43,14 @@ export function CopyButton({
         {copied ? (
           <>
             <CheckIcon className="text-green" />
-            {copiedLabel && <span>{copiedLabel}</span>}
+            {copiedLabel && (
+              <span className="w-12 text-left">{copiedLabel}</span>
+            )}
           </>
         ) : (
           <>
             <CopyIcon />
-            {idleLabel && <span>{idleLabel}</span>}
+            {idleLabel && <span className="w-12 text-left">{idleLabel}</span>}
           </>
         )}
       </div>
