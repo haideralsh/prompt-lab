@@ -3,7 +3,6 @@ import { Button } from 'react-aria-components'
 import { queue } from '../ToastQueue'
 import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
-import clsx from 'clsx'
 
 export function CopyButton({
   onCopy,
