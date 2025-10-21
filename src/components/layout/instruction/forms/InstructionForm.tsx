@@ -67,8 +67,8 @@ export function InstructionForm({
     setNewFormContent(newContent)
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault()
     const trimmedContent = newFormContent.trim()
     const trimmedName = newFormName.trim()
     if (!trimmedContent || !trimmedName || isLoading) return
@@ -99,6 +99,7 @@ export function InstructionForm({
               onNameChange={handleNewFormNameChange}
               onContentChange={handleNewFormContentChange}
               onCancel={handleCancel}
+              onSubmit={() => handleSubmit()}
             />
           ) : (
             <>

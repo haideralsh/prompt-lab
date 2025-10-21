@@ -18,8 +18,8 @@ export function EditInstructionForm({
   const [title, setTitle] = useState(instruction.name)
   const [content, setContent] = useState(instruction.content)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault()
     const trimmedTitle = title.trim()
     const trimmedContent = content.trim()
     if (!trimmedTitle || !trimmedContent || isLoading) return
@@ -35,6 +35,7 @@ export function EditInstructionForm({
         onTitleChange={setTitle}
         onContentChange={setContent}
         onCancel={onCancel}
+        onSubmit={() => handleSubmit()}
         isLoading={isLoading}
       />
     </form>

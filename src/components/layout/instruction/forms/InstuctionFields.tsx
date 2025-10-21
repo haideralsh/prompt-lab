@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, KeyboardEvent } from 'react'
 import clsx from 'clsx'
 import { GhostButton } from '../../../common/GhostButton'
 
@@ -12,6 +12,7 @@ export interface InstructionFieldsProps {
   onTitleChange: (value: string) => void
   onContentChange: (value: string) => void
   onCancel: () => void
+  onSubmit?: () => void
 }
 
 export function InstructionFields({
@@ -22,6 +23,7 @@ export function InstructionFields({
   onTitleChange,
   onContentChange,
   onCancel,
+  onSubmit,
   rows = 4,
   className,
 }: InstructionFieldsProps) {
@@ -32,6 +34,15 @@ export function InstructionFields({
     onTitleChange(e.target.value)
   const handleContent = (e: ChangeEvent<HTMLTextAreaElement>) =>
     onContentChange(e.target.value)
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault()
+      if (!saveDisabled && onSubmit) {
+        onSubmit()
+      }
+    }
+  }
 
   const saveDisabled = isLoading || !title.trim() || !content.trim()
 
@@ -71,6 +82,7 @@ export function InstructionFields({
             placeholder="Enter your instructions here..."
             value={content}
             onChange={handleContent}
+            onKeyDown={handleKeyDown}
             disabled={isLoading}
             rows={rows}
             required

@@ -7,6 +7,7 @@ interface NewInstructionFormProps {
   onNameChange: (value: string) => void
   onContentChange: (value: string) => void
   onCancel: () => void
+  onSubmit?: () => void
 }
 
 export function NewInstructionForm({
@@ -16,6 +17,7 @@ export function NewInstructionForm({
   onNameChange,
   onContentChange,
   onCancel,
+  onSubmit,
 }: NewInstructionFormProps) {
   return (
     <InstructionFields
@@ -26,6 +28,7 @@ export function NewInstructionForm({
       onTitleChange={onNameChange}
       onContentChange={onContentChange}
       onCancel={onCancel}
+      onSubmit={onSubmit}
     />
   )
 }
