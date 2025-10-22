@@ -1,9 +1,11 @@
-use tauri::{AppHandle, Wry};
+use tauri::AppHandle;
 
 use crate::errors::ApplicationError;
 use crate::store::{open_store, StoreCategoryKey, StoreConfigKey};
 
-pub fn resolve_editor(app: &AppHandle<Wry>) -> Result<Option<String>, ApplicationError> {
+pub fn resolve_editor<R: tauri::Runtime>(
+    app: &AppHandle<R>,
+) -> Result<Option<String>, ApplicationError> {
     let store = open_store(app)?;
 
     let editor_from_store = store

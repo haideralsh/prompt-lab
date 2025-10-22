@@ -5,7 +5,7 @@ use crate::errors::{codes, ApplicationError};
 use crate::store::{open_store, save_store, StoreCategoryKey, StoreConfigKey};
 use rfd::FileDialog;
 use serde_json::{json, Map, Value};
-use tauri::{AppHandle, Wry};
+use tauri::AppHandle;
 use tauri_plugin_opener::OpenerExt;
 
 #[tauri::command]
@@ -24,7 +24,10 @@ pub(crate) fn pick_editor() -> Result<String, ApplicationError> {
 }
 
 #[tauri::command]
-pub(crate) fn set_editor(app: AppHandle<Wry>, editor_path: String) -> Result<(), ApplicationError> {
+pub(crate) fn set_editor<R: tauri::Runtime>(
+    app: AppHandle<R>,
+    editor_path: String,
+) -> Result<(), ApplicationError> {
     let store = open_store(&app)?;
 
     let mut config = store
@@ -41,7 +44,9 @@ pub(crate) fn set_editor(app: AppHandle<Wry>, editor_path: String) -> Result<(),
 }
 
 #[tauri::command]
-pub(crate) fn get_editor(app: AppHandle<Wry>) -> Result<Option<String>, ApplicationError> {
+pub(crate) fn get_editor<R: tauri::Runtime>(
+    app: AppHandle<R>,
+) -> Result<Option<String>, ApplicationError> {
     let store = open_store(&app)?;
 
     let editor_path = store
@@ -54,7 +59,10 @@ pub(crate) fn get_editor(app: AppHandle<Wry>) -> Result<Option<String>, Applicat
 }
 
 #[tauri::command]
-pub(crate) fn open_with_editor(app: AppHandle<Wry>, path: &str) -> Result<(), ApplicationError> {
+pub(crate) fn open_with_editor<R: tauri::Runtime>(
+    app: AppHandle<R>,
+    path: &str,
+) -> Result<(), ApplicationError> {
     let path_buf = PathBuf::from(path);
 
     if !path_buf.exists() {
@@ -88,4 +96,54 @@ pub(crate) fn open_with_editor(app: AppHandle<Wry>, path: &str) -> Result<(), Ap
                 err
             )),
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tauri::test::{mock_builder, mock_context, noop_assets};
+    use tauri_plugin_store::Builder as StoreBuilder;
+
+    // These tests are for both get_editor and set_editor functions
+    // since the get_editor function is used implicitly in the test to verify store contents
+    #[test]
+    fn test_set_editor_happy_path() {
+        let context = mock_context(noop_assets());
+        let app = mock_builder()
+            .plugin(StoreBuilder::new().build())
+            .build(context)
+            .expect("failed to build app");
+
+        let initial = get_editor(app.handle().clone()).unwrap();
+        assert!(initial.is_none());
+
+        let editor_path = "/Applications/TestEditor.app".to_string();
+        set_editor(app.handle().clone(), editor_path.clone()).expect("set_editor should succeed");
+
+        let retrieved = get_editor(app.handle().clone()).unwrap();
+        assert_eq!(retrieved, Some(editor_path));
+    }
+
+    #[test]
+    fn test_set_editor_overwrites_existing() {
+        let context = mock_context(noop_assets());
+        let app = mock_builder()
+            .plugin(StoreBuilder::new().build())
+            .build(context)
+            .expect("failed to build app");
+
+        // initial set
+        let first = "/Applications/FirstEditor.app".to_string();
+        set_editor(app.handle().clone(), first.clone()).expect("first set should succeed");
+
+        let retrieved = get_editor(app.handle().clone()).unwrap();
+        assert_eq!(retrieved, Some(first.clone()));
+
+        // overwrite with a new path
+        let second = "/Applications/SecondEditor.app".to_string();
+        set_editor(app.handle().clone(), second.clone()).expect("second set should succeed");
+
+        let retrieved2 = get_editor(app.handle().clone()).unwrap();
+        assert_eq!(retrieved2, Some(second));
+    }
 }
