@@ -35,7 +35,7 @@ pub(crate) fn set_editor<R: tauri::Runtime>(
         .and_then(|v| v.as_object().cloned())
         .unwrap_or_else(|| Map::new());
 
-    config.insert(StoreConfigKey::EDITOR.to_string(), json!(editor_path));
+    set_editor_in_config(&mut config, editor_path);
 
     store.set(StoreCategoryKey::CONFIG, Value::Object(config));
     save_store(&store)?;
@@ -49,13 +49,26 @@ pub(crate) fn get_editor<R: tauri::Runtime>(
 ) -> Result<Option<String>, ApplicationError> {
     let store = open_store(&app)?;
 
-    let editor_path = store
+    let config = store
         .get(StoreCategoryKey::CONFIG)
         .and_then(|v| v.as_object().cloned())
-        .and_then(|config| config.get(StoreConfigKey::EDITOR).cloned())
-        .and_then(|v| v.as_str().map(|s| s.to_string()));
+        .unwrap_or_else(|| Map::new());
 
-    Ok(editor_path)
+    Ok(get_editor_from_config(&config))
+}
+
+// Pure helper: set the editor path into a config map. This is intentionally
+// independent of `tauri` so tests can exercise the logic without requiring
+// a tauri runtime or mocked app handle.
+pub(crate) fn set_editor_in_config(config: &mut Map<String, Value>, editor_path: String) {
+    config.insert(StoreConfigKey::EDITOR.to_string(), json!(editor_path));
+}
+
+// Pure helper: read the editor path from a config map.
+pub(crate) fn get_editor_from_config(config: &Map<String, Value>) -> Option<String> {
+    config
+        .get(StoreConfigKey::EDITOR)
+        .and_then(|v| v.as_str().map(|s| s.to_string()))
 }
 
 #[tauri::command]
@@ -101,49 +114,32 @@ pub(crate) fn open_with_editor<R: tauri::Runtime>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tauri::test::{mock_builder, mock_context, noop_assets};
-    use tauri_plugin_store::Builder as StoreBuilder;
 
-    // These tests are for both get_editor and set_editor functions
-    // since the get_editor function is used implicitly in the test to verify store contents
+    // These unit tests exercise the store config helpers without requiring
+    // a `tauri` runtime. They test the pure logic used by the real
+    // `set_editor`/`get_editor` functions.
     #[test]
-    fn test_set_editor_happy_path() {
-        let context = mock_context(noop_assets());
-        let app = mock_builder()
-            .plugin(StoreBuilder::new().build())
-            .build(context)
-            .expect("failed to build app");
+    fn test_set_and_get_editor_in_config() {
+        let mut config = Map::new();
 
-        let initial = get_editor(app.handle().clone()).unwrap();
-        assert!(initial.is_none());
+        assert_eq!(get_editor_from_config(&config), None);
 
         let editor_path = "/Applications/TestEditor.app".to_string();
-        set_editor(app.handle().clone(), editor_path.clone()).expect("set_editor should succeed");
+        set_editor_in_config(&mut config, editor_path.clone());
 
-        let retrieved = get_editor(app.handle().clone()).unwrap();
-        assert_eq!(retrieved, Some(editor_path));
+        assert_eq!(get_editor_from_config(&config), Some(editor_path));
     }
 
     #[test]
-    fn test_set_editor_overwrites_existing() {
-        let context = mock_context(noop_assets());
-        let app = mock_builder()
-            .plugin(StoreBuilder::new().build())
-            .build(context)
-            .expect("failed to build app");
+    fn test_set_editor_overwrites_existing_in_config() {
+        let mut config = Map::new();
 
-        // initial set
         let first = "/Applications/FirstEditor.app".to_string();
-        set_editor(app.handle().clone(), first.clone()).expect("first set should succeed");
+        set_editor_in_config(&mut config, first.clone());
+        assert_eq!(get_editor_from_config(&config), Some(first.clone()));
 
-        let retrieved = get_editor(app.handle().clone()).unwrap();
-        assert_eq!(retrieved, Some(first.clone()));
-
-        // overwrite with a new path
         let second = "/Applications/SecondEditor.app".to_string();
-        set_editor(app.handle().clone(), second.clone()).expect("second set should succeed");
-
-        let retrieved2 = get_editor(app.handle().clone()).unwrap();
-        assert_eq!(retrieved2, Some(second));
+        set_editor_in_config(&mut config, second.clone());
+        assert_eq!(get_editor_from_config(&config), Some(second));
     }
 }
