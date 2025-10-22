@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import { convertFileSrc, invoke } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core'
 import { Button } from 'react-aria-components'
 import {
   GlobeIcon,
@@ -7,70 +7,33 @@ import {
   ReloadIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
-import { queue } from '../ToastQueue'
+import { queue } from '../../ToastQueue'
 import { flushSync } from 'react-dom'
-import { getErrorMessage } from '../../helpers/getErrorMessage'
-import { WebPanelActions } from './WebPanelActions'
-import { CopyButton } from '../common/CopyButton'
-import { EditSavedPage } from './EditSavedPage'
-import { GhostButton } from '../common/GhostButton'
+import { getErrorMessage } from '../../../helpers/getErrorMessage'
+import { WebPanelActions } from '../WebPanelActions'
+import { CopyButton } from '../../common/CopyButton'
+import { EditSavedPage } from './edit-saved-page-form'
+import { GhostButton } from '../../common/GhostButton'
 
-import { preserveSelected } from '../../helpers/preserveSelected'
-import { TokenCount } from '../common/TokenCount'
-import { appDataDir, join } from '@tauri-apps/api/path'
+import { preserveSelected } from '../../../helpers/preserveSelected'
+import { TokenCount } from '../../common/TokenCount'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,
   selectedPagesIdsAtom,
   totalPagesTokenCountAtom,
-} from '../../state/atoms'
-import { PanelList } from './PanelList'
-import { PanelRowCheckbox } from './PanelRowCheckbox'
-import { Panel } from './Panel'
-import { EmptyPanelListMessage } from './EmptyPanelListMessage'
-
-export interface SavedPageMetadata {
-  title: string
-  url: string
-  tokenCount: number
-  faviconPath?: string | null
-}
-
-export type SavedPages = readonly SavedPageMetadata[]
-
-export async function fetchSavedPages(
-  directoryPath: string
-): Promise<SavedPages> {
-  try {
-    const [pages, appDataDirPath] = await Promise.all([
-      invoke<SavedPages>('list_saved_pages', { directoryPath }),
-      appDataDir(),
-    ])
-
-    const faviconPromises = pages
-      .filter((page) => page.faviconPath)
-      .map(async (page) => {
-        const filePath = await join(appDataDirPath, page.faviconPath!)
-        return { page, faviconPath: convertFileSrc(filePath) }
-      })
-
-    const convertedFavicons = await Promise.all(faviconPromises)
-    for (const { page, faviconPath } of convertedFavicons) {
-      page.faviconPath = faviconPath
-    }
-
-    return pages
-  } catch (error) {
-    const message = getErrorMessage(error)
-
-    queue.add({
-      title: 'Failed to load saved pages',
-      description: message,
-    })
-
-    return []
-  }
-}
+} from '../../../state/atoms'
+import { PanelList } from '../PanelList'
+import { PanelRowCheckbox } from '../PanelRowCheckbox'
+import { Panel } from '../Panel'
+import { EmptyPanelListMessage } from '../EmptyPanelListMessage'
+import {
+  deleteSavedPage,
+  SavedPageMetadata,
+  savePageAsMd,
+  type SavedPages,
+} from '@/api/web'
+import { fetchSavedPages } from './lib'
 
 export function WebDisclosurePanel() {
   const directory = useAtomValue(directoryAtom)
@@ -134,10 +97,7 @@ export function WebDisclosurePanel() {
     setIsSavingWeb(true)
 
     try {
-      await invoke<SavedPageMetadata>('save_page_as_md', {
-        directoryPath: directory.path,
-        url: trimmedUrl,
-      })
+      await savePageAsMd({ directoryPath: directory.path, url: trimmedUrl })
 
       const pages = await fetchSavedPages(directory.path)
 
@@ -170,10 +130,7 @@ export function WebDisclosurePanel() {
     })
 
     try {
-      await invoke<SavedPageMetadata>('save_page_as_md', {
-        directoryPath: directory.path,
-        url: entry.url,
-      })
+      await savePageAsMd({ directoryPath: directory.path, url: entry.url })
 
       const pages = await fetchSavedPages(directory.path)
 
@@ -207,7 +164,7 @@ export function WebDisclosurePanel() {
     // TODO: Show a confirmation dialog before deleting
 
     try {
-      await invoke<void>('delete_saved_page', {
+      await deleteSavedPage({
         directoryPath: directory.path,
         url: entry.url,
       })

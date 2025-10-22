@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { invoke } from '@tauri-apps/api/core'
-import { queue } from '../ToastQueue'
-import { getErrorMessage } from '../../helpers/getErrorMessage'
-import { SavedPageMetadata, SavedPages, fetchSavedPages } from './WebPanel'
+import { queue } from '../../ToastQueue'
+import { getErrorMessage } from '../../../helpers/getErrorMessage'
+import { fetchSavedPages } from './lib'
 import { useAtomValue, useSetAtom } from 'jotai'
-import { directoryAtom, selectedPagesIdsAtom } from '../../state/atoms'
-import { GhostButton } from '../common/GhostButton'
+import { directoryAtom, selectedPagesIdsAtom } from '../../../state/atoms'
+import { GhostButton } from '../../common/GhostButton'
+import { editSavedPage, SavedPageMetadata, SavedPages } from '@/api/web'
 
 type EditSavedPageProps = {
   page: SavedPageMetadata
@@ -52,7 +52,7 @@ export function EditSavedPage({ page, onSave, onCancel }: EditSavedPageProps) {
     try {
       setIsSaving(true)
 
-      await invoke<void>('edit_saved_page', {
+      await editSavedPage({
         directoryPath: directory.path,
         url: page.url,
         newTitle: trimmedTitle,
