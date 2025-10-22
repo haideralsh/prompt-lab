@@ -1,6 +1,6 @@
 import { DisclosureGroup } from 'react-aria-components'
 import { SelectedFilesPanel } from './SelectedFilesPanel'
-import { GitPanel } from './GitPanel'
+import { GitPanel } from './git/git-panel'
 import { WebDisclosurePanel } from './web/web-panel'
 import { InstructionsPanel } from './instruction/InstructionsPanel'
 
