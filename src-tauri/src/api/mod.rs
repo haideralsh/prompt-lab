@@ -1,6 +1,6 @@
 pub(crate) mod clipboard;
 pub mod directory;
-pub(crate) mod editor;
+pub mod editor;
 pub(crate) mod git;
 pub(crate) mod instruction;
 pub(crate) mod tokenize;

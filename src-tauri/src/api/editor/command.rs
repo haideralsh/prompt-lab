@@ -60,12 +60,12 @@ pub(crate) fn get_editor<R: tauri::Runtime>(
 // Pure helper: set the editor path into a config map. This is intentionally
 // independent of `tauri` so tests can exercise the logic without requiring
 // a tauri runtime or mocked app handle.
-pub(crate) fn set_editor_in_config(config: &mut Map<String, Value>, editor_path: String) {
+pub fn set_editor_in_config(config: &mut Map<String, Value>, editor_path: String) {
     config.insert(StoreConfigKey::EDITOR.to_string(), json!(editor_path));
 }
 
 // Pure helper: read the editor path from a config map.
-pub(crate) fn get_editor_from_config(config: &Map<String, Value>) -> Option<String> {
+pub fn get_editor_from_config(config: &Map<String, Value>) -> Option<String> {
     config
         .get(StoreConfigKey::EDITOR)
         .and_then(|v| v.as_str().map(|s| s.to_string()))
@@ -109,37 +109,4 @@ pub(crate) fn open_with_editor<R: tauri::Runtime>(
                 err
             )),
         })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // These unit tests exercise the store config helpers without requiring
-    // a `tauri` runtime. They test the pure logic used by the real
-    // `set_editor`/`get_editor` functions.
-    #[test]
-    fn test_set_and_get_editor_in_config() {
-        let mut config = Map::new();
-
-        assert_eq!(get_editor_from_config(&config), None);
-
-        let editor_path = "/Applications/TestEditor.app".to_string();
-        set_editor_in_config(&mut config, editor_path.clone());
-
-        assert_eq!(get_editor_from_config(&config), Some(editor_path));
-    }
-
-    #[test]
-    fn test_set_editor_overwrites_existing_in_config() {
-        let mut config = Map::new();
-
-        let first = "/Applications/FirstEditor.app".to_string();
-        set_editor_in_config(&mut config, first.clone());
-        assert_eq!(get_editor_from_config(&config), Some(first.clone()));
-
-        let second = "/Applications/SecondEditor.app".to_string();
-        set_editor_in_config(&mut config, second.clone());
-        assert_eq!(get_editor_from_config(&config), Some(second));
-    }
 }
