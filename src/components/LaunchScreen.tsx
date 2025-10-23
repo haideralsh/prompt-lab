@@ -39,7 +39,7 @@ export function LaunchScreen() {
 
   async function handleDirectoryPick(directory: DirectoryInfo) {
     try {
-      const resp = await invoke<SearchResult>('load_tree', {
+      const resp = await invoke<SearchResult>('search_tree', {
         path: directory.path,
       })
 

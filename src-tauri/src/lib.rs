@@ -14,7 +14,7 @@ pub fn run() {
             api::directory::command::list::list_directory,
             api::directory::command::recent::get_recent_directories,
             api::directory::command::recent::add_recent_directory,
-            api::tree::search::load_tree,
+            api::tree::search::command::search_tree,
             api::tree::select::command::toggle_selection,
             api::tree::select::command::clear_selection,
             api::tree::render::command::count_rendered_tree_tokens,

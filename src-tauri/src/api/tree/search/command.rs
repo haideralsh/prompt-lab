@@ -1,9 +1,7 @@
+use crate::api::tree::cache::cache;
 use crate::api::tree::index::{ensure_index, DirectoryNode};
-use crate::api::tree::lib::{build_full_tree, build_pruned_tree, count_matched_nodes};
-use crate::api::tree::{
-    cache::cache,
-    lib::{add_ancestors, add_descendants},
-};
+use crate::api::tree::search::lib::{add_ancestors, add_descendants};
+use crate::api::tree::search::lib::{build_full_tree, build_pruned_tree, count_matched_nodes};
 use crate::errors::ApplicationError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -16,7 +14,7 @@ pub(crate) struct SearchMatch {
 }
 
 #[tauri::command]
-pub(crate) fn load_tree(
+pub(crate) fn search_tree(
     path: String,
     term: Option<String>,
 ) -> Result<SearchMatch, ApplicationError> {
@@ -134,7 +132,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_no_search_term() {
+    fn test_search_tree_no_search_term() {
         let path = "/test/no_search";
         let nodes = vec![
             DirectoryNode {
@@ -158,7 +156,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), None).unwrap();
+        let result = search_tree(path.to_string(), None).unwrap();
 
         assert_eq!(result.matched_ids_count, 2);
         assert_eq!(result.results.len(), 2);
@@ -167,7 +165,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_empty_search_term() {
+    fn test_search_tree_empty_search_term() {
         let path = "/test/empty_search";
         let nodes = vec![DirectoryNode {
             id: "1".to_string(),
@@ -181,7 +179,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -190,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_whitespace_only_search_term() {
+    fn test_search_tree_whitespace_only_search_term() {
         let path = "/test/whitespace_search";
         let nodes = vec![DirectoryNode {
             id: "1".to_string(),
@@ -204,7 +202,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("   ".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("   ".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -213,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_no_matches() {
+    fn test_search_tree_no_matches() {
         let path = "/test/no_matches";
         let nodes = vec![DirectoryNode {
             id: "1".to_string(),
@@ -227,7 +225,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("nonexistent".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("nonexistent".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 0);
         assert_eq!(result.results.len(), 0);
@@ -236,7 +234,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_single_file_match() {
+    fn test_search_tree_single_file_match() {
         let path = "/test/single_file";
         let nodes = vec![DirectoryNode {
             id: "dir1".to_string(),
@@ -257,7 +255,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("document".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("document".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -269,7 +267,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_single_directory_match() {
+    fn test_search_tree_single_directory_match() {
         let path = "/test/single_dir";
         let nodes = vec![DirectoryNode {
             id: "dir1".to_string(),
@@ -300,7 +298,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("documents".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("documents".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -311,7 +309,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_multiple_matches_same_branch() {
+    fn test_search_tree_multiple_matches_same_branch() {
         let path = "/test/multiple_same_branch";
         let nodes = vec![DirectoryNode {
             id: "dir1".to_string(),
@@ -342,7 +340,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("test".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 3);
         assert_eq!(result.results.len(), 1);
@@ -352,7 +350,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_multiple_matches_different_branches() {
+    fn test_search_tree_multiple_matches_different_branches() {
         let path = "/test/multiple_branches";
         let nodes = vec![
             DirectoryNode {
@@ -390,7 +388,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("test".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 2);
         assert_eq!(result.results.len(), 2);
@@ -399,7 +397,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_top_level_match() {
+    fn test_search_tree_top_level_match() {
         let path = "/test/top_level";
         let nodes = vec![DirectoryNode {
             id: "dir1".to_string(),
@@ -420,7 +418,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("search".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("search".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -431,7 +429,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_deep_nested_match() {
+    fn test_search_tree_deep_nested_match() {
         let path = "/test/deep_nested";
         let nodes = vec![DirectoryNode {
             id: "root".to_string(),
@@ -466,7 +464,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("deep_file".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("deep_file".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -482,7 +480,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_case_sensitive_search() {
+    fn test_search_tree_case_sensitive_search() {
         let path = "/test/case_sensitive";
         let nodes = vec![
             DirectoryNode {
@@ -506,7 +504,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("foo".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("foo".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 2);
         assert_eq!(result.results.len(), 2);
@@ -515,7 +513,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_partial_string_match() {
+    fn test_search_tree_partial_string_match() {
         let path = "/test/partial_match";
         let nodes = vec![DirectoryNode {
             id: "1".to_string(),
@@ -529,7 +527,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("oo".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("oo".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -538,7 +536,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_exact_match() {
+    fn test_search_tree_exact_match() {
         let path = "/test/exact_match";
         let nodes = vec![
             DirectoryNode {
@@ -562,7 +560,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("test".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 2);
 
@@ -570,7 +568,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_special_characters_in_term() {
+    fn test_search_tree_special_characters_in_term() {
         let path = "/test/special_chars";
         let nodes = vec![DirectoryNode {
             id: "1".to_string(),
@@ -584,7 +582,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("file-123".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("file-123".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -593,7 +591,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_unicode_in_term_and_titles() {
+    fn test_search_tree_unicode_in_term_and_titles() {
         let path = "/test/unicode";
         let nodes = vec![DirectoryNode {
             id: "1".to_string(),
@@ -607,7 +605,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("文件".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("文件".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -616,15 +614,15 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_invalid_path() {
+    fn test_search_tree_invalid_path() {
         let path = "/test/nonexistent/path";
-        let result = load_tree(path.to_string(), None);
+        let result = search_tree(path.to_string(), None);
 
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_load_tree_cache_miss_after_ensure() {
+    fn test_search_tree_cache_miss_after_ensure() {
         let path = "/test/cache_test";
         clear_cache(path);
 
@@ -640,7 +638,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("file".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("file".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
 
@@ -648,7 +646,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_pruned_tree_structure() {
+    fn test_search_tree_pruned_tree_structure() {
         let path = "/test/pruned_structure";
         let nodes = vec![DirectoryNode {
             id: "root".to_string(),
@@ -693,7 +691,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("target".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("target".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 1);
         assert_eq!(result.results.len(), 1);
@@ -704,7 +702,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_matched_count_accuracy() {
+    fn test_search_tree_matched_count_accuracy() {
         let path = "/test/count_accuracy";
         let nodes = vec![DirectoryNode {
             id: "root".to_string(),
@@ -735,7 +733,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("test".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 2);
 
@@ -743,18 +741,18 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_empty_tree_index() {
+    fn test_search_tree_empty_tree_index() {
         let path = "/test/empty_tree";
         let nodes: Vec<DirectoryNode> = vec![];
 
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result_no_term = load_tree(path.to_string(), None).unwrap();
+        let result_no_term = search_tree(path.to_string(), None).unwrap();
         assert_eq!(result_no_term.matched_ids_count, 0);
         assert_eq!(result_no_term.results.len(), 0);
 
-        let result_with_term = load_tree(path.to_string(), Some("test".to_string())).unwrap();
+        let result_with_term = search_tree(path.to_string(), Some("test".to_string())).unwrap();
         assert_eq!(result_with_term.matched_ids_count, 0);
         assert_eq!(result_with_term.results.len(), 0);
 
@@ -762,7 +760,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_concurrent_cache_access() {
+    fn test_search_tree_concurrent_cache_access() {
         use std::sync::Arc;
         use std::thread;
 
@@ -784,7 +782,7 @@ mod tests {
             .map(|_| {
                 let p = Arc::clone(&path_arc);
                 thread::spawn(move || {
-                    let result = load_tree(p.to_string(), Some("file".to_string()));
+                    let result = search_tree(p.to_string(), Some("file".to_string()));
                     assert!(result.is_ok());
                 })
             })
@@ -798,15 +796,15 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_error_propagation_from_ensure_index() {
+    fn test_search_tree_error_propagation_from_ensure_index() {
         let path = "/definitely/does/not/exist/path";
-        let result = load_tree(path.to_string(), None);
+        let result = search_tree(path.to_string(), None);
 
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_load_tree_performance_large_tree() {
+    fn test_search_tree_performance_large_tree() {
         use std::time::Instant;
 
         let path = "/test/large_tree";
@@ -827,7 +825,7 @@ mod tests {
         setup_cache(path, tree_index);
 
         let start = Instant::now();
-        let result = load_tree(path.to_string(), Some("file500".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("file500".to_string())).unwrap();
         let duration = start.elapsed();
 
         assert_eq!(result.matched_ids_count, 1);
@@ -837,7 +835,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_serialization() {
+    fn test_search_tree_serialization() {
         let path = "/test/serialization";
         let nodes = vec![DirectoryNode {
             id: "1".to_string(),
@@ -851,7 +849,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("file".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("file".to_string())).unwrap();
 
         let json = serde_json::to_string(&result);
         assert!(json.is_ok());
@@ -863,7 +861,7 @@ mod tests {
     }
 
     #[test]
-    fn test_load_tree_duplicate_ids_handling() {
+    fn test_search_tree_duplicate_ids_handling() {
         let path = "/test/duplicate_ids";
         let nodes = vec![
             DirectoryNode {
@@ -887,7 +885,7 @@ mod tests {
         let tree_index = create_test_tree_index(nodes);
         setup_cache(path, tree_index);
 
-        let result = load_tree(path.to_string(), Some("test".to_string())).unwrap();
+        let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
 
         assert_eq!(result.matched_ids_count, 2);
         assert_eq!(result.results.len(), 2);

@@ -39,7 +39,7 @@ export function Sidebar() {
   const resetState = useSetAtom(resetStateAtom)
 
   async function search(query: string) {
-    const { results } = await invoke<SearchResult>('load_tree', {
+    const { results } = await invoke<SearchResult>('search_tree', {
       path: directory.path,
       term: query.trim(),
     })
