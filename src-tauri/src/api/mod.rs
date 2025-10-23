@@ -4,5 +4,5 @@ pub(crate) mod editor;
 pub(crate) mod git;
 pub(crate) mod instruction;
 pub(crate) mod tokenize;
-pub(crate) mod tree;
+pub mod tree;
 pub(crate) mod web;

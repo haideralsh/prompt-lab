@@ -6,23 +6,23 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct DirectoryNode {
-    pub(crate) id: String,
-    pub(crate) title: String,
+pub struct DirectoryNode {
+    pub id: String,
+    pub title: String,
     #[serde(rename = "type")]
-    pub(crate) node_type: String,
+    pub node_type: String,
     #[serde(default)]
-    pub(crate) children: Vec<DirectoryNode>,
+    pub children: Vec<DirectoryNode>,
     #[serde(skip)]
-    pub(crate) parent: Option<String>,
+    pub parent: Option<String>,
     #[serde(skip)]
-    pub(crate) child_ids: Vec<String>,
+    pub child_ids: Vec<String>,
 }
 
-pub(crate) struct TreeIndex {
-    pub(crate) top_level: Vec<String>,
-    pub(crate) nodes: HashMap<String, DirectoryNode>,
-    pub(crate) titles: Vec<(String, String)>,
+pub struct TreeIndex {
+    pub top_level: Vec<String>,
+    pub nodes: HashMap<String, DirectoryNode>,
+    pub titles: Vec<(String, String)>,
 }
 
 fn index_node(node: &DirectoryNode, parent: Option<&str>, tree_index: &mut TreeIndex) {

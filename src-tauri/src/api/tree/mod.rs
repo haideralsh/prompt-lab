@@ -1,5 +1,5 @@
-pub(crate) mod cache;
-pub(crate) mod index;
+pub mod cache;
+pub mod index;
 pub(crate) mod render;
-pub(crate) mod search;
+pub mod search;
 pub(crate) mod select;
