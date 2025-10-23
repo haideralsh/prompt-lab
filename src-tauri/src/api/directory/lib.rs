@@ -3,10 +3,10 @@ use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct PickedDirectory {
-    pub(crate) name: String,
-    pub(crate) path: String,
-    pub(crate) pretty_path: String,
+pub struct PickedDirectory {
+    pub name: String,
+    pub path: String,
+    pub pretty_path: String,
 }
 
 pub fn home_dir() -> Option<PathBuf> {

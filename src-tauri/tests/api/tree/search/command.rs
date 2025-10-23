@@ -1,5 +1,5 @@
 use promptlab_lib::api::tree::cache::cache;
-use promptlab_lib::api::tree::index::{ensure_index, DirectoryNode, TreeIndex};
+use promptlab_lib::api::tree::index::{DirectoryNode, TreeIndex};
 use promptlab_lib::api::tree::search::command::{search_tree, SearchMatch};
 use std::collections::HashMap;
 
