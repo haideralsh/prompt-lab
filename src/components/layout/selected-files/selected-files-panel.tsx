@@ -9,18 +9,17 @@ import {
 import { ReaderIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
+import { sortFilesByTokenCount } from '@/helpers/sortFilesByTokenCount'
 import {
   FileNode,
   Id,
-  SelectionResult,
   TreeDisplayMode,
   treeDisplayModes,
-} from '../../types/FileTree'
-import { CopyButton } from '../common/CopyButton'
-import { queue } from '../ToastQueue'
-import { ApplicationError } from '../../helpers/getErrorMessage'
-import { TokenCount } from '../common/TokenCount'
+} from '@/types/FileTree'
+import { CopyButton } from '@/components/common/CopyButton'
+import { queue } from '@/components/ToastQueue'
+import { ApplicationError } from '@/helpers/getErrorMessage'
+import { TokenCount } from '@/components/common/TokenCount'
 import {
   directoryAtom,
   indeterminateNodesAtom,
@@ -30,11 +29,17 @@ import {
   treeDisplayModeAtom,
   totalFilesTokenCountAtom,
   treeTokenCountAtom,
-} from '../../state/atoms'
-import { Panel } from './Panel'
-import { PanelList } from './PanelList'
-import { PanelRowCheckbox } from './PanelRowCheckbox'
-import { EmptyPanelListMessage } from './EmptyPanelListMessage'
+} from '@/state/atoms'
+import { Panel } from '@/components/layout/Panel'
+import { PanelList } from '@/components/layout/PanelList'
+import { PanelRowCheckbox } from '@/components/layout/PanelRowCheckbox'
+import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
+import {
+  clearSelection,
+  countRenderedTreeTokens,
+  openWithEditor,
+  toggleSelection,
+} from '@/api/selection'
 
 export function SelectedFilesPanel() {
   const [selectedFiles, setSelectedFiles] = useAtom(selectedFilesAtom)
@@ -51,9 +56,9 @@ export function SelectedFilesPanel() {
   }, [selectedFiles])
 
   async function deselect(path: Id) {
-    const selection = await invoke<SelectionResult>('toggle_selection', {
+    const selection = await toggleSelection({
       directoryPath: directory.path,
-      current: Array.from(selectedNodes),
+      current: Array.from(selectedNodes, String),
       nodePath: path,
       treeDisplayMode,
       fullTree: tree,
@@ -64,7 +69,7 @@ export function SelectedFilesPanel() {
   }
 
   async function deselectAll() {
-    const selection = await invoke<SelectionResult>('clear_selection', {
+    const selection = await clearSelection({
       directoryPath: directory.path,
     })
     setSelectedNodes(new Set(selection.selectedNodesPaths))
@@ -83,7 +88,7 @@ export function SelectedFilesPanel() {
 
   async function handleOpenFile(file: FileNode) {
     try {
-      await invoke('open_with_editor', { path: file.path })
+      await openWithEditor({ path: file.path })
     } catch (error) {
       queue.add({
         title: 'Failed to open file',
@@ -102,7 +107,7 @@ export function SelectedFilesPanel() {
   }
 
   async function updateTreeTokenCount(mode: TreeDisplayMode) {
-    invoke<number>('count_rendered_tree_tokens', {
+    countRenderedTreeTokens({
       treeDisplayMode: mode,
       fullTree: tree,
       selectedNodes: Array.from(selectedNodes) as string[],
