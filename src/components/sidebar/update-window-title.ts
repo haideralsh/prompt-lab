@@ -1,5 +1,5 @@
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { queue } from '../ToastQueue'
+import { queue } from '@/components/toasts/toast-queue'
 
 export async function updateWindowTitle(title: string) {
   try {

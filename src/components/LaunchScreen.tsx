@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { DirectoryPickerButton } from './DirectoryPickerButton'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import { invoke } from '@tauri-apps/api/core'
-import { updateWindowTitle } from './Sidebar/updateWindowTitle'
+import { updateWindowTitle } from './sidebar/update-window-title'
 import { ERROR_CODES } from '../constants'
 import type { SearchResult } from '../types/FileTree'
-import { queue } from './ToastQueue'
+import { queue } from '@/components/toasts/toast-queue'
 import { ApplicationError } from '../helpers/getErrorMessage'
 import { useSetAtom } from 'jotai'
 import { directoryAtom, filteredTreeAtom, treeAtom } from '../state/atoms'
@@ -62,7 +62,7 @@ export function LaunchScreen() {
   }
 
   return (
-    <main className="min-h-screen h-full justify-center items-center flex bg-background-dark">
+    <main data-testid="launch-screen" className="min-h-screen h-full justify-center items-center flex bg-background-dark">
       <div className="flex flex-col max-w-72 gap-8">
         <DirectoryPickerButton onPick={handleDirectoryPick} />
 

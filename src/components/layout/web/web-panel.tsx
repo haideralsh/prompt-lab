@@ -7,7 +7,7 @@ import {
   ReloadIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
-import { queue } from '../../ToastQueue'
+import { queue } from '@/components/toasts/toast-queue'
 import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import { WebPanelActions } from '../WebPanelActions'

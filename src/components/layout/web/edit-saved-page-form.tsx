@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { queue } from '../../ToastQueue'
+import { queue } from '@/components/toasts/toast-queue'
 import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import { fetchSavedPages } from './lib'
 import { useAtomValue, useSetAtom } from 'jotai'

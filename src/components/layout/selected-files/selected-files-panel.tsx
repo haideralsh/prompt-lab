@@ -17,7 +17,7 @@ import {
   treeDisplayModes,
 } from '@/types/FileTree'
 import { CopyButton } from '@/components/common/CopyButton'
-import { queue } from '@/components/ToastQueue'
+import { queue } from '@/components/toasts/toast-queue'
 import { ApplicationError } from '@/helpers/getErrorMessage'
 import { TokenCount } from '@/components/common/TokenCount'
 import {
