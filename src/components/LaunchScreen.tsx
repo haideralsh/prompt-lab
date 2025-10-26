@@ -62,7 +62,7 @@ export function LaunchScreen() {
   }
 
   return (
-    <main data-testid="launch-screen" className="min-h-screen h-full justify-center items-center flex bg-background-dark">
+    <main className="min-h-screen h-full justify-center items-center flex bg-background-dark">
       <div className="flex flex-col max-w-72 gap-8">
         <DirectoryPickerButton onPick={handleDirectoryPick} />
 
