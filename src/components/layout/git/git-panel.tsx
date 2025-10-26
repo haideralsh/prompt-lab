@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { CopyButton } from '../../common/CopyButton'
+import { CopyButton } from '../../common/copy-button'
 import { GitStatusResult } from '../../../types/git'
 import { Panel } from '../Panel'
-import { TokenCount } from '../../common/TokenCount'
+import { TokenCount } from '../../common/token-count'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,

@@ -12,7 +12,7 @@ import {
   TriangleDownIcon,
   TriangleRightIcon,
 } from '@radix-ui/react-icons'
-import { TokenCount } from '../common/TokenCount'
+import { TokenCount } from '../common/token-count'
 
 export interface PanelDisclosureProps {
   id: string

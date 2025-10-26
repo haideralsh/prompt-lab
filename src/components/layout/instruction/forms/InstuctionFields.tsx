@@ -1,6 +1,6 @@
 import { ChangeEvent, KeyboardEvent } from 'react'
 import clsx from 'clsx'
-import { GhostButton } from '../../../common/GhostButton'
+import { GhostButton } from '../../../common/ghost-button'
 
 export interface InstructionFieldsProps {
   id: string

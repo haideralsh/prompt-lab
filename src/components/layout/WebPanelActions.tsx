@@ -1,6 +1,6 @@
 import { PlusIcon } from '@radix-ui/react-icons'
 import { Button } from 'react-aria-components'
-import { CopyButton } from '../common/CopyButton'
+import { CopyButton } from '../common/copy-button'
 
 type WebPanelActionsProps = {
   isAddingNewPage: boolean

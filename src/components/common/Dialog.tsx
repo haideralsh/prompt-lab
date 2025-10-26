@@ -1,6 +1,6 @@
 import { Dialog as BaseDialog } from '@base-ui-components/react/dialog'
 import { ComponentProps, ReactNode } from 'react'
-import { GhostButton } from './GhostButton'
+import { GhostButton } from './ghost-button'
 
 export function DialogTrigger({
   children,

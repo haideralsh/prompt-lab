@@ -1,7 +1,7 @@
 import { Button } from 'react-aria-components'
 import { BookmarkIcon, BookmarkFilledIcon } from '@radix-ui/react-icons'
-import { CopyButton } from '../../../common/CopyButton'
-import { TokenCount } from '../../../common/TokenCount'
+import { CopyButton } from '../../../common/copy-button'
+import { TokenCount } from '../../../common/token-count'
 import { Instruction } from '../types'
 
 interface NewInstructionTextareaProps {

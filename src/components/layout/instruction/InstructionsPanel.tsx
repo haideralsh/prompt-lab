@@ -4,7 +4,7 @@ import { PlusIcon } from '@radix-ui/react-icons'
 import { InstructionItem } from './InstructionItem'
 import { preserveSelected } from '../../../helpers/preserveSelected'
 import { InstructionForm } from './forms/InstructionForm'
-import { CopyButton } from '../../common/CopyButton'
+import { CopyButton } from '../../common/copy-button'
 import { Panel } from '../Panel'
 import type {
   SavedInstructionMetadata,

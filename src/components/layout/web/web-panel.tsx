@@ -11,12 +11,12 @@ import { queue } from '@/components/toasts/toast-queue'
 import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import { WebPanelActions } from '../WebPanelActions'
-import { CopyButton } from '../../common/CopyButton'
+import { CopyButton } from '../../common/copy-button'
 import { EditSavedPage } from './edit-saved-page-form'
-import { GhostButton } from '../../common/GhostButton'
+import { GhostButton } from '../../common/ghost-button'
 
 import { preserveSelected } from '../../../helpers/preserveSelected'
-import { TokenCount } from '../../common/TokenCount'
+import { TokenCount } from '../../common/token-count'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,

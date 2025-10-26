@@ -16,10 +16,10 @@ import {
   TreeDisplayMode,
   treeDisplayModes,
 } from '@/types/FileTree'
-import { CopyButton } from '@/components/common/CopyButton'
+import { CopyButton } from '@/components/common/copy-button'
 import { queue } from '@/components/toasts/toast-queue'
 import { ApplicationError } from '@/helpers/getErrorMessage'
-import { TokenCount } from '@/components/common/TokenCount'
+import { TokenCount } from '@/components/common/token-count'
 import {
   directoryAtom,
   indeterminateNodesAtom,

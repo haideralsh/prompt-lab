@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import { fetchSavedPages } from './lib'
 import { useAtomValue, useSetAtom } from 'jotai'
 import { directoryAtom, selectedPagesIdsAtom } from '../../../state/atoms'
-import { GhostButton } from '../../common/GhostButton'
+import { GhostButton } from '../../common/ghost-button'
 import { editSavedPage, SavedPageMetadata, SavedPages } from '@/api/web'
 
 type EditSavedPageProps = {

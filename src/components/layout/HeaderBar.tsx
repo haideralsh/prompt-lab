@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai'
-import { TokenCount } from '../common/TokenCount'
+import { TokenCount } from '../common/token-count'
 import {
   directoryAtom,
   selectedNodesAtom,
@@ -12,7 +12,7 @@ import {
   totalTokenCountAtom,
 } from '../../state/atoms'
 import { invoke } from '@tauri-apps/api/core'
-import { CopyButton } from '../common/CopyButton'
+import { CopyButton } from '../common/copy-button'
 import { SettingsDialog } from './SettingsDialog'
 import { DividerVerticalIcon } from '@radix-ui/react-icons'
 
