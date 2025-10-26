@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { queue } from '../../ToastQueue'
+import { queue } from '@/components/toasts/toast-queue'
 import { getErrorMessage } from '../../../helpers/getErrorMessage'
 import type { Instruction, SavedInstructionMetadata, SavedInstructions } from './types'
 

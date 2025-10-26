@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react'
 import { Button, Key, Tree } from 'react-aria-components'
-import { SearchBar } from './SearchBar'
-import { TreeNodeItem } from './TreeNodeItem'
+import { SearchBar } from './search-bar'
+import { TreeNodeItem } from './tree-node-item'
 import type {
   TreeNode,
   SearchResult,
   SelectionResult,
-} from '../../types/FileTree'
+} from '@/types/FileTree'
 import { invoke } from '@tauri-apps/api/core'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
@@ -16,9 +16,9 @@ import {
   resetStateAtom,
   selectedFilesAtom,
   selectedNodesAtom,
-} from '../../state/atoms'
+} from '@/state/atoms'
 import { ExitIcon } from '@radix-ui/react-icons'
-import { resetWindowTitle } from './updateWindowTitle'
+import { resetWindowTitle } from './update-window-title'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)

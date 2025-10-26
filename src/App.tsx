@@ -1,4 +1,4 @@
-import { Sidebar } from './components/Sidebar/Sidebar'
+import { Sidebar } from './components/sidebar/sidebar'
 import { LaunchScreen } from './components/LaunchScreen'
 import { Layout } from './components/layout/Layout'
 import { Main } from './components/layout/Main'

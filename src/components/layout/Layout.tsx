@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { ScrollArea } from '../ScrollArea'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useTokenCountListener } from './useTokenCountListener'
 import HeaderBar from './HeaderBar'
 import { useResizeableSidebar } from './useResizeableSidebar'
