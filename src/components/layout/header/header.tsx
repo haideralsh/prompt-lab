@@ -1,5 +1,9 @@
 import { useAtomValue } from 'jotai'
-import { TokenCount } from '../common/token-count'
+import { TokenCount } from '../../common/token-count'
+import { invoke } from '@tauri-apps/api/core'
+import { CopyAllButton } from './copy-all-button'
+import { SettingsDialog } from '../SettingsDialog'
+import { DividerVerticalIcon } from '@radix-ui/react-icons'
 import {
   directoryAtom,
   selectedNodesAtom,
@@ -10,13 +14,9 @@ import {
   unsavedInstructionAtom,
   treeDisplayModeAtom,
   totalTokenCountAtom,
-} from '../../state/atoms'
-import { invoke } from '@tauri-apps/api/core'
-import { CopyButton } from '../common/copy-button'
-import { SettingsDialog } from './SettingsDialog'
-import { DividerVerticalIcon } from '@radix-ui/react-icons'
+} from '../../../state/atoms'
 
-function HeaderBar() {
+export function Header() {
   const directory = useAtomValue(directoryAtom)
   const tree = useAtomValue(treeAtom)
   const selectedNodes = useAtomValue(selectedNodesAtom)
@@ -59,7 +59,7 @@ function HeaderBar() {
         <div className="flex item-center gap-1.5">
           <SettingsDialog />
           <DividerVerticalIcon className="text-border-light" />
-          <CopyButton
+          <CopyAllButton
             onCopy={handleCopyToClipboard}
             idleLabel="Copy all"
             copiedLabel="Copied"
@@ -70,5 +70,3 @@ function HeaderBar() {
     </div>
   )
 }
-
-export default HeaderBar

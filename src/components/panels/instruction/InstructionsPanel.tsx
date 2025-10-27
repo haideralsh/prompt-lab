@@ -5,7 +5,6 @@ import { InstructionItem } from './InstructionItem'
 import { preserveSelected } from '../../../helpers/preserveSelected'
 import { InstructionForm } from './forms/InstructionForm'
 import { CopyButton } from '../../common/copy-button'
-import { Panel } from '../Panel'
 import type {
   SavedInstructionMetadata,
   Instruction,
@@ -26,6 +25,7 @@ import {
   selectedInstructionIdsAtom,
   unsavedInstructionAtom,
 } from '../../../state/atoms'
+import { Panel } from '../panel/Panel'
 
 export function InstructionsPanel() {
   const directory = useAtomValue(directoryAtom)

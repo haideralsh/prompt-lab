@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useTokenCountListener } from './useTokenCountListener'
-import HeaderBar from './HeaderBar'
+import { Header } from './header'
 import { useResizeableSidebar } from './useResizeableSidebar'
 import { SidebarResizeHandle } from './SidebarResizeHandle'
 
@@ -35,7 +35,7 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
       </div>
 
       <div className="flex flex-1 min-h-0 flex-col">
-        <HeaderBar />
+        <Header />
 
         <div className="flex-1 min-h-0 overflow-hidden">
           <ScrollArea>{main}</ScrollArea>

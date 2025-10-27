@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CopyButton } from '../../common/copy-button'
 import { GitStatusResult } from '../../../types/git'
-import { Panel } from '../Panel'
 import { TokenCount } from '../../common/token-count'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
@@ -9,13 +8,14 @@ import {
   selectedDiffIdsAtom,
   totalGitDiffTokenCountAtom,
 } from '../../../state/atoms'
-import { PanelRowCheckbox } from '../PanelRowCheckbox'
-import { PanelList } from '../PanelList'
-import { EmptyPanelListMessage } from '../EmptyPanelListMessage'
 import { copyDiffsToClipboard } from './lib'
 import { useInquireGitStatus } from './hooks/useInquireGitStatus'
 import { useGitStatusListener } from './hooks/useGitStatusListener'
 import { useGitTokenCountsListener } from './hooks/useGitTokenCountsListener'
+import { Panel } from '../panel/Panel'
+import { PanelList } from '../panel/PanelList'
+import { PanelRowCheckbox } from '../panel/PanelRowCheckbox'
+import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
 
 export function GitPanel() {
   const directory = useAtomValue(directoryAtom)

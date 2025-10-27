@@ -37,10 +37,3 @@ cd prompt-lab
 pnpm install
 pnpm tauri build
 ```
-
-## Contributing
-
-TODO
-
-<!--
-For contributing to this project please refer to the [Contributing guide](./CONTRIBUTING.md). -->

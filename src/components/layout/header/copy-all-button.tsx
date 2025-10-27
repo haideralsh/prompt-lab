@@ -1,8 +1,8 @@
-import { forwardRef, useState } from 'react'
+import { forwardRef, useState, useEffect } from 'react'
 import { Button } from 'react-aria-components'
 import { queue } from '@/components/toasts/toast-queue'
-import { getErrorMessage } from '../../helpers/getErrorMessage'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
+import { getErrorMessage } from '@/helpers/getErrorMessage'
 
 interface CopyButtonProps extends React.ComponentProps<typeof Button> {
   onCopy: () => Promise<void>
@@ -11,7 +11,7 @@ interface CopyButtonProps extends React.ComponentProps<typeof Button> {
   copiedLabel?: string
 }
 
-export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
+export const CopyAllButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
   (
     {
       onCopy,
@@ -36,6 +36,21 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
         })
       }
     }
+
+    useEffect(() => {
+      function onKeyDown(e: KeyboardEvent) {
+        const isC = e.key.toLowerCase() === 'c'
+        const hasShift = e.shiftKey
+        const hasCmdOrCtrl = e.metaKey || e.ctrlKey
+
+        if (isC && hasShift && hasCmdOrCtrl) {
+          handlePress()
+        }
+      }
+
+      window.addEventListener('keydown', onKeyDown)
+      return () => window.removeEventListener('keydown', onKeyDown)
+    }, [handlePress])
 
     return (
       <Button
@@ -65,4 +80,4 @@ export const CopyButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
   }
 )
 
-CopyButton.displayName = 'CopyButton'
+CopyAllButton.displayName = 'CopyButton'

@@ -30,9 +30,9 @@ import {
   totalFilesTokenCountAtom,
   treeTokenCountAtom,
 } from '@/state/atoms'
-import { Panel } from '@/components/layout/Panel'
-import { PanelList } from '@/components/layout/PanelList'
-import { PanelRowCheckbox } from '@/components/layout/PanelRowCheckbox'
+import { Panel } from '@/components/panels/panel/Panel'
+import { PanelList } from '@/components/panels/panel/PanelList'
+import { PanelRowCheckbox } from '@/components/panels/panel/PanelRowCheckbox'
 import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
 import {
   clearSelection,

@@ -10,7 +10,6 @@ import {
 import { queue } from '@/components/toasts/toast-queue'
 import { flushSync } from 'react-dom'
 import { getErrorMessage } from '../../../helpers/getErrorMessage'
-import { WebPanelActions } from '../WebPanelActions'
 import { CopyButton } from '../../common/copy-button'
 import { EditSavedPage } from './edit-saved-page-form'
 import { GhostButton } from '../../common/ghost-button'
@@ -23,10 +22,6 @@ import {
   selectedPagesIdsAtom,
   totalPagesTokenCountAtom,
 } from '../../../state/atoms'
-import { PanelList } from '../PanelList'
-import { PanelRowCheckbox } from '../PanelRowCheckbox'
-import { Panel } from '../Panel'
-import { EmptyPanelListMessage } from '../EmptyPanelListMessage'
 import {
   deleteSavedPage,
   SavedPageMetadata,
@@ -34,6 +29,11 @@ import {
   type SavedPages,
 } from '@/api/web'
 import { fetchSavedPages } from './lib'
+import { WebPanelActions } from './web-panel-actions'
+import { Panel } from '../panel/Panel'
+import { PanelList } from '../panel/PanelList'
+import { PanelRowCheckbox } from '../panel/PanelRowCheckbox'
+import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
 
 export function WebDisclosurePanel() {
   const directory = useAtomValue(directoryAtom)
