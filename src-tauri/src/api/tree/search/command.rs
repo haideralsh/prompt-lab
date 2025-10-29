@@ -14,10 +14,7 @@ pub struct SearchMatch {
 }
 
 #[tauri::command]
-pub fn search_tree(
-    path: String,
-    term: Option<String>,
-) -> Result<SearchMatch, ApplicationError> {
+pub fn search_tree(path: String, term: Option<String>) -> Result<SearchMatch, ApplicationError> {
     ensure_index(&path)?;
 
     let guard = cache().read().expect("cache read poisoned");

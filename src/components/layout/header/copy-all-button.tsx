@@ -1,83 +1,140 @@
-import { forwardRef, useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from 'react-aria-components'
 import { queue } from '@/components/toasts/toast-queue'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
 import { getErrorMessage } from '@/helpers/getErrorMessage'
+import { useAtomValue } from 'jotai'
+import { copyAllToClipboard } from '@/api/clipboard'
+import clsx from 'clsx'
+import { twMerge } from 'tailwind-merge'
+import { platform } from '@tauri-apps/plugin-os'
+import {
+  directoryAtom,
+  selectedDiffIdsAtom,
+  selectedInstructionIdsAtom,
+  selectedNodesAtom,
+  selectedPagesIdsAtom,
+  treeAtom,
+  treeDisplayModeAtom,
+  unsavedInstructionAtom,
+} from '@/state/atoms'
 
-interface CopyButtonProps extends React.ComponentProps<typeof Button> {
-  onCopy: () => Promise<void>
-  errorMessage?: string
-  idleLabel?: string
-  copiedLabel?: string
-}
+export function CopyAllButton() {
+  const [copied, setCopied] = useState(false)
+  const [userPlatform, setUserPlatform] = useState('unknown')
+  const timeoutRef = useRef<number | null>(null)
 
-export const CopyAllButton = forwardRef<HTMLButtonElement, CopyButtonProps>(
-  (
-    {
-      onCopy,
-      errorMessage = 'Failed to copy to clipboard',
-      idleLabel,
-      copiedLabel,
-      ...props
-    },
-    ref
-  ) => {
-    const [copied, setCopied] = useState(false)
+  const directory = useAtomValue(directoryAtom)
+  const tree = useAtomValue(treeAtom)
+  const selectedNodes = useAtomValue(selectedNodesAtom)
+  const selectedPagesIds = useAtomValue(selectedPagesIdsAtom)
+  const selectedDiffIds = useAtomValue(selectedDiffIdsAtom)
+  const selectedInstructionIds = useAtomValue(selectedInstructionIdsAtom)
+  const unsavedInstruction = useAtomValue(unsavedInstructionAtom)
+  const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
 
-    const handlePress = async () => {
-      try {
-        await onCopy()
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      } catch (error) {
-        queue.add({
-          title: errorMessage,
-          description: getErrorMessage(error),
-        })
+  useEffect(() => {
+    const p = platform()
+    setUserPlatform(p === 'macos' ? 'mac' : 'other')
+  }, [])
+
+  async function handlePress() {
+    if (copied) return
+
+    try {
+      await copyAllToClipboard({
+        treeDisplayMode,
+        fullTree: tree,
+        root: directory.path,
+        selectedNodes: selectedNodes,
+        gitDiffPaths: selectedDiffIds,
+        urls: selectedPagesIds,
+        instructionIds: selectedInstructionIds,
+        unsavedInstruction,
+      })
+
+      setCopied(true)
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        setCopied(false)
+        timeoutRef.current = null
+      }, 2000)
+    } catch (error) {
+      queue.add({
+        title: 'Failed to copy to clipboard',
+        description: getErrorMessage(error),
+      })
+    }
+  }
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const isC = e.key.toLowerCase() === 'c'
+      const hasShift = e.shiftKey
+      const hasCmdOrCtrl = e.metaKey || e.ctrlKey
+      if (isC && hasShift && hasCmdOrCtrl) {
+        handlePress()
       }
     }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
-    useEffect(() => {
-      function onKeyDown(e: KeyboardEvent) {
-        const isC = e.key.toLowerCase() === 'c'
-        const hasShift = e.shiftKey
-        const hasCmdOrCtrl = e.metaKey || e.ctrlKey
-
-        if (isC && hasShift && hasCmdOrCtrl) {
-          handlePress()
-        }
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
+    }
+  }, [])
 
-      window.addEventListener('keydown', onKeyDown)
-      return () => window.removeEventListener('keydown', onKeyDown)
-    }, [handlePress])
-
-    return (
-      <Button
-        className="group"
-        onPress={handlePress}
-        ref={ref}
-        isDisabled={copied}
-        {...props}
+  return (
+    <Button
+      className="group focus:outline-none focus-visible:ring-offset-background-dark"
+      onPress={handlePress}
+      isDisabled={copied}
+    >
+      <div
+        className={twMerge(
+          clsx([
+            'flex items-center gap-1.25 rounded-sm bg-accent-interactive-mid px-2 py-1 text-xs text-text-light transition-colors group-focus-visible:ring-2 group-focus-visible:ring-accent-border-mid group-focus-visible:ring-offset-1 group-focus-visible:ring-offset-background-dark hover:bg-accent-interactive-light',
+            {
+              'bg-accent-background-dark pr-3.5 hover:bg-accent-background-dark':
+                copied,
+            },
+          ]),
+        )}
       >
-        <div className="flex items-center text-xs gap-1.25 text-text-dark hover:text-text-light group-data-[disabled]:hover:text-text-dark group-data-[disabled]:text-text-dark group-data-[disabled]:cursor-not-allowed">
-          {copied ? (
-            <>
-              <CheckIcon className="text-green" />
-              {copiedLabel && (
-                <span className="w-12 text-left">{copiedLabel}</span>
-              )}
-            </>
-          ) : (
-            <>
-              <CopyIcon />
-              {idleLabel && <span className="w-12 text-left">{idleLabel}</span>}
-            </>
-          )}
-        </div>
-      </Button>
-    )
-  }
+        {copied ? <CheckIcon className="text-green" /> : <CopyIcon />}
+        <span className="flex items-center gap-2.5 text-left">
+          <span>{copied ? 'Copied to clipboard' : 'Copy all'}</span>
+          {copied
+            ? null
+            : userPlatform !== 'unknown'
+              ? userPlatform === 'mac'
+                ? MacShortcutLegend
+                : WindowsLinuxShortcutLegend
+              : null}
+        </span>
+      </div>
+    </Button>
+  )
+}
+
+const MacShortcutLegend = (
+  <span className="space-x-0.5 text-text-dark">
+    <span>⌘</span>
+    <span>⇧</span>
+    <span>C</span>
+  </span>
 )
 
-CopyAllButton.displayName = 'CopyButton'
+const WindowsLinuxShortcutLegend = (
+  <span className="-ml-0.5 text-text-dark">
+    <span>Ctrl+Shift+C</span>
+  </span>
+)
