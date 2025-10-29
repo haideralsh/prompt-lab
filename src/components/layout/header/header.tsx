@@ -1,69 +1,22 @@
 import { useAtomValue } from 'jotai'
-import { TokenCount } from '../../common/token-count'
-import { invoke } from '@tauri-apps/api/core'
+import { TokenCount } from '@/components/common/token-count'
 import { CopyAllButton } from './copy-all-button'
-import { SettingsDialog } from '../SettingsDialog'
-import { DividerVerticalIcon } from '@radix-ui/react-icons'
-import {
-  directoryAtom,
-  selectedNodesAtom,
-  treeAtom,
-  selectedPagesIdsAtom,
-  selectedDiffIdsAtom,
-  selectedInstructionIdsAtom,
-  unsavedInstructionAtom,
-  treeDisplayModeAtom,
-  totalTokenCountAtom,
-} from '../../../state/atoms'
+import { totalTokenCountAtom } from '@/state/atoms'
 
 export function Header() {
-  const directory = useAtomValue(directoryAtom)
-  const tree = useAtomValue(treeAtom)
-  const selectedNodes = useAtomValue(selectedNodesAtom)
-  const selectedPagesIds = useAtomValue(selectedPagesIdsAtom)
-  const selectedDiffIds = useAtomValue(selectedDiffIdsAtom)
-  const selectedInstructionIds = useAtomValue(selectedInstructionIdsAtom)
-  const unsavedInstruction = useAtomValue(unsavedInstructionAtom)
-  const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
   const totalTokenCount = useAtomValue(totalTokenCountAtom)
 
-  async function handleCopyToClipboard() {
-    await invoke('copy_all_to_clipboard', {
-      treeDisplayMode,
-      fullTree: tree,
-      root: directory.path,
-      selectedNodes: Array.from(selectedNodes),
-      gitDiffPaths: Array.from(selectedDiffIds),
-      urls: Array.from(selectedPagesIds),
-      instructionIds: Array.from(selectedInstructionIds),
-      instructions: unsavedInstruction
-        ? [
-            {
-              name: unsavedInstruction.name,
-              content: unsavedInstruction.content,
-            },
-          ]
-        : [],
-    })
-  }
-
   return (
-    <div className="bg-background-dark p-2 flex items-center justify-between">
+    <div className="flex items-center justify-between bg-background-dark p-2">
       <div className="flex items-center gap-1.5">
-        <span className="uppercase font-medium tracking-wide text-xs text-text-dark">
+        <span className="text-xs font-medium tracking-wide text-text-dark uppercase">
           Prompt
         </span>
       </div>
 
       <div className="flex items-center gap-3 text-text-dark">
-        <div className="flex item-center gap-1.5">
-          <SettingsDialog />
-          <DividerVerticalIcon className="text-border-light" />
-          <CopyAllButton
-            onCopy={handleCopyToClipboard}
-            idleLabel="Copy all"
-            copiedLabel="Copied"
-          />
+        <div className="item-center flex gap-1.5">
+          <CopyAllButton />
         </div>
         <TokenCount count={totalTokenCount} showLabel />
       </div>
