@@ -2,11 +2,7 @@ import { useRef, useState } from 'react'
 import { Button, Key, Tree } from 'react-aria-components'
 import { SearchBar } from './search-bar'
 import { TreeNodeItem } from './tree-node-item'
-import type {
-  TreeNode,
-  SearchResult,
-  SelectionResult,
-} from '@/types/FileTree'
+import type { TreeNode, SearchResult } from '@/types/FileTree'
 import { invoke } from '@tauri-apps/api/core'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
@@ -16,9 +12,13 @@ import {
   resetStateAtom,
   selectedFilesAtom,
   selectedNodesAtom,
+  treeAtom,
+  treeDisplayModeAtom,
 } from '@/state/atoms'
 import { ExitIcon } from '@radix-ui/react-icons'
 import { resetWindowTitle } from './update-window-title'
+import { clearSelection } from '@/api/selection'
+import { SettingsDialog } from '@/components/layout/SettingsDialog'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)
@@ -31,11 +31,13 @@ function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
 export function Sidebar() {
   const [filteredTree, setFilteredTree] = useAtom(filteredTreeAtom)
   const directory = useAtomValue(directoryAtom)
+  const tree = useAtomValue(treeAtom)
   const setSelectedFiles = useSetAtom(selectedFilesAtom)
   const setSelectedNodes = useSetAtom(selectedNodesAtom)
   const setIndeterminateNodes = useSetAtom(indeterminateNodesAtom)
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(new Set())
   const treeRef = useRef<HTMLDivElement>(null)
+  const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
   const resetState = useSetAtom(resetStateAtom)
 
   async function search(query: string) {
@@ -48,7 +50,7 @@ export function Sidebar() {
     setExpandedKeys(
       query.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
-        : new Set()
+        : new Set(),
     )
   }
 
@@ -56,9 +58,11 @@ export function Sidebar() {
     setExpandedKeys(new Set())
   }
 
-  async function clearSelection() {
-    const selection = await invoke<SelectionResult>('clear_selection', {
+  async function deselectAll() {
+    const selection = await clearSelection({
       directoryPath: directory.path,
+      treeDisplayMode: treeDisplayMode,
+      fullTree: tree,
     })
 
     setSelectedNodes(new Set(selection.selectedNodesPaths))
@@ -72,27 +76,31 @@ export function Sidebar() {
   }
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex min-h-full flex-col">
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center p-2 gap-1">
-          <span className="font-medium tracking-wide text-xs text-text-dark">
-            {directory?.name}
-          </span>
-          <Button onPress={exitDirectory}>
-            <ExitIcon className="text-text-dark/75 hover:text-text-dark group-data-[disabled]:hover:text-text-dark/50 group-data-[disabled]:text-text-dark/50" />
-          </Button>
+        <div className="flex justify-between p-3">
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-medium tracking-wide text-text-dark">
+              {directory?.name}
+            </span>
+            <Button onPress={exitDirectory}>
+              <ExitIcon className="text-text-dark/75 group-data-[disabled]:text-text-dark/50 hover:text-text-dark group-data-[disabled]:hover:text-text-dark/50" />
+            </Button>
+          </div>
+          <SettingsDialog />
         </div>
-        <div className="flex items-center gap-0.5 justify-end px-1">
+
+        <div className="flex items-center justify-end gap-0.5 px-1">
           <button
-            onClick={clearSelection}
-            className="inline-flex items-center gap-1 text-xs py-0.5 px-2 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
+            onClick={deselectAll}
+            className="inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs text-text-dark transition-colors duration-150 outline-none hover:bg-interactive-dark hover:text-text-light focus:ring-1 focus:ring-accent-border-light focus:ring-inset"
             title="Deselect all"
           >
             <span>Deselect all</span>
           </button>
           <button
             onClick={collapseAll}
-            className="inline-flex items-center gap-1 text-xs py-0.5 px-1.5 text-text-dark hover:bg-interactive-dark rounded-sm hover:text-text-light transition-colors duration-150 outline-none focus:ring-inset focus:ring-1 focus:ring-accent-border-light"
+            className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs text-text-dark transition-colors duration-150 outline-none hover:bg-interactive-dark hover:text-text-light focus:ring-1 focus:ring-accent-border-light focus:ring-inset"
             title="Collapse all"
           >
             <span>Collapse all</span>
@@ -107,7 +115,7 @@ export function Sidebar() {
       <div className="flex-1 px-2">
         <div className="h-full overflow-x-hidden">
           {filteredTree.length === 0 ? (
-            <div className="flex h-full py-1 px-2 text-xs text-text-dark">
+            <div className="flex h-full px-2 py-1 text-xs text-text-dark">
               No results found
             </div>
           ) : (

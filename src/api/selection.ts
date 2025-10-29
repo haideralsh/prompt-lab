@@ -11,7 +11,11 @@ export async function toggleSelection(params: {
   return await invoke<SelectionResult>('toggle_selection', params)
 }
 
-export async function clearSelection(params: { directoryPath: string }) {
+export async function clearSelection(params: {
+  directoryPath: string
+  treeDisplayMode: TreeDisplayMode
+  fullTree: Tree | null
+}) {
   return await invoke<SelectionResult>('clear_selection', params)
 }
 

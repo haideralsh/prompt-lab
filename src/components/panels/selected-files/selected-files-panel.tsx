@@ -71,6 +71,8 @@ export function SelectedFilesPanel() {
   async function deselectAll() {
     const selection = await clearSelection({
       directoryPath: directory.path,
+      treeDisplayMode,
+      fullTree: tree,
     })
     setSelectedNodes(new Set(selection.selectedNodesPaths))
     setSelectedFiles(selection.selectedFiles)
@@ -136,24 +138,24 @@ export function SelectedFilesPanel() {
             aria-label="Directory tree in model context"
             selectedKeys={new Set([treeDisplayMode])}
             onSelectionChange={handleTreeDisplayModeChange}
-            className="inline-flex items-center rounded-sm border border-border-mid overflow-hidden [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border-mid"
+            className="inline-flex items-center overflow-hidden rounded-sm border border-border-mid [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border-mid"
             disallowEmptySelection
           >
             <ToggleButton
               id="none"
-              className="uppercase text-xs tracking-wide px-1.5 flex items-center justify-center text-text-dark hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
+              className="flex items-center justify-center px-1.5 text-xs tracking-wide text-text-dark uppercase hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
             >
               No Tree
             </ToggleButton>
             <ToggleButton
               id="selected"
-              className="uppercase text-xs tracking-wide px-1.5 flex items-center justify-center text-text-dark hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
+              className="flex items-center justify-center px-1.5 text-xs tracking-wide text-text-dark uppercase hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
             >
               Selected Only
             </ToggleButton>
             <ToggleButton
               id="full"
-              className="uppercase text-xs tracking-wide px-1.5 flex items-center justify-center text-text-dark hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
+              className="flex items-center justify-center px-1.5 text-xs tracking-wide text-text-dark uppercase hover:bg-interactive-mid data-[selected]:bg-text-dark data-[selected]:text-background-light"
             >
               Full Tree
             </ToggleButton>
@@ -204,10 +206,10 @@ export function SelectedFilesPanel() {
                     </>
                   }
                 >
-                  <span className="font-normal text-text-dark break-all truncate">
+                  <span className="truncate font-normal break-all text-text-dark">
                     {file.title}
                   </span>
-                  <span className="hidden group-hover:inline text-solid-light truncate">
+                  <span className="hidden truncate text-solid-light group-hover:inline">
                     {file.prettyPath}
                   </span>
                 </PanelRowCheckbox>
