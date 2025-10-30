@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { DirectoryInfo } from '@/types/DirectoryInfo'
+import { DirectoryInfo } from '@/types/directory-info'
 import { GitStatusResult } from '@/types/git'
 import { mergeTokenCountsWithPrevious } from '../lib'
 

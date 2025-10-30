@@ -1,7 +1,7 @@
 import { forwardRef, useState } from 'react'
 import { Button } from 'react-aria-components'
 import { queue } from '@/components/toasts/toast-queue'
-import { getErrorMessage } from '../../helpers/getErrorMessage'
+import { getErrorMessage } from '../../helpers/get-error-message'
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons'
 
 interface CopyButtonProps extends React.ComponentProps<typeof Button> {

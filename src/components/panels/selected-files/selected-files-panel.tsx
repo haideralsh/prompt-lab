@@ -9,16 +9,16 @@ import {
 import { ReaderIcon } from '@radix-ui/react-icons'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { sortFilesByTokenCount } from '@/helpers/sortFilesByTokenCount'
+import { sortFilesByTokenCount } from '@/helpers/sort-files-by-token-count'
 import {
   FileNode,
   Id,
   TreeDisplayMode,
   treeDisplayModes,
-} from '@/types/FileTree'
+} from '@/types/file-tree'
 import { CopyButton } from '@/components/common/copy-button'
 import { queue } from '@/components/toasts/toast-queue'
-import { ApplicationError } from '@/helpers/getErrorMessage'
+import { ApplicationError } from '@/helpers/get-error-message'
 import { TokenCount } from '@/components/common/token-count'
 import {
   directoryAtom,

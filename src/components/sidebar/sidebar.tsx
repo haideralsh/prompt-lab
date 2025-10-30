@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { Button, Key, Tree } from 'react-aria-components'
 import { SearchBar } from './search-bar'
 import { TreeNodeItem } from './tree-node-item'
-import type { TreeNode, SearchResult } from '@/types/FileTree'
+import type { TreeNode, SearchResult } from '@/types/file-tree'
 import { invoke } from '@tauri-apps/api/core'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
@@ -18,7 +18,7 @@ import {
 import { ExitIcon } from '@radix-ui/react-icons'
 import { resetWindowTitle } from './update-window-title'
 import { clearSelection } from '@/api/selection'
-import { SettingsDialog } from '@/components/layout/SettingsDialog'
+import { SettingsDialog } from '@/components/layout/settings-dialog'
 
 function expandAll(item: TreeNode, acc: Key[] = []): Key[] {
   acc.push(item.id)

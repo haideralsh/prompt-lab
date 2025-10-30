@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useAtomValue } from 'jotai'
 import TokenChart from '@/components/visualization/token-chart'
-import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
+import { sortFilesByTokenCount } from '../../helpers/sort-files-by-token-count'
 import { selectedFilesAtom, totalFilesTokenCountAtom } from '../../state/atoms'
 
 export function Footer() {

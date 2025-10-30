@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { Tree, Id, SelectionResult, TreeDisplayMode } from '../types/FileTree'
+import { Tree, Id, SelectionResult, TreeDisplayMode } from '../types/file-tree'
 
 export async function toggleSelection(params: {
   directoryPath: string

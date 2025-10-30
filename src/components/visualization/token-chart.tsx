@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileNode } from '@/types/FileTree'
+import { FileNode } from '@/types/file-tree'
 
 interface ChartDataItem {
   path: string

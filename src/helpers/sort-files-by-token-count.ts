@@ -1,4 +1,4 @@
-import type { FileNode } from '../types/FileTree'
+import type { FileNode } from '../types/file-tree'
 
 export function sortFilesByTokenCount(files: FileNode[]) {
   return files.sort((a, b) => {

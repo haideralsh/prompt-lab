@@ -2,7 +2,7 @@ import { UnlistenFn } from '@tauri-apps/api/event'
 import { useEffect, Dispatch, SetStateAction } from 'react'
 import { listen } from '@tauri-apps/api/event'
 import { GitStatusResult, GitTokenCountsEvent } from '@/types/git'
-import { DirectoryInfo } from '@/types/DirectoryInfo'
+import { DirectoryInfo } from '@/types/directory-info'
 
 export function useGitTokenCountsListener(
   directory: DirectoryInfo,

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { CheckboxGroup, Button } from 'react-aria-components'
 import { PlusIcon } from '@radix-ui/react-icons'
 import { InstructionItem } from './InstructionItem'
-import { preserveSelected } from '../../../helpers/preserveSelected'
+import { preserveSelected } from '../../../helpers/preserve-selected'
 import { InstructionForm } from './forms/InstructionForm'
 import { CopyButton } from '../../common/copy-button'
 import type {

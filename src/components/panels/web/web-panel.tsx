@@ -9,12 +9,12 @@ import {
 } from '@radix-ui/react-icons'
 import { queue } from '@/components/toasts/toast-queue'
 import { flushSync } from 'react-dom'
-import { getErrorMessage } from '../../../helpers/getErrorMessage'
+import { getErrorMessage } from '../../../helpers/get-error-message'
 import { CopyButton } from '../../common/copy-button'
 import { EditSavedPage } from './edit-saved-page-form'
 import { GhostButton } from '../../common/ghost-button'
 
-import { preserveSelected } from '../../../helpers/preserveSelected'
+import { preserveSelected } from '../../../helpers/preserve-selected'
 import { TokenCount } from '../../common/token-count'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
