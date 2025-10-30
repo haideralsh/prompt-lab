@@ -64,15 +64,12 @@ pub(crate) fn copy_all_to_clipboard(
 
     let web_pages_section = build_web_pages_section(&app, &root, &urls)?;
 
-    let mut payload = base_payload;
+    let sections = [base_payload, web_pages_section, instructions_payload]
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>();
 
-    if !web_pages_section.is_empty() {
-        payload.push_str(&web_pages_section);
-    }
-
-    if !instructions_payload.is_empty() {
-        payload.push_str(&format!("{}\n\n", instructions_payload));
-    }
+    let payload = sections.join("\n\n");
 
     write_to_clipboard(&app, payload)
 }
