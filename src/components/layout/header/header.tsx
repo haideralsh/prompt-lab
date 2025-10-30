@@ -12,13 +12,13 @@ export function Header() {
         <span className="text-xs font-medium tracking-wide text-text-dark uppercase">
           Prompt
         </span>
+        <TokenCount showLabel="always" count={totalTokenCount} />
       </div>
 
       <div className="flex items-center gap-3 text-text-dark">
         <div className="item-center flex gap-1.5">
           <CopyAllButton />
         </div>
-        <TokenCount count={totalTokenCount} showLabel />
       </div>
     </div>
   )

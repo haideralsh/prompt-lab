@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 
 interface TokenCountProps {
   count: number | null | undefined
-  showLabel?: boolean
+  showLabel?: boolean | 'always'
 }
 
 export function TokenCount({ count, showLabel = false }: TokenCountProps) {
@@ -11,6 +11,8 @@ export function TokenCount({ count, showLabel = false }: TokenCountProps) {
   const [labelWidth, setLabelWidth] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const gap = 'var(--spacing)'
+  const shouldAlwaysShow = showLabel === 'always'
+  const shouldShowOnHover = showLabel === true
 
   useEffect(() => {
     if (labelRef.current) {
@@ -20,16 +22,16 @@ export function TokenCount({ count, showLabel = false }: TokenCountProps) {
 
   return (
     <span
-      className="flex items-center text-xs border px-1 rounded-sm uppercase text-text-dark border-border-mid overflow-hidden relative"
+      className={`relative flex items-center overflow-hidden rounded-sm border border-border-mid px-1 text-xs text-text-dark uppercase`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <span>{count?.toLocaleString() ?? '-'}</span>
-      {showLabel && (
+      {(shouldShowOnHover || shouldAlwaysShow) && (
         <>
           <span
             ref={labelRef}
-            className="absolute invisible whitespace-nowrap lowercase"
+            className="invisible absolute whitespace-nowrap lowercase"
             aria-hidden="true"
           >
             tokens
@@ -41,8 +43,8 @@ export function TokenCount({ count, showLabel = false }: TokenCountProps) {
               width: 0,
             }}
             animate={{
-              marginLeft: isHovered ? gap : 0,
-              width: isHovered ? labelWidth : 0,
+              marginLeft: isHovered || shouldAlwaysShow ? gap : 0,
+              width: isHovered || shouldAlwaysShow ? labelWidth : 0,
             }}
             transition={{
               duration: 0.2,
@@ -56,8 +58,11 @@ export function TokenCount({ count, showLabel = false }: TokenCountProps) {
                 opacity: 0,
               }}
               animate={{
-                x: isHovered ? 0 : `calc(${labelWidth}px + ${gap})`,
-                opacity: isHovered ? 1 : 0,
+                x:
+                  isHovered || shouldAlwaysShow
+                    ? 0
+                    : `calc(${labelWidth}px + ${gap})`,
+                opacity: isHovered || shouldAlwaysShow ? 1 : 0,
               }}
               transition={{ duration: 0.2, ease: 'easeOut', delay: 0.3 }}
               className="lowercase"
