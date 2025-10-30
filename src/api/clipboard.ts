@@ -32,3 +32,17 @@ export async function copyAllToClipboard(params: {
       : [],
   })
 }
+
+export async function copyFilesToClipboard(params: {
+  directoryPath: string
+  paths: string[]
+}) {
+  await invoke<void>('copy_files_to_clipboard', params)
+}
+
+export async function copyPagesToClipboard(params: {
+  directoryPath: string
+  pageIds: string[]
+}) {
+  await invoke<void>('copy_pages_to_clipboard', params)
+}

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { copyFilesToClipboard } from '@/api/clipboard'
 import {
   Button,
   Key,
@@ -80,11 +80,9 @@ export function SelectedFilesPanel() {
   }
 
   async function copyFiles(paths: Id[]) {
-    await invoke('copy_files_to_clipboard', {
+    await copyFilesToClipboard({
       directoryPath: directory.path,
-      treeDisplayMode,
-      fullTree: tree,
-      selectedNodes: paths,
+      paths: paths as string[],
     })
   }
 

@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { DirectoryPickerButton } from './directory-picker-button'
-import type { DirectoryInfo } from '../types/directory-info'
-import { invoke } from '@tauri-apps/api/core'
-import { updateWindowTitle } from '../helpers/update-window-title'
-import { ERROR_CODES } from '../constants'
-import type { SearchResult } from '../types/file-tree'
+import type { DirectoryInfo } from '@/types/directory-info'
+import { updateWindowTitle } from '@/helpers/update-window-title'
+import {
+  getRecentDirectories,
+  searchTree,
+  addRecentDirectory,
+} from '@/api/directory'
+import { ERROR_CODES } from '@/constants'
 import { queue } from '@/components/toasts/toast-queue'
-import { ApplicationError } from '../helpers/get-error-message'
+import { ApplicationError } from '@/helpers/get-error-message'
 import { useSetAtom } from 'jotai'
-import { directoryAtom, filteredTreeAtom, treeAtom } from '../state/atoms'
+import { directoryAtom, filteredTreeAtom, treeAtom } from '@/state/atoms'
 
 export function LaunchScreen() {
   const [recentOpened, setRecentOpened] = useState<DirectoryInfo[]>([])
@@ -19,9 +22,7 @@ export function LaunchScreen() {
   useEffect(() => {
     async function loadRecentOpened() {
       try {
-        const directories = await invoke<DirectoryInfo[]>(
-          'get_recent_directories',
-        )
+        const directories = await getRecentDirectories()
 
         setRecentOpened(directories)
       } catch (err) {
@@ -39,7 +40,7 @@ export function LaunchScreen() {
 
   async function handleDirectoryPick(directory: DirectoryInfo) {
     try {
-      const resp = await invoke<SearchResult>('search_tree', {
+      const resp = await searchTree({
         path: directory.path,
       })
 
@@ -50,7 +51,7 @@ export function LaunchScreen() {
       updateWindowTitle(
         directory.prettyPath ?? directory.name ?? directory.path,
       )
-      invoke('add_recent_directory', { directory })
+      addRecentDirectory({ directory })
     } catch (err) {
       const e = err as ApplicationError
       if (e && e.code === ERROR_CODES.DIRECTORY_READ_ERROR) {

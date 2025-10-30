@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { Button } from 'react-aria-components'
+import { copyPagesToClipboard } from '@/api/clipboard'
 import {
   GlobeIcon,
   Pencil1Icon,
@@ -188,16 +188,16 @@ export function WebDisclosurePanel() {
   }
 
   async function handleCopyToClipboard(entry: SavedPageMetadata) {
-    await invoke<void>('copy_pages_to_clipboard', {
+    await copyPagesToClipboard({
       directoryPath: directory.path,
-      urls: [entry.url],
+      pageIds: [entry.url],
     })
   }
 
   async function handleCopySelectedToClipboard() {
-    await invoke<void>('copy_pages_to_clipboard', {
+    await copyPagesToClipboard({
       directoryPath: directory.path,
-      urls: Array.from(selectedPagesIds),
+      pageIds: Array.from(selectedPagesIds),
     })
   }
 

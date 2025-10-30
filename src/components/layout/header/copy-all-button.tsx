@@ -109,8 +109,7 @@ export function CopyAllButton() {
           clsx([
             'flex items-center gap-1.25 rounded-sm bg-accent-interactive-mid px-2 py-1 text-xs text-text-light transition-colors group-focus-visible:ring-2 group-focus-visible:ring-accent-border-mid group-focus-visible:ring-offset-1 group-focus-visible:ring-offset-background-dark hover:bg-accent-interactive-light',
             {
-              'bg-accent-background-dark pr-3.5 hover:bg-accent-background-dark':
-                copied,
+              'bg-background-dark hover:bg-background-dark': copied,
             },
           ]),
         )}

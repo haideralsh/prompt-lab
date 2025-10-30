@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { getVersion } from '@tauri-apps/api/app'
+import { getEditor, pickEditor, setEditor } from '@/api/settings'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import {
   Dialog,
@@ -36,7 +36,7 @@ export function SettingsDialog() {
 
   async function loadEditorPath() {
     try {
-      const path = await invoke<string | null>('get_editor')
+      const path = await getEditor()
       return path
     } catch (error) {
       console.error('Failed to get editor:', error)
@@ -46,9 +46,9 @@ export function SettingsDialog() {
 
   async function handlePickEditor() {
     try {
-      const pickedPath = await invoke<string>('pick_editor')
+      const pickedPath = await pickEditor()
       const [, storePath] = await Promise.all([
-        invoke('set_editor', { editorPath: pickedPath }),
+        setEditor({ editorPath: pickedPath }),
         loadEditorPath(),
       ])
 

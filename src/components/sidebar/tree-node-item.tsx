@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core'
-import { SelectionResult, TreeNode } from '../../types/file-tree'
+import { TreeNode } from '@/types/file-tree'
+import { toggleSelection } from '@/api/selection'
 import {
   FileIcon,
   CheckIcon,
@@ -51,7 +51,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
   const treeStateRef = React.useRef<TreeNodeItemState | null>(null)
 
   async function onToggle() {
-    const selection = await invoke<SelectionResult>('toggle_selection', {
+    const selection = await toggleSelection({
       directoryPath: directory.path,
       current: Array.from(selectedNodes) as string[],
       nodePath: item.id,
@@ -81,7 +81,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
       id={item.id}
       textValue={item.title}
       onPress={() => handleItemPress(item)}
-      className="cursor-default rounded-sm group hover:bg-accent-interactive-dark focus:bg-accent-interactive-dark focus:outline-accent-border-dark focus:outline-1 focus:outline-offset-[-1px] select-none"
+      className="group cursor-default rounded-sm select-none hover:bg-accent-interactive-dark focus:bg-accent-interactive-dark focus:outline-1 focus:outline-offset-[-1px] focus:outline-accent-border-dark"
     >
       <TreeItemContent>
         {({ hasChildItems, isExpanded, state }) => {
@@ -89,7 +89,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
 
           return (
             <div
-              className="flex items-center space-x-1 py-0.5 px-2 pl-[calc(8px+var(--depth)*16px)]"
+              className="flex items-center space-x-1 px-2 py-0.5 pl-[calc(8px+var(--depth)*16px)]"
               style={{ '--depth': depth } as React.CSSProperties}
             >
               <Checkbox
@@ -98,10 +98,7 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
                 isSelected={selected}
                 isIndeterminate={indeterminate}
                 onChange={onToggle}
-                className="relative flex items-center justify-center size-[15px] rounded-sm  text-accent-text-light
-              border border-border-light  data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid
-              bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light
-              flex-shrink-0"
+                className="relative flex size-[15px] flex-shrink-0 items-center justify-center rounded-sm border border-border-light bg-transparent text-accent-text-light data-[indeterminate]:border-accent-border-mid data-[indeterminate]:bg-accent-interactive-light data-[selected]:border-accent-border-mid data-[selected]:bg-accent-interactive-light"
               >
                 {selected && <CheckIcon />}
                 {indeterminate && <MinusIcon />}
@@ -110,18 +107,18 @@ export function TreeNodeItem({ item, depth = 0 }: TreeNodeItemProps) {
               {hasChildItems ? (
                 <Button
                   slot="chevron"
-                  className="shrink-0 w-4 h-4 flex items-center justify-center bg-transparent border-0 cursor-pointer focus:outline-none"
+                  className="flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent focus:outline-none"
                 >
                   <span className="text-text-dark">
                     {isExpanded ? <TriangleDownIcon /> : <TriangleRightIcon />}
                   </span>
                 </Button>
               ) : (
-                <div className="shrink-0 size-4" />
+                <div className="size-4 shrink-0" />
               )}
 
               <div className="flex items-center space-x-1 text-nowrap">
-                <span className="text-text-dark  text-sm">
+                <span className="text-sm text-text-dark">
                   {item.type === 'directory' ? (
                     isExpanded ? (
                       <FolderOpenIcon className="size-[15px]" />

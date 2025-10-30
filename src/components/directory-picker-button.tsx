@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core'
-import type { DirectoryInfo } from '../types/directory-info'
+import type { DirectoryInfo } from '@/types/directory-info'
+import { pickDirectory } from '@/api/directory'
 import { PlusIcon } from '@radix-ui/react-icons'
 
 interface DirectoryPickerProps {
@@ -7,8 +7,8 @@ interface DirectoryPickerProps {
 }
 
 export function DirectoryPickerButton({ onPick }: DirectoryPickerProps) {
-  async function pickDirectory() {
-    const picked = await invoke<DirectoryInfo | null>('pick_directory')
+  async function handlePickDirectory() {
+    const picked = await pickDirectory()
 
     if (picked) {
       onPick(picked)
@@ -18,7 +18,7 @@ export function DirectoryPickerButton({ onPick }: DirectoryPickerProps) {
   return (
     <button
       className="flex w-fit cursor-pointer items-center gap-1.5 rounded-sm bg-accent-interactive-mid py-1 pr-3.5 pl-2 text-sm text-text-light transition-colors hover:bg-accent-interactive-light"
-      onClick={pickDirectory}
+      onClick={handlePickDirectory}
     >
       <PlusIcon />
       <span>New directory</span>

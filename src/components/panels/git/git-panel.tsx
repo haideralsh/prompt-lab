@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react'
-import { CopyButton } from '../../common/copy-button'
-import { GitStatusResult } from '../../../types/git'
-import { TokenCount } from '../../common/token-count'
+import { CopyButton } from '@/components/common/copy-button'
+import { GitStatusResult } from '@/types/git'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,
   selectedDiffIdsAtom,
   totalGitDiffTokenCountAtom,
-} from '../../../state/atoms'
-import { copyDiffsToClipboard } from './lib'
+} from '@/state/atoms'
 import { useInquireGitStatus } from './hooks/use-inquire-git-status'
 import { useGitStatusListener } from './hooks/use-git-status-listener'
 import { useGitTokenCountsListener } from './hooks/use-git-token-counts-listener'
-import { Panel } from '../panel/panel'
-import { PanelList } from '../panel/panel-list'
-import { PanelRowCheckbox } from '../panel/panel-row-checkbox'
+import { Panel } from '@/components/panels/panel/panel'
+import { PanelList } from '@/components/panels/panel/panel-list'
+import { PanelRowCheckbox } from '@/components/panels/panel/panel-row-checkbox'
 import { EmptyPanelListMessage } from '@/components/panels/panel/empty-panel-list-message'
+import { copyDiffsToClipboard } from '@/api/git'
+import { TokenCount } from '@/components/common/token-count'
 
 export function GitPanel() {
   const directory = useAtomValue(directoryAtom)
@@ -64,7 +64,7 @@ export function GitPanel() {
         <CopyButton
           isDisabled={selectedDiffIds.size === 0}
           onCopy={async () => {
-            await copyDiffsToClipboard(directory, selectedDiffIds)
+            await copyDiffsToClipboard(directory.path, selectedDiffIds)
           }}
         />
       }
@@ -85,7 +85,10 @@ export function GitPanel() {
                     {change.tokenCount && (
                       <CopyButton
                         onCopy={async () => {
-                          await copyDiffsToClipboard(directory, change.path)
+                          await copyDiffsToClipboard(
+                            directory.path,
+                            change.path,
+                          )
                         }}
                       />
                     )}

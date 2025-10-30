@@ -1,6 +1,6 @@
 import { useEffect, useState, useTransition } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { useDebounceValue } from 'usehooks-ts'
+import { countInstructionTokens } from '@/api/instructions'
 
 const DEBOUNCE_DELAY_MS = 1000
 
@@ -17,7 +17,7 @@ export function useInstructionTokenCount(content: string) {
       return
     }
 
-    invoke<number>('count_instruction_tokens', {
+    countInstructionTokens({
       content: debouncedContent,
     })
       .then((count) => {

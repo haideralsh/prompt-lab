@@ -1,20 +1,20 @@
 import { UnlistenFn } from '@tauri-apps/api/event'
 import { useEffect, Dispatch, SetStateAction } from 'react'
 import { listen } from '@tauri-apps/api/event'
-import { invoke } from '@tauri-apps/api/core'
 import { GitStatusResult, GitStatusUpdatedEvent } from '@/types/git'
 import { DirectoryInfo } from '@/types/directory-info'
 import { mergeTokenCountsWithPrevious } from '../lib'
+import { watchDirectoryForGitChanges } from '@/api/git'
 
 export function useGitStatusListener(
   directory: DirectoryInfo,
-  onGitStatusUpdate: Dispatch<SetStateAction<GitStatusResult | null>>
+  onGitStatusUpdate: Dispatch<SetStateAction<GitStatusResult | null>>,
 ) {
   useEffect(() => {
     let unlisten: UnlistenFn | undefined
 
     async function listenToGitStatus() {
-      await invoke<void>('watch_directory_for_git_changes', {
+      await watchDirectoryForGitChanges({
         directoryPath: directory.path,
       })
 
@@ -28,7 +28,7 @@ export function useGitStatusListener(
             if (!prev || prev.length === 0) return payload.changes
             return mergeTokenCountsWithPrevious(payload.changes, prev)
           })
-        }
+        },
       )
     }
 

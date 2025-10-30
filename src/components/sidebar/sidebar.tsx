@@ -2,9 +2,9 @@ import { useRef, useState } from 'react'
 import { Button, Key, Tree } from 'react-aria-components'
 import { SearchBar } from './search-bar'
 import { TreeNodeItem } from './tree-node-item'
-import type { TreeNode, SearchResult } from '@/types/file-tree'
-import { invoke } from '@tauri-apps/api/core'
+import type { TreeNode } from '@/types/file-tree'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
+import { searchTree } from '@/api/directory'
 import {
   directoryAtom,
   filteredTreeAtom,
@@ -41,9 +41,9 @@ export function Sidebar() {
   const resetState = useSetAtom(resetStateAtom)
 
   async function search(query: string) {
-    const { results } = await invoke<SearchResult>('search_tree', {
+    const { results } = await searchTree({
       path: directory.path,
-      term: query.trim(),
+      query: query.trim(),
     })
 
     setFilteredTree(results)

@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { DirectoryInfo } from '@/types/directory-info'
+import { getGitStatus } from '@/api/git'
 import { GitStatusResult } from '@/types/git'
 import { mergeTokenCountsWithPrevious } from '../lib'
 
@@ -13,7 +13,7 @@ export function useInquireGitStatus(
       if (!directory.path) return
 
       try {
-        const changes = await invoke<GitStatusResult | null>('get_git_status', {
+        const changes = await getGitStatus({
           directoryPath: directory.path,
         })
 

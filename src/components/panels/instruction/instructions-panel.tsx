@@ -16,7 +16,9 @@ import {
   getInstruction,
   listInstructions,
   upsertInstruction,
-} from './handlers'
+} from '@/api/instructions'
+import { queue } from '@/components/toasts/toast-queue'
+import { getErrorMessage } from '../../../helpers/get-error-message'
 import { useInstructionTokenCount } from './forms/use-instruction-token-count'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
@@ -30,10 +32,10 @@ import { Panel } from '../panel/panel'
 export function InstructionsPanel() {
   const directory = useAtomValue(directoryAtom)
   const [selectedInstructionIds, setSelectedInstructionIds] = useAtom(
-    selectedInstructionIdsAtom
+    selectedInstructionIdsAtom,
   )
   const [unsavedInstruction, setUnsavedInstruction] = useAtom(
-    unsavedInstructionAtom
+    unsavedInstructionAtom,
   )
   const [instructions, setInstructions] = useState<SavedInstructions>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -44,7 +46,7 @@ export function InstructionsPanel() {
   const [isFormIncluded, setIsFormIncluded] = useState(true)
   const [hasUnsavedInstruction, setHasUnsavedInstruction] = useState(false)
   const { tokenCount: unsavedTokenCount } = useInstructionTokenCount(
-    unsavedInstruction?.content ?? ''
+    unsavedInstruction?.content ?? '',
   )
   const setInstructionsTokenCountAtom = useSetAtom(instructionsTokenCountAtom)
 
@@ -89,19 +91,24 @@ export function InstructionsPanel() {
   }
 
   async function loadInstructions() {
-    const loadedInstructions = await listInstructions(directory.path)
-    if (!loadedInstructions) {
-      return
+    try {
+      const loadedInstructions = await listInstructions({
+        directoryPath: directory.path,
+      })
+      setInstructions(loadedInstructions)
+      setSelectedInstructionIds(new Set())
+      clearUnsavedInstruction()
+    } catch (error) {
+      queue.add({
+        title: 'Failed to load saved instructions',
+        description: getErrorMessage(error),
+      })
     }
-
-    setInstructions(loadedInstructions)
-    setSelectedInstructionIds(new Set())
-    clearUnsavedInstruction()
   }
 
   function handleSelectAll() {
     setSelectedInstructionIds(
-      new Set(instructions.map((instruction) => instruction.id))
+      new Set(instructions.map((instruction) => instruction.id)),
     )
     setIsFormIncluded(true)
   }
@@ -123,20 +130,27 @@ export function InstructionsPanel() {
     clearUnsavedInstruction()
     setIsLoading(true)
 
-    const fullInstruction = await getInstruction(directory.path, instruction.id)
-
-    if (!fullInstruction) {
-      setIsLoading(false)
-      return
-    }
-
-    setInstructions((current) =>
-      current.map((entry) =>
-        entry.id === instruction.id ? { ...entry, ...fullInstruction } : entry
+    try {
+      const fullInstruction = await getInstruction({
+        directoryPath: directory.path,
+        instructionId: instruction.id,
+      })
+      setInstructions((current) =>
+        current.map((entry) =>
+          entry.id === instruction.id
+            ? { ...entry, ...fullInstruction }
+            : entry,
+        ),
       )
-    )
-    setEditingInstructionId(instruction.id)
-    setIsLoading(false)
+      setEditingInstructionId(instruction.id)
+    } catch (error) {
+      queue.add({
+        title: 'Failed to load instruction',
+        description: getErrorMessage(error),
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   function handleCancelEdit() {
@@ -144,11 +158,31 @@ export function InstructionsPanel() {
   }
 
   async function handleCopySavedInstruction(id: string) {
-    await copyInstructionsToClipboard(directory.path, [id], [])
+    try {
+      await copyInstructionsToClipboard({
+        directoryPath: directory.path,
+        instructionIds: [id],
+      })
+    } catch (error) {
+      queue.add({
+        title: 'Failed to copy instructions',
+        description: getErrorMessage(error),
+      })
+    }
   }
 
-  async function handleCopyInstruction(instruction: Instruction) {
-    await copyInstructionsToClipboard(directory.path, [], [instruction])
+  async function handleCopyInstruction(_instruction: Instruction) {
+    try {
+      await copyInstructionsToClipboard({
+        directoryPath: directory.path,
+        instructionIds: [],
+      })
+    } catch (error) {
+      queue.add({
+        title: 'Failed to copy instructions',
+        description: getErrorMessage(error),
+      })
+    }
   }
 
   async function handleCopySelectedInstructions() {
@@ -172,82 +206,107 @@ export function InstructionsPanel() {
       return
     }
 
-    await copyInstructionsToClipboard(
-      directory.path,
-      instructionIds,
-      draftInstructions
-    )
+    try {
+      await copyInstructionsToClipboard({
+        directoryPath: directory.path,
+        instructionIds,
+      })
+    } catch (error) {
+      queue.add({
+        title: 'Failed to copy instructions',
+        description: getErrorMessage(error),
+      })
+    }
   }
 
   async function handleDelete(id: string) {
-    const updatedInstructions = await deleteInstructions(directory.path, [id])
-    if (!updatedInstructions) {
-      return
-    }
-
-    setInstructions(updatedInstructions)
-    setSelectedInstructionIds((selectedIds) =>
-      preserveSelected(
-        updatedInstructions,
-        selectedIds,
-        (instruction) => instruction.id
+    try {
+      await deleteInstructions({
+        directoryPath: directory.path,
+        instructionIds: [id],
+      })
+      const updatedInstructions = await listInstructions({
+        directoryPath: directory.path,
+      })
+      setInstructions(updatedInstructions)
+      setSelectedInstructionIds((selectedIds) =>
+        preserveSelected(
+          updatedInstructions,
+          selectedIds,
+          (instruction) => instruction.id,
+        ),
       )
-    )
 
-    if (editingInstructionId === id) {
-      setEditingInstructionId(null)
+      if (editingInstructionId === id) {
+        setEditingInstructionId(null)
+      }
+    } catch (error) {
+      queue.add({
+        title: 'Failed to delete saved instruction',
+        description: getErrorMessage(error),
+      })
     }
   }
 
   async function handleSaveEdit(instructionId: string, data: Instruction) {
     setIsLoading(true)
-    const updatedInstructions = await upsertInstruction(
-      directory.path,
-      data.name,
-      data.content,
-      instructionId
-    )
-
-    if (!updatedInstructions) {
-      setIsLoading(false)
-      return
-    }
-
-    setInstructions(updatedInstructions)
-    setSelectedInstructionIds((selectedIds) =>
-      preserveSelected(
-        updatedInstructions,
-        selectedIds,
-        (instruction) => instruction.id
+    try {
+      await upsertInstruction({
+        directoryPath: directory.path,
+        instructionId,
+        title: data.name,
+        content: data.content,
+      })
+      const updatedInstructions = await listInstructions({
+        directoryPath: directory.path,
+      })
+      setInstructions(updatedInstructions)
+      setSelectedInstructionIds((selectedIds) =>
+        preserveSelected(
+          updatedInstructions,
+          selectedIds,
+          (instruction) => instruction.id,
+        ),
       )
-    )
-    setEditingInstructionId(null)
-    setIsLoading(false)
+      setEditingInstructionId(null)
+    } catch (error) {
+      queue.add({
+        title: 'Failed to update saved instruction',
+        description: getErrorMessage(error),
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   async function handleSaveNew(data: Instruction) {
     setIsLoading(true)
-    const updatedInstructions = await upsertInstruction(
-      directory.path,
-      data.name,
-      data.content
-    )
-
-    if (!updatedInstructions) {
-      setIsLoading(false)
-      return
-    }
-
-    setInstructions(updatedInstructions)
-    setSelectedInstructionIds((selectedIds) =>
-      preserveSelected(
-        updatedInstructions,
-        selectedIds,
-        (instruction) => instruction.id
+    try {
+      await upsertInstruction({
+        directoryPath: directory.path,
+        title: data.name,
+        content: data.content,
+      })
+      const updatedInstructions = await listInstructions({
+        directoryPath: directory.path,
+      })
+      setInstructions(updatedInstructions)
+      setSelectedInstructionIds((selectedIds) =>
+        preserveSelected(
+          updatedInstructions,
+          selectedIds,
+          (instruction) => instruction.id,
+        ),
       )
-    )
-    setIsAddingNew(false)
-    setIsLoading(false)
+      setIsAddingNew(false)
+    } catch (error) {
+      queue.add({
+        title: 'Failed to save saved instruction',
+        description: getErrorMessage(error),
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   function handleCancelNew() {
