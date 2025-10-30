@@ -5,7 +5,7 @@
 export function preserveSelected<T>(
   allItems: readonly T[],
   selectedIds: Set<string>,
-  idGetter: (item: T) => string
+  idGetter: (item: T) => string,
 ): Set<string> {
   const allIds = new Set(allItems.map(idGetter))
   const updatedSelected = new Set<string>()
