@@ -2,7 +2,7 @@ import { atom } from 'jotai'
 import type { Key } from 'react-aria-components'
 import type { DirectoryInfo } from '../types/DirectoryInfo'
 import type { FileNode, Tree, TreeDisplayMode } from '../types/FileTree'
-import type { Instruction } from '../components/layout/instruction/types'
+import type { Instruction } from '../components/panels/instruction/types'
 import { NO_DIRECTORY } from './initial'
 import { atomWithReset, RESET } from 'jotai/utils'
 
@@ -12,12 +12,12 @@ export const filteredTreeAtom = atomWithReset<Tree>([])
 export const selectedNodesAtom = atomWithReset<Set<Key>>(new Set<Key>())
 export const selectedFilesAtom = atomWithReset<FileNode[]>([])
 export const selectedPagesIdsAtom = atomWithReset<Set<string>>(
-  new Set<string>()
+  new Set<string>(),
 )
 export const selectedDiffIdsAtom = atomWithReset<Set<string>>(new Set<string>())
 export const indeterminateNodesAtom = atomWithReset<Set<Key>>(new Set<Key>())
 export const selectedInstructionIdsAtom = atomWithReset<Set<string>>(
-  new Set<string>()
+  new Set<string>(),
 )
 export const unsavedInstructionAtom = atomWithReset<Instruction | null>(null)
 export const instructionsTokenCountAtom = atomWithReset<number>(0)
@@ -32,7 +32,7 @@ export const totalTokenCountAtom = atom<number>(
     get(totalPagesTokenCountAtom) +
     get(totalGitDiffTokenCountAtom) +
     get(instructionsTokenCountAtom) +
-    get(treeTokenCountAtom)
+    get(treeTokenCountAtom),
 )
 export const resetStateAtom = atom(
   null, // This is a write-only atom, so the read value is null
@@ -53,5 +53,5 @@ export const resetStateAtom = atom(
     set(totalGitDiffTokenCountAtom, RESET)
     set(treeTokenCountAtom, RESET)
     set(treeDisplayModeAtom, RESET)
-  }
+  },
 )

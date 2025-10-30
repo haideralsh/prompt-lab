@@ -58,15 +58,15 @@ export function Panel({
     onSelectAll === false && (count === 0 || !isGroupSelected)
 
   return (
-    <Disclosure id={id} className="-mx-2 mb-0.5">
+    <Disclosure id={id} className="-mx-2 mb-0.25">
       {({ isExpanded }) => (
         <>
           <Button
             slot="trigger"
-            className="flex w-full items-center gap-1 cursor-pointer sticky top-0 px-2 py-1.5 bg-interactive-dark z-10"
+            className="sticky top-0 z-10 flex w-full cursor-pointer items-center gap-1 bg-interactive-dark px-2 py-1.5"
           >
             <Heading
-              className={`flex justify-between w-full group ${
+              className={`group flex w-full justify-between ${
                 headingClassName ?? ''
               }`}
             >
@@ -76,7 +76,7 @@ export function Panel({
                   isIndeterminate={isGroupIndeterminate}
                   onChange={handleSelectionChange}
                   isDisabled={shouldDisableGroupCheckbox}
-                  className="relative flex items-center justify-center size-[15px] rounded-sm text-accent-text-light border border-border-light data-[selected]:border-accent-border-mid data-[indeterminate]:border-accent-border-mid bg-transparent data-[selected]:bg-accent-interactive-light data-[indeterminate]:bg-accent-interactive-light flex-shrink-0 hover:bg-accent-interactive-dark data-[disabled]:border-interactive-light data-[disabled]:hover:bg-transparent"
+                  className="relative flex size-[15px] flex-shrink-0 items-center justify-center rounded-sm border border-border-light bg-transparent text-accent-text-light hover:bg-accent-interactive-dark data-[disabled]:border-interactive-light data-[disabled]:hover:bg-transparent data-[indeterminate]:border-accent-border-mid data-[indeterminate]:bg-accent-interactive-light data-[selected]:border-accent-border-mid data-[selected]:bg-accent-interactive-light"
                 >
                   {isGroupSelected && <CheckIcon />}
                   {isGroupIndeterminate && <MinusIcon />}
@@ -86,7 +86,7 @@ export function Panel({
                 ) : (
                   <TriangleRightIcon className={resolvedIconClass} />
                 )}
-                <span className="flex items-center gap-3 uppercase font-medium tracking-wide text-xs">
+                <span className="flex items-center gap-3 text-xs font-medium tracking-wide uppercase">
                   <span>{label}</span>
                   <span className="text-solid-dark">{count}</span>
                 </span>

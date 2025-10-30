@@ -20,7 +20,7 @@ export function LaunchScreen() {
     async function loadRecentOpened() {
       try {
         const directories = await invoke<DirectoryInfo[]>(
-          'get_recent_directories'
+          'get_recent_directories',
         )
 
         setRecentOpened(directories)
@@ -48,7 +48,7 @@ export function LaunchScreen() {
       setFilteredTree(resp.results)
 
       updateWindowTitle(
-        directory.prettyPath ?? directory.name ?? directory.path
+        directory.prettyPath ?? directory.name ?? directory.path,
       )
       invoke('add_recent_directory', { directory })
     } catch (err) {
@@ -62,8 +62,8 @@ export function LaunchScreen() {
   }
 
   return (
-    <main className="min-h-screen h-full justify-center items-center flex bg-background-dark">
-      <div className="flex flex-col max-w-72 gap-8">
+    <main className="flex h-full min-h-screen items-center justify-center bg-background-dark">
+      <div className="flex max-w-72 flex-col gap-8">
         <DirectoryPickerButton onPick={handleDirectoryPick} />
 
         {recentOpened.length > 0 && (
@@ -74,13 +74,13 @@ export function LaunchScreen() {
                 tabIndex={0}
                 onClick={() => handleDirectoryPick(dir)}
                 key={`${dir.path}|${dir.name}`}
-                className="relative flex items-center cursor-pointer group"
+                className="group relative flex cursor-pointer items-center"
               >
                 <div className="flex flex-col">
                   <h2 className="text-sm text-text-dark group-hover:text-text-light">
                     {dir.name}
                   </h2>
-                  <span className="text-xs text-text-dark group-hover:text-text-light whitespace-nowrap">
+                  <span className="text-xs whitespace-nowrap text-text-dark group-hover:text-text-light">
                     {dir.prettyPath}
                   </span>
                 </div>
