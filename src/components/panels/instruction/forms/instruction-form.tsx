@@ -1,8 +1,8 @@
 import { FormEvent, useState } from 'react'
 import { Checkbox } from 'react-aria-components'
 import { CheckIcon } from '@radix-ui/react-icons'
-import { NewInstructionForm } from './NewInstructionForm'
-import { NewInstructionTextarea } from './NewInstructionTextarea'
+import { NewInstructionForm } from './new-instruction-form'
+import { NewInstructionTextarea } from './new-instruction-textarea'
 import { Instruction } from '../types'
 
 interface InstructionFormProps {

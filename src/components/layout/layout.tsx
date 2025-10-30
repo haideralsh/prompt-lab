@@ -1,9 +1,9 @@
 import React, { useRef } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useTokenCountListener } from './useTokenCountListener'
 import { Header } from './header'
-import { useResizeableSidebar } from './useResizeableSidebar'
-import { SidebarResizeHandle } from './SidebarResizeHandle'
+import { useTokenCountListener } from './use-token-count-listener'
+import { useResizeableSidebar } from './use-resizeable-sidebar'
+import { SidebarResizeHandle } from './sidebar-resize-handle'
 
 interface LayoutProps {
   sidebar: React.ReactNode

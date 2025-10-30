@@ -1,8 +1,8 @@
 import { Sidebar } from './components/sidebar/sidebar'
-import { LaunchScreen } from './components/LaunchScreen'
-import { Layout } from './components/layout/Layout'
-import { Main } from './components/layout/Main'
-import { Footer } from './components/layout/Footer'
+import { LaunchScreen } from './components/launch-screen'
+import { Layout } from './components/layout/layout'
+import { Main } from './components/layout/main'
+import { Footer } from './components/layout/footer'
 import { useAtomValue } from 'jotai'
 import { directoryAtom } from './state/atoms'
 

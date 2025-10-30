@@ -30,10 +30,10 @@ import {
 } from '@/api/web'
 import { fetchSavedPages } from './lib'
 import { WebPanelActions } from './web-panel-actions'
-import { Panel } from '../panel/Panel'
-import { PanelList } from '../panel/PanelList'
-import { PanelRowCheckbox } from '../panel/PanelRowCheckbox'
-import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
+import { Panel } from '../panel/panel'
+import { PanelList } from '../panel/panel-list'
+import { PanelRowCheckbox } from '../panel/panel-row-checkbox'
+import { EmptyPanelListMessage } from '@/components/layout/empty-panel-list-message'
 
 export function WebDisclosurePanel() {
   const directory = useAtomValue(directoryAtom)
@@ -238,7 +238,9 @@ export function WebDisclosurePanel() {
         <PanelList
           ariaLabel="Saved pages"
           selectedValues={selectedPagesIds}
-          onChangeSelectedValues={(values) => setSelectedPagesIds(values)}
+          onChangeSelectedValues={(values: Set<string>) =>
+            setSelectedPagesIds(values)
+          }
           className="text-sm"
         >
           {savedPages.map((entry) => {

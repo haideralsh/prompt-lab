@@ -9,13 +9,13 @@ import {
   totalGitDiffTokenCountAtom,
 } from '../../../state/atoms'
 import { copyDiffsToClipboard } from './lib'
-import { useInquireGitStatus } from './hooks/useInquireGitStatus'
-import { useGitStatusListener } from './hooks/useGitStatusListener'
-import { useGitTokenCountsListener } from './hooks/useGitTokenCountsListener'
-import { Panel } from '../panel/Panel'
-import { PanelList } from '../panel/PanelList'
-import { PanelRowCheckbox } from '../panel/PanelRowCheckbox'
-import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
+import { useInquireGitStatus } from './hooks/use-inquire-git-status'
+import { useGitStatusListener } from './hooks/use-git-status-listener'
+import { useGitTokenCountsListener } from './hooks/use-git-token-counts-listener'
+import { Panel } from '../panel/panel'
+import { PanelList } from '../panel/panel-list'
+import { PanelRowCheckbox } from '../panel/panel-row-checkbox'
+import { EmptyPanelListMessage } from '@/components/layout/empty-panel-list-message'
 
 export function GitPanel() {
   const directory = useAtomValue(directoryAtom)
