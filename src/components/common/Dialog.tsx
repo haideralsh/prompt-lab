@@ -23,7 +23,7 @@ export function DialogContent({
   return (
     <BaseDialog.Portal>
       <BaseDialog.Backdrop className="fixed inset-0 z-40 min-h-dvh bg-background-dark opacity-85 transition-all duration-150 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0 supports-[-webkit-touch-callout:none]:absolute" />
-      <BaseDialog.Popup className="fixed top-1/2 left-1/2 z-40 -mt-8 w-96 min-h-64 max-w-[calc(100vw-3rem)] -translate-x-1/2 -translate-y-1/2 rounded-md bg-background-light p-4 text-text-light outline-1 outline-interactive-light transition-all duration-150 data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 flex flex-col">
+      <BaseDialog.Popup className="fixed top-1/2 left-1/2 z-40 -mt-8 w-96 min-h-64 max-w-[calc(100vw-3rem)] -translate-x-1/2 -translate-y-1/2 rounded-md bg-background-light p-4 text-text-light outline-1 outline-interactive-light transition-all duration-150 origin-bottom data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 flex flex-col">
         <div className="flex flex-col gap-6 flex-grow">
           <BaseDialog.Title className="font-medium tracking-wide text-sm text-text-light">
             {title}

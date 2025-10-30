@@ -4,9 +4,9 @@ import { getVersion } from '@tauri-apps/api/app'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
-} from '@/components/common/Dialog'
+  DialogTrigger,
+} from '@/components/common/dialog'
 
 export function SettingsDialog() {
   const [editorPath, setEditorPath] = useState<string | null>(null)
@@ -74,11 +74,11 @@ export function SettingsDialog() {
             will be used.
           </h3>
           <div className="flex items-center justify-between">
-            <p className="text-xs text-text-light break-all">
+            <p className="text-xs break-all text-text-light">
               {editorPath ? editorPath : 'No editor set'}
             </p>
             <button
-              className="bg-accent-interactive-dark rounded-sm text-text-light flex items-center gap-1.5 text-xs cursor-pointer px-2 py-1 w-fit"
+              className="flex w-fit cursor-pointer items-center gap-1.5 rounded-sm bg-accent-interactive-dark px-2 py-1 text-xs text-text-light"
               onClick={handlePickEditor}
             >
               Choose editor
