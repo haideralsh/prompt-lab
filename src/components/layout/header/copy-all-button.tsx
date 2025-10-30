@@ -32,6 +32,7 @@ export function CopyAllButton() {
   const selectedInstructionIds = useAtomValue(selectedInstructionIdsAtom)
   const unsavedInstruction = useAtomValue(unsavedInstructionAtom)
   const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
+  const handlePressRef = useRef(handlePress)
 
   useEffect(() => {
     const p = platform()
@@ -72,12 +73,17 @@ export function CopyAllButton() {
   }
 
   useEffect(() => {
+    handlePressRef.current = handlePress
+  })
+
+  useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const isC = e.key.toLowerCase() === 'c'
       const hasShift = e.shiftKey
       const hasCmdOrCtrl = e.metaKey || e.ctrlKey
+
       if (isC && hasShift && hasCmdOrCtrl) {
-        handlePress()
+        handlePressRef.current()
       }
     }
     window.addEventListener('keydown', onKeyDown)
