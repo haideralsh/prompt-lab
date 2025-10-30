@@ -3,7 +3,7 @@ import { useEffect, Dispatch, SetStateAction } from 'react'
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
 import { GitStatusResult, GitStatusUpdatedEvent } from '@/types/git'
-import { DirectoryInfo } from '@/types/DirectoryInfo'
+import { DirectoryInfo } from '@/types/directory-info'
 import { mergeTokenCountsWithPrevious } from '../lib'
 
 export function useGitStatusListener(

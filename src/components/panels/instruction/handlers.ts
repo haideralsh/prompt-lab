@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { queue } from '@/components/toasts/toast-queue'
-import { getErrorMessage } from '../../../helpers/getErrorMessage'
+import { getErrorMessage } from '../../../helpers/get-error-message'
 import type { Instruction, SavedInstructionMetadata, SavedInstructions } from './types'
 
 export async function listInstructions(

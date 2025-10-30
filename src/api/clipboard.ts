@@ -1,7 +1,6 @@
-import { TreeDisplayMode } from '@/types/FileTree'
+import { Tree, TreeDisplayMode } from '@/types/file-tree'
 import { invoke } from '@tauri-apps/api/core'
-import { Tree } from '@/types/FileTree'
-import { DirectoryInfo } from '@/types/DirectoryInfo'
+import { DirectoryInfo } from '@/types/directory-info'
 import { Key } from 'react-aria-components'
 import { Instruction } from '@/components/panels/instruction/types'
 

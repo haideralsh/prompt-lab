@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { GitStatusResult } from '../../../types/git'
-import { DirectoryInfo } from '@/types/DirectoryInfo'
+import { DirectoryInfo } from '@/types/directory-info'
 
 export function mergeTokenCountsWithPrevious(
   incoming: GitStatusResult,

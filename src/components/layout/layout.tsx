@@ -1,9 +1,9 @@
 import React, { useRef } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useTokenCountListener } from './useTokenCountListener'
 import { Header } from './header'
-import { useResizeableSidebar } from './useResizeableSidebar'
-import { SidebarResizeHandle } from './SidebarResizeHandle'
+import { useTokenCountListener } from './use-token-count-listener'
+import { useResizeableSidebar } from '../sidebar/use-resizeable-sidebar'
+import { SidebarResizeHandle } from '../sidebar/sidebar-resize-handle'
 
 interface LayoutProps {
   sidebar: React.ReactNode
@@ -34,10 +34,10 @@ export function Layout({ sidebar, main, footer }: LayoutProps) {
         />
       </div>
 
-      <div className="flex flex-1 min-h-0 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         <Header />
 
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <ScrollArea>{main}</ScrollArea>
         </div>
 

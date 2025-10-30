@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { DirectoryInfo } from '../types/DirectoryInfo'
+import type { DirectoryInfo } from '../types/directory-info'
 import { PlusIcon } from '@radix-ui/react-icons'
 
 interface DirectoryPickerProps {

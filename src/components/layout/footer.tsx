@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useAtomValue } from 'jotai'
 import TokenChart from '@/components/visualization/token-chart'
-import { sortFilesByTokenCount } from '../../helpers/sortFilesByTokenCount'
-import { selectedFilesAtom, totalFilesTokenCountAtom } from '../../state/atoms'
+import { sortFilesByTokenCount } from '@/helpers/sort-files-by-token-count'
+import { selectedFilesAtom, totalFilesTokenCountAtom } from '@/state/atoms'
 
 export function Footer() {
   const selectedFiles = useAtomValue(selectedFilesAtom)
@@ -15,7 +15,7 @@ export function Footer() {
   if (sortedFiles.length === 0) return null
 
   return (
-    <div className="flex p-3 gap-8 justify-between items-center bg-background-dark">
+    <div className="flex items-center justify-between gap-8 bg-background-dark p-3">
       <TokenChart
         files={sortedFiles}
         totalFilesTokenCount={totalFilesTokenCount}

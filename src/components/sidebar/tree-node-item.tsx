@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { SelectionResult, TreeNode } from '../../types/FileTree'
+import { SelectionResult, TreeNode } from '../../types/file-tree'
 import {
   FileIcon,
   CheckIcon,

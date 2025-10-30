@@ -1,4 +1,4 @@
-import { InstructionFields } from './InstuctionFields'
+import { InstructionFields } from './instruction-fields'
 
 interface NewInstructionFormProps {
   name: string

@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { SavedInstructionMetadata, Instruction } from '../types'
-import { InstructionFields } from './InstuctionFields'
+import { InstructionFields } from './instruction-fields'
 
 interface EditInstructionFormProps {
   instruction: SavedInstructionMetadata

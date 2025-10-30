@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { CheckboxGroup, Button } from 'react-aria-components'
 import { PlusIcon } from '@radix-ui/react-icons'
-import { InstructionItem } from './InstructionItem'
-import { preserveSelected } from '../../../helpers/preserveSelected'
-import { InstructionForm } from './forms/InstructionForm'
+import { InstructionItem } from './instruction-item'
+import { preserveSelected } from '../../../helpers/preserve-selected'
+import { InstructionForm } from './forms/instruction-form'
 import { CopyButton } from '../../common/copy-button'
 import type {
   SavedInstructionMetadata,
@@ -17,7 +17,7 @@ import {
   listInstructions,
   upsertInstruction,
 } from './handlers'
-import { useInstructionTokenCount } from './forms/useInstructionTokenCount'
+import { useInstructionTokenCount } from './forms/use-instruction-token-count'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
   directoryAtom,
@@ -25,7 +25,7 @@ import {
   selectedInstructionIdsAtom,
   unsavedInstructionAtom,
 } from '../../../state/atoms'
-import { Panel } from '../panel/Panel'
+import { Panel } from '../panel/panel'
 
 export function InstructionsPanel() {
   const directory = useAtomValue(directoryAtom)
@@ -334,8 +334,8 @@ export function InstructionsPanel() {
           onStartAdd={handleStartAddNew}
           onCopy={handleCopyInstruction}
           isIncluded={isFormIncluded}
-          onIncludeChange={(selected) => setIsFormIncluded(selected)}
-          onUnsavedInstructionPresenceChange={(exists) =>
+          onIncludeChange={(selected: boolean) => setIsFormIncluded(selected)}
+          onUnsavedInstructionPresenceChange={(exists: boolean) =>
             setHasUnsavedInstruction(exists)
           }
           onUnsavedInstructionChange={setUnsavedInstruction}

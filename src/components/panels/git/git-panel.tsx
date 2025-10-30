@@ -9,13 +9,13 @@ import {
   totalGitDiffTokenCountAtom,
 } from '../../../state/atoms'
 import { copyDiffsToClipboard } from './lib'
-import { useInquireGitStatus } from './hooks/useInquireGitStatus'
-import { useGitStatusListener } from './hooks/useGitStatusListener'
-import { useGitTokenCountsListener } from './hooks/useGitTokenCountsListener'
-import { Panel } from '../panel/Panel'
-import { PanelList } from '../panel/PanelList'
-import { PanelRowCheckbox } from '../panel/PanelRowCheckbox'
-import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
+import { useInquireGitStatus } from './hooks/use-inquire-git-status'
+import { useGitStatusListener } from './hooks/use-git-status-listener'
+import { useGitTokenCountsListener } from './hooks/use-git-token-counts-listener'
+import { Panel } from '../panel/panel'
+import { PanelList } from '../panel/panel-list'
+import { PanelRowCheckbox } from '../panel/panel-row-checkbox'
+import { EmptyPanelListMessage } from '@/components/panels/panel/empty-panel-list-message'
 
 export function GitPanel() {
   const directory = useAtomValue(directoryAtom)
@@ -53,7 +53,7 @@ export function GitPanel() {
       isGroupIndeterminate={isGroupIndeterminate}
       onSelectAll={() => {
         setSelectedDiffIds(
-          () => new Set(gitChanges.map((change) => change.path))
+          () => new Set(gitChanges.map((change) => change.path)),
         )
       }}
       onDeselectAll={() => {
@@ -93,20 +93,20 @@ export function GitPanel() {
                   </>
                 }
               >
-                <span className="flex items-center gap-3 w-full">
+                <span className="flex w-full items-center gap-3">
                   <span
-                    className="text-text-dark bg-border-dark rounded-sm text-xs px-1 py-0.5 justify-self-start -mr-1"
+                    className="-mr-1 justify-self-start rounded-sm bg-border-dark px-1 py-0.5 text-xs text-text-dark"
                     title={change.changeType}
                   >
                     {change.changeType.slice(0, 1).toUpperCase()}
                   </span>
-                  <span className="font-normal text-text-dark break-all">
+                  <span className="font-normal break-all text-text-dark">
                     {change.path}
                   </span>
-                  <span className="text-red bg-red/15 px-1 py-0.5 rounded-l-sm rounded-r-none text-xs font-semibold justify-self-start">
+                  <span className="justify-self-start rounded-l-sm rounded-r-none bg-red/15 px-1 py-0.5 text-xs font-semibold text-red">
                     -{change.linesDeleted}
                   </span>
-                  <span className="text-green bg-green/15 px-1 py-0.5 rounded-r-sm rounded-l-none text-xs font-semibold justify-self-start -ml-3">
+                  <span className="-ml-3 justify-self-start rounded-l-none rounded-r-sm bg-green/15 px-1 py-0.5 text-xs font-semibold text-green">
                     +{change.linesAdded}
                   </span>
                 </span>

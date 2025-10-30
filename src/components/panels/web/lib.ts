@@ -1,6 +1,6 @@
 import { listSavedPages, SavedPages } from '@/api/web'
 import { queue } from '@/components/toasts/toast-queue'
-import { getErrorMessage } from '@/helpers/getErrorMessage'
+import { getErrorMessage } from '@/helpers/get-error-message'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { appDataDir, join } from '@tauri-apps/api/path'
 

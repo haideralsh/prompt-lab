@@ -9,12 +9,12 @@ import {
 } from '@radix-ui/react-icons'
 import { queue } from '@/components/toasts/toast-queue'
 import { flushSync } from 'react-dom'
-import { getErrorMessage } from '../../../helpers/getErrorMessage'
+import { getErrorMessage } from '../../../helpers/get-error-message'
 import { CopyButton } from '../../common/copy-button'
 import { EditSavedPage } from './edit-saved-page-form'
 import { GhostButton } from '../../common/ghost-button'
 
-import { preserveSelected } from '../../../helpers/preserveSelected'
+import { preserveSelected } from '../../../helpers/preserve-selected'
 import { TokenCount } from '../../common/token-count'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
@@ -30,10 +30,10 @@ import {
 } from '@/api/web'
 import { fetchSavedPages } from './lib'
 import { WebPanelActions } from './web-panel-actions'
-import { Panel } from '../panel/Panel'
-import { PanelList } from '../panel/PanelList'
-import { PanelRowCheckbox } from '../panel/PanelRowCheckbox'
-import { EmptyPanelListMessage } from '@/components/layout/EmptyPanelListMessage'
+import { Panel } from '../panel/panel'
+import { PanelList } from '../panel/panel-list'
+import { PanelRowCheckbox } from '../panel/panel-row-checkbox'
+import { EmptyPanelListMessage } from '@/components/panels/panel/empty-panel-list-message'
 
 export function WebDisclosurePanel() {
   const directory = useAtomValue(directoryAtom)
@@ -44,12 +44,12 @@ export function WebDisclosurePanel() {
   const [webUrl, setWebUrl] = useState('')
   const [isSavingWeb, setIsSavingWeb] = useState(false)
   const [reloadingUrls, setReloadingUrls] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
   const webUrlInputRef = useRef<HTMLInputElement | null>(null)
   const [editingPageUrl, setEditingPageUrl] = useState<string | null>(null)
   const [brokenFavicons, setBrokenFavicons] = useState<Set<string>>(
-    () => new Set()
+    () => new Set(),
   )
 
   const totalPagesTokenCount = savedPages
@@ -103,7 +103,7 @@ export function WebDisclosurePanel() {
 
       setSavedPages(pages)
       setSelectedPagesIds((selectedUrls) =>
-        preserveSelected(pages, selectedUrls, (page) => page.url)
+        preserveSelected(pages, selectedUrls, (page) => page.url),
       )
 
       setWebUrl('')
@@ -238,7 +238,9 @@ export function WebDisclosurePanel() {
         <PanelList
           ariaLabel="Saved pages"
           selectedValues={selectedPagesIds}
-          onChangeSelectedValues={(values) => setSelectedPagesIds(values)}
+          onChangeSelectedValues={(values: Set<string>) =>
+            setSelectedPagesIds(values)
+          }
           className="text-sm"
         >
           {savedPages.map((entry) => {
@@ -249,7 +251,7 @@ export function WebDisclosurePanel() {
               <li
                 key={`${entry.url}`}
                 className={`${
-                  isReloading ? 'opacity-75 pointer-events-none' : 'opacity-100'
+                  isReloading ? 'pointer-events-none opacity-75' : 'opacity-100'
                 }`}
               >
                 {isEditing ? (
@@ -293,7 +295,7 @@ export function WebDisclosurePanel() {
                           onPress={() => {
                             void handleDelete(entry)
                           }}
-                          className=" text-red/75 hover:text-red data-[disabled]:text-red/75"
+                          className="text-red/75 hover:text-red data-[disabled]:text-red/75"
                           isDisabled={isReloading}
                         >
                           <TrashIcon />
@@ -307,7 +309,7 @@ export function WebDisclosurePanel() {
                         src={entry.faviconPath}
                         onError={() =>
                           setBrokenFavicons((prev) =>
-                            new Set(prev).add(entry.url)
+                            new Set(prev).add(entry.url),
                           )
                         }
                         alt={entry.title}
@@ -316,10 +318,10 @@ export function WebDisclosurePanel() {
                     ) : (
                       <GlobeIcon className="text-solid-light" />
                     )}
-                    <span className="font-normal shrink-0 text-text-dark">
+                    <span className="shrink-0 font-normal text-text-dark">
                       {entry.title}
                     </span>
-                    <span className="hidden group-hover:inline text-solid-light truncate">
+                    <span className="hidden truncate text-solid-light group-hover:inline">
                       {entry.url}
                     </span>
                   </PanelRowCheckbox>
@@ -342,8 +344,8 @@ export function WebDisclosurePanel() {
             void handleAddNewPage(event)
           }}
         >
-          <div className="ml-8 mr-2 mt-1 mb-2">
-            <div className="rounded-sm group bg-transparent outline-1 -outline-offset-1 outline-interactive-light has-[input:focus-within]:outline-1 has-[input:focus-within]:-outline-offset-1 has-[input:focus-within]:outline-border-mid">
+          <div className="mt-1 mr-2 mb-2 ml-8">
+            <div className="group rounded-sm bg-transparent outline-1 -outline-offset-1 outline-interactive-light has-[input:focus-within]:outline-1 has-[input:focus-within]:-outline-offset-1 has-[input:focus-within]:outline-border-mid">
               <label className="sr-only" htmlFor="web-url">
                 add a web page URL
               </label>
@@ -362,7 +364,7 @@ export function WebDisclosurePanel() {
                   value={webUrl}
                   onChange={(event) => setWebUrl(event.target.value)}
                   disabled={isSavingWeb}
-                  className="min-w-0 grow py-1.5 px-2 text-sm text-text-dark placeholder:text-solid-light focus:outline-none bg-transparent disabled:text-text-dark/60"
+                  className="min-w-0 grow bg-transparent px-2 py-1.5 text-sm text-text-dark placeholder:text-solid-light focus:outline-none disabled:text-text-dark/60"
                 />
 
                 <div className="flex items-center gap-1.5 px-1">

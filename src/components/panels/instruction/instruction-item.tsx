@@ -2,7 +2,7 @@ import { Button, Checkbox } from 'react-aria-components'
 import { CheckIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons'
 import { SavedInstructionMetadata, Instruction } from './types'
 import { CopyButton } from '../../common/copy-button'
-import { EditInstructionForm } from './forms/EditInstructionForm'
+import { EditInstructionForm } from './forms/edit-instruction-form'
 
 interface InstructionItemProps {
   instruction: SavedInstructionMetadata
