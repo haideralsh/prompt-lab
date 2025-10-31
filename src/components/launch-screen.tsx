@@ -42,6 +42,7 @@ export function LaunchScreen() {
     try {
       const resp = await searchTree({
         path: directory.path,
+        forceRefresh: true,
       })
 
       setDirectory(directory)

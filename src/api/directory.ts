@@ -14,10 +14,10 @@ export async function addRecentDirectory(params: { directory: DirectoryInfo }) {
   await invoke<void>('add_recent_directory', params)
 }
 
-export async function searchTree(params: { path: string; query?: string }) {
-  const { path, query } = params
-  return await invoke<SearchResult>(
-    'search_tree',
-    query !== undefined ? { path, query } : { path }
-  )
+export async function searchTree(params: {
+  path: string
+  term?: string
+  forceRefresh?: boolean
+}) {
+  return await invoke<SearchResult>('search_tree', params)
 }

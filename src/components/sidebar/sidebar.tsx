@@ -40,15 +40,15 @@ export function Sidebar() {
   const treeDisplayMode = useAtomValue(treeDisplayModeAtom)
   const resetState = useSetAtom(resetStateAtom)
 
-  async function search(query: string) {
+  async function search(term: string) {
     const { results } = await searchTree({
       path: directory.path,
-      query: query.trim(),
+      term: term.trim(),
     })
 
     setFilteredTree(results)
     setExpandedKeys(
-      query.trim()
+      term.trim()
         ? new Set(results.flatMap((result) => expandAll(result)))
         : new Set(),
     )

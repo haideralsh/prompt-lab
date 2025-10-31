@@ -78,7 +78,7 @@ fn test_search_tree_no_search_term() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), None).unwrap();
+    let result = search_tree(path.to_string(), None, None).unwrap();
 
     assert_eq!(result.matched_ids_count, 2);
     assert_eq!(result.results.len(), 2);
@@ -101,7 +101,7 @@ fn test_search_tree_empty_search_term() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -124,7 +124,7 @@ fn test_search_tree_whitespace_only_search_term() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("   ".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("   ".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -147,7 +147,7 @@ fn test_search_tree_no_matches() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("nonexistent".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("nonexistent".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 0);
     assert_eq!(result.results.len(), 0);
@@ -177,7 +177,7 @@ fn test_search_tree_single_file_match() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("document".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("document".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -220,7 +220,7 @@ fn test_search_tree_single_directory_match() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("documents".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("documents".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -262,7 +262,7 @@ fn test_search_tree_multiple_matches_same_branch() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("test".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 3);
     assert_eq!(result.results.len(), 1);
@@ -310,7 +310,7 @@ fn test_search_tree_multiple_matches_different_branches() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("test".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 2);
     assert_eq!(result.results.len(), 2);
@@ -340,7 +340,7 @@ fn test_search_tree_top_level_match() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("search".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("search".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -386,7 +386,7 @@ fn test_search_tree_deep_nested_match() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("deep_file".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("deep_file".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -426,7 +426,7 @@ fn test_search_tree_case_sensitive_search() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("foo".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("foo".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 2);
     assert_eq!(result.results.len(), 2);
@@ -449,7 +449,7 @@ fn test_search_tree_partial_string_match() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("oo".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("oo".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -482,7 +482,7 @@ fn test_search_tree_exact_match() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("test".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 2);
 
@@ -504,7 +504,7 @@ fn test_search_tree_special_characters_in_term() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("file-123".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("file-123".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -527,7 +527,7 @@ fn test_search_tree_unicode_in_term_and_titles() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("文件".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("文件".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -538,7 +538,7 @@ fn test_search_tree_unicode_in_term_and_titles() {
 #[test]
 fn test_search_tree_invalid_path() {
     let path = "/test/nonexistent/path";
-    let result = search_tree(path.to_string(), None);
+    let result = search_tree(path.to_string(), None, None);
 
     assert!(result.is_err());
 }
@@ -560,7 +560,7 @@ fn test_search_tree_cache_miss_after_ensure() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("file".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("file".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
 
@@ -613,7 +613,7 @@ fn test_search_tree_pruned_tree_structure() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("target".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("target".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 1);
     assert_eq!(result.results.len(), 1);
@@ -655,7 +655,7 @@ fn test_search_tree_matched_count_accuracy() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("test".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 2);
 
@@ -670,11 +670,11 @@ fn test_search_tree_empty_tree_index() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result_no_term = search_tree(path.to_string(), None).unwrap();
+    let result_no_term = search_tree(path.to_string(), None, None).unwrap();
     assert_eq!(result_no_term.matched_ids_count, 0);
     assert_eq!(result_no_term.results.len(), 0);
 
-    let result_with_term = search_tree(path.to_string(), Some("test".to_string())).unwrap();
+    let result_with_term = search_tree(path.to_string(), Some("test".to_string()), None).unwrap();
     assert_eq!(result_with_term.matched_ids_count, 0);
     assert_eq!(result_with_term.results.len(), 0);
 
@@ -704,7 +704,7 @@ fn test_search_tree_concurrent_cache_access() {
         .map(|_| {
             let p = Arc::clone(&path_arc);
             thread::spawn(move || {
-                let result = search_tree(p.to_string(), Some("file".to_string()));
+                let result = search_tree(p.to_string(), Some("file".to_string()), None);
                 assert!(result.is_ok());
             })
         })
@@ -720,7 +720,7 @@ fn test_search_tree_concurrent_cache_access() {
 #[test]
 fn test_search_tree_error_propagation_from_ensure_index() {
     let path = "/definitely/does/not/exist/path";
-    let result = search_tree(path.to_string(), None);
+    let result = search_tree(path.to_string(), None, None);
 
     assert!(result.is_err());
 }
@@ -747,7 +747,7 @@ fn test_search_tree_performance_large_tree() {
     setup_cache(path, tree_index);
 
     let start = Instant::now();
-    let result = search_tree(path.to_string(), Some("file500".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("file500".to_string()), None).unwrap();
     let duration = start.elapsed();
 
     assert_eq!(result.matched_ids_count, 1);
@@ -771,7 +771,7 @@ fn test_search_tree_serialization() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("file".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("file".to_string()), None).unwrap();
 
     let json = serde_json::to_string(&result);
     assert!(json.is_ok());
@@ -807,10 +807,79 @@ fn test_search_tree_duplicate_ids_handling() {
     let tree_index = create_test_tree_index(nodes);
     setup_cache(path, tree_index);
 
-    let result = search_tree(path.to_string(), Some("test".to_string())).unwrap();
+    let result = search_tree(path.to_string(), Some("test".to_string()), None).unwrap();
 
     assert_eq!(result.matched_ids_count, 2);
     assert_eq!(result.results.len(), 2);
+
+    clear_cache(path);
+}
+
+#[test]
+fn test_force_refresh_none_uses_cache() {
+    let path = "/test/force_refresh_none";
+    let nodes = vec![DirectoryNode {
+        id: "1".to_string(),
+        title: "file.txt".to_string(),
+        node_type: "file".to_string(),
+        children: vec![],
+        parent: None,
+        child_ids: vec![],
+    }];
+
+    let tree_index = create_test_tree_index(nodes);
+    setup_cache(path, tree_index);
+
+    let result1 = search_tree(path.to_string(), None, None).unwrap();
+    assert_eq!(result1.matched_ids_count, 1);
+
+    let result2 = search_tree(path.to_string(), None, None).unwrap();
+    assert_eq!(result2.matched_ids_count, 1);
+
+    clear_cache(path);
+}
+
+#[test]
+fn test_force_refresh_false_uses_cache() {
+    let path = "/test/force_refresh_false";
+    let nodes = vec![DirectoryNode {
+        id: "1".to_string(),
+        title: "file.txt".to_string(),
+        node_type: "file".to_string(),
+        children: vec![],
+        parent: None,
+        child_ids: vec![],
+    }];
+
+    let tree_index = create_test_tree_index(nodes);
+    setup_cache(path, tree_index);
+
+    let result1 = search_tree(path.to_string(), None, Some(false)).unwrap();
+    assert_eq!(result1.matched_ids_count, 1);
+
+    let result2 = search_tree(path.to_string(), None, Some(false)).unwrap();
+    assert_eq!(result2.matched_ids_count, 1);
+
+    clear_cache(path);
+}
+
+#[test]
+fn test_force_refresh_parameter_accepted() {
+    let path = "/test/force_refresh_param";
+    let nodes = vec![DirectoryNode {
+        id: "1".to_string(),
+        title: "test.txt".to_string(),
+        node_type: "file".to_string(),
+        children: vec![],
+        parent: None,
+        child_ids: vec![],
+    }];
+
+    let tree_index = create_test_tree_index(nodes);
+    setup_cache(path, tree_index);
+
+    let result1 = search_tree(path.to_string(), Some("test".to_string()), Some(false)).unwrap();
+    assert_eq!(result1.matched_ids_count, 1);
 
     clear_cache(path);
 }

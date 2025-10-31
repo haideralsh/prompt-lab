@@ -35,7 +35,7 @@ pub(crate) fn toggle_selection(
     tree_display_mode: String,
     full_tree: Vec<DirectoryNode>,
 ) -> Result<SelectionResult, ApplicationError> {
-    ensure_index(&directory_path)?;
+    ensure_index(&directory_path, false)?;
     let guard = cache().read().expect("cache read poisoned");
     let tree_index = guard
         .get(&directory_path)
@@ -121,7 +121,7 @@ pub(crate) fn clear_selection(
     tree_display_mode: String,
     full_tree: Vec<DirectoryNode>,
 ) -> Result<SelectionResult, ApplicationError> {
-    ensure_index(&directory_path)?;
+    ensure_index(&directory_path, false)?;
     let cache = cache().read().expect("cache read poisoned");
     let tree_index = cache
         .get(&directory_path)

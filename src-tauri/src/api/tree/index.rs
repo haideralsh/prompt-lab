@@ -64,13 +64,14 @@ fn build_index(full_tree: Vec<DirectoryNode>) -> TreeIndex {
     tree_index
 }
 
-pub fn ensure_index(path: &str) -> Result<(), ApplicationError> {
+pub fn ensure_index(path: &str, force_refresh: bool) -> Result<(), ApplicationError> {
     {
-        if cache()
+        let has_cache = cache()
             .read()
             .expect("cache read poisoned")
-            .contains_key(path)
-        {
+            .contains_key(path);
+
+        if !force_refresh && has_cache {
             return Ok(());
         }
     }
