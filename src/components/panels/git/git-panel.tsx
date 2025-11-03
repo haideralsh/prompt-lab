@@ -14,7 +14,7 @@ import { Panel } from '@/components/panels/panel/panel'
 import { PanelList } from '@/components/panels/panel/panel-list'
 import { PanelRowCheckbox } from '@/components/panels/panel/panel-row-checkbox'
 import { EmptyPanelListMessage } from '@/components/panels/panel/empty-panel-list-message'
-import { copyDiffsToClipboard } from '@/api/git'
+import { copyDiffsToClipboard } from '@/api/clipboard'
 import { TokenCount } from '@/components/common/token-count'
 
 export function GitPanel() {

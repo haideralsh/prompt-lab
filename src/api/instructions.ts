@@ -31,13 +31,6 @@ export async function deleteInstructions(params: {
   return await invoke<string>('delete_instructions', params)
 }
 
-export async function copyInstructionsToClipboard(params: {
-  directoryPath: string
-  instructionIds: string[]
-}) {
-  return await invoke<string>('copy_instructions_to_clipboard', params)
-}
-
 export async function countInstructionTokens(params: { content: string }) {
   return await invoke<number>('count_instruction_tokens', params)
 }

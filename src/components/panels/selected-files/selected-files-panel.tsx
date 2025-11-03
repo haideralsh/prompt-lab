@@ -79,10 +79,12 @@ export function SelectedFilesPanel() {
     setIndeterminateNodes(new Set(selection.indeterminateNodesPaths))
   }
 
-  async function copyFiles(paths: Id[]) {
+  async function copyFiles() {
     await copyFilesToClipboard({
       directoryPath: directory.path,
-      paths: paths as string[],
+      treeDisplayMode,
+      fullTree: tree,
+      selectedNodes,
     })
   }
 
@@ -159,7 +161,7 @@ export function SelectedFilesPanel() {
             </ToggleButton>
           </ToggleButtonGroup>
           <CopyButton
-            onCopy={() => copyFiles(sortedFiles.map((file) => file.path))}
+            onCopy={copyFiles}
             isDisabled={sortedFiles.length === 0 && treeDisplayMode === 'none'}
           />
         </>
@@ -195,11 +197,7 @@ export function SelectedFilesPanel() {
                       >
                         <ReaderIcon />
                       </Button>
-                      <CopyButton
-                        onCopy={async () => {
-                          await copyFiles([file.path])
-                        }}
-                      />
+                      <CopyButton onCopy={copyFiles} />
                       <TokenCount count={file.tokenCount} />
                     </>
                   }

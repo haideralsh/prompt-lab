@@ -190,14 +190,14 @@ export function WebDisclosurePanel() {
   async function handleCopyToClipboard(entry: SavedPageMetadata) {
     await copyPagesToClipboard({
       directoryPath: directory.path,
-      pageIds: [entry.url],
+      urls: [entry.url],
     })
   }
 
   async function handleCopySelectedToClipboard() {
     await copyPagesToClipboard({
       directoryPath: directory.path,
-      pageIds: Array.from(selectedPagesIds),
+      urls: Array.from(selectedPagesIds),
     })
   }
 

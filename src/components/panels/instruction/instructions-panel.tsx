@@ -11,12 +11,12 @@ import type {
   SavedInstructions,
 } from './types'
 import {
-  copyInstructionsToClipboard,
   deleteInstructions,
   getInstruction,
   listInstructions,
   upsertInstruction,
 } from '@/api/instructions'
+import { copyInstructionsToClipboard } from '@/api/clipboard'
 import { queue } from '@/components/toasts/toast-queue'
 import { getErrorMessage } from '../../../helpers/get-error-message'
 import { useInstructionTokenCount } from './forms/use-instruction-token-count'
@@ -171,11 +171,12 @@ export function InstructionsPanel() {
     }
   }
 
-  async function handleCopyInstruction(_instruction: Instruction) {
+  async function handleCopyInstruction(instruction: Instruction) {
     try {
       await copyInstructionsToClipboard({
         directoryPath: directory.path,
         instructionIds: [],
+        instructions: [{ name: instruction.name, content: instruction.content }],
       })
     } catch (error) {
       queue.add({
@@ -210,6 +211,7 @@ export function InstructionsPanel() {
       await copyInstructionsToClipboard({
         directoryPath: directory.path,
         instructionIds,
+        instructions: draftInstructions,
       })
     } catch (error) {
       queue.add({
