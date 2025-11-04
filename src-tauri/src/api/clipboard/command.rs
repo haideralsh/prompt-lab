@@ -5,7 +5,7 @@ use crate::api::clipboard::lib::{
     build_clipboard_content, build_git_diff, build_instruction_sections, build_web_pages_section,
     get_rendered_tree, write_to_clipboard,
 };
-use crate::api::git::status::git_diff_text;
+
 use crate::api::instruction::lib::Instruction;
 use crate::api::tree::index::DirectoryNode;
 use crate::api::web::lib::load_page_contents_from_store;
