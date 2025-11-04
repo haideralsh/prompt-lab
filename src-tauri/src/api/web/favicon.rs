@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use scraper::{Html, Selector};
 use tauri::{AppHandle, Manager, Wry};
@@ -15,22 +18,103 @@ pub async fn get_favicon_url(site_url: &str) -> Option<String> {
     let document = Html::parse_document(&html);
 
     let selectors = [
-        r#"link[rel="icon"]"#,
-        r#"link[rel="shortcut icon"]"#,
+        r#"link[rel*="icon"]"#,
         r#"link[rel="apple-touch-icon"]"#,
+        r#"link[rel="apple-touch-icon-precomposed"]"#,
+        r#"link[rel="mask-icon"]"#,
     ];
+
+    #[derive(Debug)]
+    struct Candidate {
+        href: String,
+        media: Option<String>,
+        rel: Option<String>,
+        r#type: Option<String>,
+        sizes: Option<String>,
+    }
+
+    let mut candidates: Vec<Candidate> = Vec::new();
 
     for selector_str in &selectors {
         if let Ok(selector) = Selector::parse(selector_str) {
-            if let Some(element) = document.select(&selector).next() {
-                match element.value().attr("href") {
-                    Some(href) => match base_url.join(href).ok() {
-                        Some(favicon_url) => return Some(favicon_url.to_string()),
-                        None => continue,
-                    },
-                    None => continue,
+            for element in document.select(&selector) {
+                if let Some(href) = element.value().attr("href") {
+                    let media = element.value().attr("media").map(|s| s.to_string());
+                    let rel = element.value().attr("rel").map(|s| s.to_string());
+                    let r#type = element.value().attr("type").map(|s| s.to_string());
+                    let sizes = element.value().attr("sizes").map(|s| s.to_string());
+                    candidates.push(Candidate {
+                        href: href.to_string(),
+                        media,
+                        rel,
+                        r#type,
+                        sizes,
+                    });
                 }
             }
+        }
+    }
+
+    fn score(c: &Candidate) -> i32 {
+        let mut s = 0;
+
+        if let Some(m) = &c.media {
+            let m_lower = m.to_ascii_lowercase();
+            if m_lower.contains("prefers-color-scheme: dark") {
+                s += 100;
+            } else if m_lower.contains("prefers-color-scheme: light") {
+                s += 50;
+            } else {
+                s += 10;
+            }
+        } else {
+            s += 20;
+        }
+
+        if let Some(rel) = &c.rel {
+            let rl = rel.to_ascii_lowercase();
+            if rl.contains("icon") {
+                s += 15;
+            }
+            if rl.contains("mask-icon") {
+                s += 5;
+            }
+            if rl.contains("apple-touch-icon") {
+                s -= 5;
+            }
+        }
+
+        if let Some(t) = &c.r#type {
+            let tl = t.to_ascii_lowercase();
+            if tl.contains("svg") {
+                s += 12;
+            } else if tl.contains("png") {
+                s += 10;
+            } else if tl.contains("ico") || tl.contains("x-icon") {
+                s += 5;
+            }
+        } else {
+            s += 2;
+        }
+
+        if let Some(sz) = &c.sizes {
+            let sl = sz.to_ascii_lowercase();
+            if sl.contains("any") {
+                s += 6;
+            } else if sl.contains("64x64") || sl.contains("128x128") || sl.contains("256x256") {
+                s += 3;
+            }
+        }
+
+        s
+    }
+
+    candidates.sort_by_key(|c| score(c));
+    candidates.reverse();
+
+    for c in candidates {
+        if let Ok(joined) = base_url.join(&c.href) {
+            return Some(joined.to_string());
         }
     }
 
@@ -49,7 +133,17 @@ pub async fn save_favicon(app: &AppHandle<Wry>, favicon_url: &str) -> Option<Str
 
     let bytes = response.bytes().await.ok()?;
 
-    let file_name = format!("{}.{}", Uuid::new_v4(), "ico");
+    let extension = Url::parse(favicon_url)
+        .ok()
+        .and_then(|url| {
+            Path::new(url.path())
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .map(|s| s.to_string())
+        })
+        .unwrap_or_else(|| "ico".to_string());
+
+    let file_name = format!("{}.{}", Uuid::new_v4(), extension);
 
     let favicons_directory = favicons_directory(app)?;
 
