@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use tauri::{AppHandle, Wry};
 
 use crate::api::clipboard::lib::{
-    build_clipboard_content, build_instruction_sections, build_web_pages_section,
+    build_clipboard_content, build_git_diff, build_instruction_sections, build_web_pages_section,
     get_rendered_tree, write_to_clipboard,
 };
 use crate::api::git::status::git_diff_text;
@@ -34,12 +34,7 @@ pub(crate) fn copy_diffs_to_clipboard(
         return Ok(());
     }
 
-    let diff = match git_diff_text(&directory_path, paths) {
-        Some(content) => content,
-        None => return Ok(()),
-    };
-
-    write_to_clipboard(&app, diff)
+    write_to_clipboard(&app, build_git_diff(&directory_path, paths))
 }
 
 #[tauri::command]
