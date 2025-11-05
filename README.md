@@ -23,7 +23,7 @@ Prompt Lab is an open-source, cross-platform desktop app for building and provid
 - Deliver clear, structured instructions for better guidance
 - Save and reuse frequently used instructions
 
-<!-- <img src="./docs/screenshot.png" /> -->
+<img src="./docs/screenshot.png" />
 
 ## Building from source
 
