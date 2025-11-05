@@ -18,7 +18,7 @@ export async function getInstruction(params: {
 export async function upsertInstruction(params: {
   directoryPath: string
   instructionId?: string
-  title: string
+  name: string
   content: string
 }) {
   return await invoke<string>('upsert_instruction', params)

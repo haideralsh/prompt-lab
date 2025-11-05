@@ -176,7 +176,9 @@ export function InstructionsPanel() {
       await copyInstructionsToClipboard({
         directoryPath: directory.path,
         instructionIds: [],
-        instructions: [{ name: instruction.name, content: instruction.content }],
+        instructions: [
+          { name: instruction.name, content: instruction.content },
+        ],
       })
     } catch (error) {
       queue.add({
@@ -256,7 +258,7 @@ export function InstructionsPanel() {
       await upsertInstruction({
         directoryPath: directory.path,
         instructionId,
-        title: data.name,
+        name: data.name,
         content: data.content,
       })
       const updatedInstructions = await listInstructions({
@@ -286,7 +288,7 @@ export function InstructionsPanel() {
     try {
       await upsertInstruction({
         directoryPath: directory.path,
-        title: data.name,
+        name: data.name,
         content: data.content,
       })
       const updatedInstructions = await listInstructions({
