@@ -58,7 +58,7 @@ pub fn classify_change(st: Status) -> Option<String> {
 }
 
 pub fn git_diff_text(root: &str, paths: Vec<String>) -> Option<String> {
-    let repo = match Repository::discover(root) {
+    let repo = match Repository::open(root) {
         Ok(r) => r,
         Err(e) if e.code() == ErrorCode::NotFound => return None,
         Err(_) => return Some(String::new()),
@@ -115,7 +115,7 @@ pub(crate) enum GitStatusComputation {
 }
 
 pub(crate) fn compute_git_status(app: &AppHandle<Wry>, root: &str) -> GitStatusComputation {
-    let repo = match Repository::discover(root) {
+    let repo = match Repository::open(root) {
         Ok(r) => r,
         Err(e) if e.code() == ErrorCode::NotFound => return GitStatusComputation::NotRepository,
         Err(_) => {
