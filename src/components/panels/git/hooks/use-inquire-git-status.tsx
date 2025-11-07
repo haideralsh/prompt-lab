@@ -21,7 +21,7 @@ export function useInquireGitStatus(
           onGitStatusUpdate(() => null)
         } else {
           onGitStatusUpdate((prev) => {
-            if (!prev || prev.length === 0) return changes
+            if (!prev || prev.results.length === 0) return changes
             return mergeTokenCountsWithPrevious(changes, prev)
           })
         }

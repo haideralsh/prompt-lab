@@ -1,5 +1,5 @@
 use crate::api::git::{
-    status::{compute_git_status, GitChange, GitStatusComputation},
+    status::{compute_git_status, GitStatusComputation, GitStatusResults},
     tokenize::spawn_git_token_count_task,
     watch::ensure_git_watcher_started,
 };
@@ -9,17 +9,21 @@ use tauri::{AppHandle, Wry};
 pub(crate) fn get_git_status(
     app: AppHandle<Wry>,
     directory_path: String,
-) -> Option<Vec<GitChange>> {
+) -> Option<GitStatusResults> {
     match compute_git_status(&app, &directory_path) {
         GitStatusComputation::NotRepository => None,
         GitStatusComputation::Finished {
             changes,
             work_items,
+            truncated,
         } => {
             if !work_items.is_empty() {
                 spawn_git_token_count_task(app.clone(), directory_path.clone(), work_items);
             }
-            Some(changes)
+            Some(GitStatusResults {
+                results: changes,
+                truncated,
+            })
         }
     }
 }

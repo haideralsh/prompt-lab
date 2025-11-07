@@ -18,11 +18,11 @@ export function useGitTokenCountsListener(
           if (event.payload.root !== directory.path) return
 
           onGitStatusUpdate((prev) => {
-            if (!prev || prev.length === 0) return prev
+            if (!prev || prev.results.length === 0) return prev
 
             let didUpdate = false
 
-            const next = prev.map((change) => {
+            const next = prev.results.map((change) => {
               const tokenCount = event.payload.files[change.path]
               if (tokenCount == null) return change
               if (change.tokenCount === tokenCount) return change
@@ -30,7 +30,9 @@ export function useGitTokenCountsListener(
               return { ...change, tokenCount }
             })
 
-            return didUpdate ? next : prev
+            return didUpdate
+              ? { results: next, truncated: prev.truncated }
+              : prev
           })
         }
       )

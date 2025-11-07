@@ -25,8 +25,13 @@ export function useGitStatusListener(
           if (payload.root !== directory.path) return
 
           onGitStatusUpdate((prev) => {
-            if (!prev || prev.length === 0) return payload.changes
-            return mergeTokenCountsWithPrevious(payload.changes, prev)
+            if (!prev || prev.results.length === 0) {
+              return { results: payload.results, truncated: payload.truncated }
+            }
+            return mergeTokenCountsWithPrevious(
+              { results: payload.results, truncated: payload.truncated },
+              prev,
+            )
           })
         },
       )

@@ -27,7 +27,7 @@ export function GitPanel() {
   useGitTokenCountsListener(directory, setGitStatus)
   useGitStatusListener(directory, setGitStatus)
 
-  const gitChanges = gitStatus ?? []
+  const gitChanges = gitStatus?.results ?? []
   const selectedDiffCount = selectedDiffIds.size
   const isGroupSelected =
     gitChanges.length > 0 && selectedDiffCount === gitChanges.length
@@ -70,53 +70,60 @@ export function GitPanel() {
       }
     >
       {gitChanges.length > 0 ? (
-        <PanelList
-          ariaLabel="Git changes"
-          selectedValues={selectedDiffIds}
-          onChangeSelectedValues={(values) => setSelectedDiffIds(values)}
-          className="text-sm text-text-dark"
-        >
-          {gitChanges.map((change) => (
-            <li key={change.path}>
-              <PanelRowCheckbox
-                value={change.path}
-                endActions={
-                  <>
-                    {change.tokenCount && (
-                      <CopyButton
-                        onCopy={async () => {
-                          await copyDiffsToClipboard(
-                            directory.path,
-                            change.path,
-                          )
-                        }}
-                      />
-                    )}
-                    <TokenCount count={change.tokenCount} />
-                  </>
-                }
-              >
-                <span className="flex w-full items-center gap-3">
-                  <span
-                    className="-mr-1 justify-self-start rounded-sm bg-border-dark px-1 py-0.5 text-xs text-text-dark"
-                    title={change.changeType}
-                  >
-                    {change.changeType.slice(0, 1).toUpperCase()}
+        <>
+          {gitStatus?.truncated && (
+            <div className="px-2 text-xs/loose text-solid-light">
+              Showing {gitChanges.length} of many Git changes
+            </div>
+          )}
+          <PanelList
+            ariaLabel="Git changes"
+            selectedValues={selectedDiffIds}
+            onChangeSelectedValues={(values) => setSelectedDiffIds(values)}
+            className="text-sm text-text-dark"
+          >
+            {gitChanges.map((change) => (
+              <li key={change.path}>
+                <PanelRowCheckbox
+                  value={change.path}
+                  endActions={
+                    <>
+                      {change.tokenCount && (
+                        <CopyButton
+                          onCopy={async () => {
+                            await copyDiffsToClipboard(
+                              directory.path,
+                              change.path,
+                            )
+                          }}
+                        />
+                      )}
+                      <TokenCount count={change.tokenCount} />
+                    </>
+                  }
+                >
+                  <span className="flex w-full items-center gap-3">
+                    <span
+                      className="-mr-1 justify-self-start rounded-sm bg-border-dark px-1 py-0.5 text-xs text-text-dark"
+                      title={change.changeType}
+                    >
+                      {change.changeType.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span className="font-normal break-all text-text-dark">
+                      {change.path}
+                    </span>
+                    <span className="justify-self-start rounded-l-sm rounded-r-none bg-red/15 px-1 py-0.5 text-xs font-semibold text-red">
+                      -{change.linesDeleted}
+                    </span>
+                    <span className="-ml-3 justify-self-start rounded-l-none rounded-r-sm bg-green/15 px-1 py-0.5 text-xs font-semibold text-green">
+                      +{change.linesAdded}
+                    </span>
                   </span>
-                  <span className="font-normal break-all text-text-dark">
-                    {change.path}
-                  </span>
-                  <span className="justify-self-start rounded-l-sm rounded-r-none bg-red/15 px-1 py-0.5 text-xs font-semibold text-red">
-                    -{change.linesDeleted}
-                  </span>
-                  <span className="-ml-3 justify-self-start rounded-l-none rounded-r-sm bg-green/15 px-1 py-0.5 text-xs font-semibold text-green">
-                    +{change.linesAdded}
-                  </span>
-                </span>
-              </PanelRowCheckbox>
-            </li>
-          ))}
-        </PanelList>
+                </PanelRowCheckbox>
+              </li>
+            ))}
+          </PanelList>
+        </>
       ) : (
         <EmptyPanelListMessage>
           {gitStatus === null

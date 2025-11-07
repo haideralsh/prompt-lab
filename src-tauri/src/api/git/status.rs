@@ -12,6 +12,8 @@ use std::{
 };
 use tauri::{AppHandle, Wry};
 
+const MAX_GIT_CHANGES: usize = 100;
+
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GitChange {
@@ -20,6 +22,13 @@ pub(crate) struct GitChange {
     pub(crate) lines_added: i32,
     pub(crate) lines_deleted: i32,
     pub(crate) token_count: Option<usize>,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GitStatusResults {
+    pub(crate) results: Vec<GitChange>,
+    pub(crate) truncated: bool,
 }
 
 #[derive(Clone)]
@@ -111,6 +120,7 @@ pub(crate) enum GitStatusComputation {
     Finished {
         changes: Vec<GitChange>,
         work_items: Vec<GitDiffWorkItem>,
+        truncated: bool,
     },
 }
 
@@ -122,6 +132,7 @@ pub(crate) fn compute_git_status(app: &AppHandle<Wry>, root: &str) -> GitStatusC
             return GitStatusComputation::Finished {
                 changes: Vec::new(),
                 work_items: Vec::new(),
+                truncated: false,
             }
         }
     };
@@ -154,6 +165,7 @@ pub(crate) fn compute_git_status(app: &AppHandle<Wry>, root: &str) -> GitStatusC
                 return GitStatusComputation::Finished {
                     changes: Vec::new(),
                     work_items: Vec::new(),
+                    truncated: false,
                 }
             }
         };
@@ -218,12 +230,15 @@ pub(crate) fn compute_git_status(app: &AppHandle<Wry>, root: &str) -> GitStatusC
             return GitStatusComputation::Finished {
                 changes: Vec::new(),
                 work_items: Vec::new(),
+                truncated: false,
             }
         }
     };
 
     let mut out: Vec<GitChange> = Vec::new();
     let mut work_items: Vec<GitDiffWorkItem> = Vec::new();
+    let mut included_count = 0;
+    let mut truncated = false;
 
     for entry in statuses.iter() {
         let st = entry.status();
@@ -259,6 +274,11 @@ pub(crate) fn compute_git_status(app: &AppHandle<Wry>, root: &str) -> GitStatusC
         };
 
         if let Some(path) = path {
+            if included_count >= MAX_GIT_CHANGES {
+                truncated = true;
+                continue;
+            }
+
             let data = file_changes.get(&path);
             let lines_added = data.map(|d| d.lines_added).unwrap_or_default();
             let lines_deleted = data.map(|d| d.lines_deleted).unwrap_or_default();
@@ -290,11 +310,14 @@ pub(crate) fn compute_git_status(app: &AppHandle<Wry>, root: &str) -> GitStatusC
                 lines_deleted,
                 token_count,
             });
+
+            included_count += 1;
         }
     }
 
     GitStatusComputation::Finished {
         changes: out,
         work_items,
+        truncated,
     }
 }

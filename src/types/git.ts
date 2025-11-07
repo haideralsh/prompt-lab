@@ -6,7 +6,10 @@ interface GitChange {
   tokenCount?: number | null
 }
 
-export type GitStatusResult = GitChange[]
+export type GitStatusResult = {
+  results: GitChange[]
+  truncated: boolean
+}
 
 export interface GitTokenCountsEvent {
   root: string
@@ -15,5 +18,6 @@ export interface GitTokenCountsEvent {
 
 export type GitStatusUpdatedEvent = {
   root: string
-  changes: GitChange[]
+  results: GitChange[]
+  truncated: boolean
 }

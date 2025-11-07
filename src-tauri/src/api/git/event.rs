@@ -17,7 +17,8 @@ pub(crate) struct GitTokenCountsEvent {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct GitStatusEvent {
     pub(crate) root: String,
-    pub(crate) changes: Vec<GitChange>,
+    pub(crate) results: Vec<GitChange>,
+    pub(crate) truncated: bool,
 }
 
 pub(crate) fn emit_git_status_event(app: AppHandle<Wry>, directory_path: String) {
@@ -26,6 +27,7 @@ pub(crate) fn emit_git_status_event(app: AppHandle<Wry>, directory_path: String)
         GitStatusComputation::Finished {
             changes,
             work_items,
+            truncated,
         } => {
             if !work_items.is_empty() {
                 spawn_git_token_count_task(app.clone(), directory_path.clone(), work_items);
@@ -35,7 +37,8 @@ pub(crate) fn emit_git_status_event(app: AppHandle<Wry>, directory_path: String)
                 "git-status-updated",
                 GitStatusEvent {
                     root: directory_path,
-                    changes,
+                    results: changes,
+                    truncated,
                 },
             );
         }
