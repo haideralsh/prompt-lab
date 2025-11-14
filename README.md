@@ -16,12 +16,11 @@ Prompt Lab is an open-source, cross-platform desktop app for building and provid
 
 ## Features
 
-- Embed complete file contents directly in your prompt
-- Share your project’s directory structure with LLMs
-- Let LLMs view Git diffs to analyze and review code changes
-- Supply LLMs with saved web documentation in Markdown format
-- Deliver clear, structured instructions for better guidance
-- Save and reuse frequently used instructions
+- Share project directory structure with LLMs
+- Embed full file contents in prompts
+- Enable LLMs to review Git diffs for code changes
+- Provide web documentation in markdown format
+- Save and reuse common instructions
 
 <img src="./docs/screenshot.png" />
 
