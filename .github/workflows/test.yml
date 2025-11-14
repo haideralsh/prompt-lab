@@ -32,6 +32,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+      - name: install OpenSSL (macOS only)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          brew install openssl@3
+
       - name: Cache cargo dependencies
         uses: actions/cache@v4
         with:
@@ -46,3 +51,5 @@ jobs:
       - name: Run tests
         run: cargo test ${{ matrix.args }}
         working-directory: src-tauri
+        env:
+          OPENSSL_DIR: ${{ matrix.platform == 'macos-latest' && '/usr/local/opt/openssl@3' || '' }}
