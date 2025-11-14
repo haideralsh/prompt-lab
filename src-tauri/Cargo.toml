@@ -29,10 +29,10 @@ tauri-plugin-store = "2.4"
 ignore = "0.4"
 tiktoken-rs = "0.7"
 git2 = { version = "0.18", features = ["vendored-libgit2"] }
-twars-url2md = "1.4.2" 
 notify = "6"
 uuid = { version = "1", features = ["v4"] }
-reqwest = { version = "0.11", features = ["json"] }
-scraper = "0.18"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "gzip", "brotli", "deflate", "json"] }
+scraper = "0.20"
 url = "2.5"
 tauri-plugin-os = "2"
+html_to_markdown = "0.1"
