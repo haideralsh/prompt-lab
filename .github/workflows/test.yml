@@ -21,12 +21,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Ensures rustup/cargo/rustc are installed and on PATH for all OS-es
       - name: Setup Rust (stable)
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          # No extra targets needed on macOS jobs; host matches matrix arch.
+
+      - name: ensure cargo is on PATH (macOS)
+        if: startsWith(matrix.platform, 'macos')
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Rust versions
         run: |
@@ -51,7 +53,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/

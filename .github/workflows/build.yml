@@ -8,14 +8,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
+          - platform: 'macos-14'
             args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest'
+            rust_targets: 'aarch64-apple-darwin'
+          - platform: 'macos-13'
             args: '--target x86_64-apple-darwin'
+            rust_targets: 'x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
+            rust_targets: ''
           - platform: 'windows-latest'
             args: ''
+            rust_targets: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -34,10 +38,20 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          toolchain: stable
+          targets: ${{ matrix.rust_targets }}
+
+      - name: ensure cargo is on PATH (macOS)
+        if: startsWith(matrix.platform, 'macos')
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: verify cargo
+        run: |
+          which cargo || true
+          cargo --version
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
