@@ -28,7 +28,10 @@ export async function deleteInstructions(params: {
   directoryPath: string
   instructionIds: string[]
 }) {
-  return await invoke<string>('delete_instructions', params)
+  return await invoke<void>('delete_instructions', {
+    directoryPath: params.directoryPath,
+    instructionsIds: params.instructionIds,
+  })
 }
 
 export async function countInstructionTokens(params: { content: string }) {
